@@ -1,0 +1,20 @@
+# IDEs
+*.iml
+.idea/
+.kotlin/
+.gradle/
+
+# macOS
+.DS_Store
+
+# Build artifacts
+local.properties
+build/
+**/build/
+bin/
+**/bin/
+out/
+**/out/
+
+# Logs
+*.log
