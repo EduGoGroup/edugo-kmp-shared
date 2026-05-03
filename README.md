@@ -46,8 +46,9 @@ Plan vivo: [`edugo-ui-kmp/docs/architecture/kmp-shared-extraction-v2/README.md`]
 
 ## Estructura
 
-Ver `BASELINE.md` para métricas de referencia y `bom/README.md` para
-detalles del BOM.
+Ver `bom/README.md` para detalles del BOM. Las métricas de referencia
+(`BASELINE.md`) viven en el repo principal en
+`edugo-ui-kmp/docs/architecture/kmp-shared-extraction-v2/BASELINE.md` (P22).
 
 ## Política de versionamiento
 
