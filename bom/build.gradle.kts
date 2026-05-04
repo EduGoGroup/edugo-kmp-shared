@@ -6,9 +6,8 @@ plugins {
 }
 
 group = "com.edugo.kmp"
-// En Fases 0-6 el BOM no tiene versión publicable. Se omite `version` durante el
-// composite-build local; opcionalmente puede usarse `version = "0.1.0-DEV"` para
-// debug. La versión real (0.1.0) la fija Fase 7.
+// Versión nominal opcional. La publicación real (0.1.0) ocurre en Fase 7.
+version = "0.1.0-DEV"
 
 javaPlatform {
     allowDependencies()
@@ -16,7 +15,8 @@ javaPlatform {
 
 dependencies {
     constraints {
-        // VACÍO en Fase 0. Las constraints se poblarán cuando los módulos vivan en
-        // shared (Fase 2+) y serán consumidas vía composite-build, no vía mavenLocal.
+        api("com.edugo.kmp:foundation:0.1.0-DEV")
+        api("com.edugo.kmp:core:0.1.0-DEV")
+        api("com.edugo.kmp:validation:0.1.0-DEV")
     }
 }

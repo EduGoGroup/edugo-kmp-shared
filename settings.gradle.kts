@@ -34,4 +34,11 @@ plugins {
 }
 
 include(":bom")
-// (los módulos extraídos se añaden a partir de Fase 2)
+// El BOM se publica como artefacto `edugo-kmp-bom` (design.md §5.4). Como la
+// carpeta del subproyecto se llama `bom/`, renombramos `project.name` para
+// que el composite-build resuelva la coordenada `com.edugo.kmp:edugo-kmp-bom`
+// usada por los aliases del catalog en la app.
+project(":bom").name = "edugo-kmp-bom"
+include(":foundation")
+include(":core")
+include(":validation")
