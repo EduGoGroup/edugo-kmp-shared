@@ -25,5 +25,8 @@ dependencies {
         api("com.edugo.kmp:storage:0.1.0-DEV")
         api("com.edugo.kmp:settings:0.1.0-DEV")
         api("com.edugo.kmp:telemetry-core:0.1.0-DEV")
+        // Nuevos en Fase 4 (2 artefactos) — DA-23/P43: composite-build local
+        api("com.edugo.kmp:network:0.1.0-DEV")
+        api("com.edugo.kmp:database-core:0.1.0-DEV")
     }
 }
