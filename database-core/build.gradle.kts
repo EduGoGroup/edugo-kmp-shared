@@ -22,7 +22,6 @@ kotlin {
                 api(project(":foundation"))
                 implementation(project(":storage"))
                 implementation(project(":telemetry-core"))
-                api(libs.sqldelight.runtime)
             }
         }
         val commonTest by getting {
@@ -30,7 +29,16 @@ kotlin {
                 implementation(libs.multiplatform.settings.test)
             }
         }
+
+        val sqlPlatformsMain by creating {
+            dependsOn(commonMain)
+            dependencies {
+                api(libs.sqldelight.runtime)
+            }
+        }
+
         val desktopMain by getting {
+            dependsOn(sqlPlatformsMain)
             dependencies {
                 api(libs.sqldelight.sqlite.driver)
             }
@@ -38,6 +46,7 @@ kotlin {
 
         if (enableAndroid) {
             val androidMain by getting {
+                dependsOn(sqlPlatformsMain)
                 dependencies {
                     api(libs.sqldelight.android.driver)
                 }
@@ -46,6 +55,7 @@ kotlin {
 
         if (enableIos) {
             val iosMain by getting {
+                dependsOn(sqlPlatformsMain)
                 dependencies {
                     api(libs.sqldelight.native.driver)
                 }
