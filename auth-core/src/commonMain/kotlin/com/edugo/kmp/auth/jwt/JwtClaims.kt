@@ -1,0 +1,75 @@
+@file:UseSerializers(InstantSerializer::class)
+
+package com.edugo.kmp.auth.jwt
+
+import com.edugo.kmp.foundation.serialization.InstantSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.UseSerializers
+import kotlin.time.Clock
+import kotlin.time.Instant
+
+/**
+ * Claims extraídos de un token JWT.
+ *
+ * IMPORTANTE: Este modelo solo representa datos parseados del token.
+ * NO garantiza que el token sea válido o no haya sido manipulado.
+ * Para validación real, usar JwtValidator.
+ *
+ * ## Claims Estándar JWT (RFC 7519)
+ * - sub (subject): Identificador del usuario
+ * - iss (issuer): Emisor del token
+ * - aud (audience): Audiencia destinataria
+ * - exp (expiration): Tiempo de expiración
+ * - iat (issued at): Tiempo de emisión
+ * - nbf (not before): Token no válido antes de este tiempo
+ * - jti (JWT ID): Identificador único del token
+ *
+ * ## Ejemplo de Uso
+ * ```kotlin
+ * val result = JwtParser.parse(token)
+ * if (result is JwtParseResult.Success) {
+ *     val claims = result.claims
+ *     println("Subject: ${claims.subject}")
+ *     println("Expired: ${claims.isExpired}")
+ *     println("Custom: ${claims.customClaims}")
+ * }
+ * ```
+ */
+@Serializable
+data class JwtClaims(
+    /** Subject - típicamente el user_id */
+    val subject: String? = null,
+    /** Issuer - emisor del token (ej: "edugo-api") */
+    val issuer: String? = null,
+    /** Audience - audiencia destinataria */
+    val audience: String? = null,
+    /** Expiration time */
+    val expiresAt: Instant? = null,
+    /** Issued at time */
+    val issuedAt: Instant? = null,
+    /** Not before time */
+    val notBefore: Instant? = null,
+    /** JWT ID - identificador único */
+    val jwtId: String? = null,
+    /** Claims personalizados */
+    val customClaims: Map<String, String> = emptyMap(),
+) {
+    /**
+     * Verifica si el token ha expirado basado en el claim exp.
+     * Retorna false si no hay claim exp (asume no expira).
+     */
+    val isExpired: Boolean
+        get() = expiresAt?.let { Clock.System.now() >= it } ?: false
+
+    /**
+     * Verifica si el token aún no es válido (nbf > now).
+     */
+    val isNotYetValid: Boolean
+        get() = notBefore?.let { Clock.System.now() < it } ?: false
+
+    /**
+     * Verifica si el token está en su ventana de validez temporal.
+     */
+    val isTemporallyValid: Boolean
+        get() = !isExpired && !isNotYetValid
+}

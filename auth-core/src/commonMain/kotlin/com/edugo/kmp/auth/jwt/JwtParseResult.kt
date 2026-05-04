@@ -1,0 +1,40 @@
+package com.edugo.kmp.auth.jwt
+
+/**
+ * Resultado del parsing de un token JWT.
+ */
+sealed class JwtParseResult {
+    /**
+     * Parsing exitoso - claims extraídos correctamente.
+     * NOTA: No significa que el token sea válido, solo que se pudo parsear.
+     */
+    data class Success(
+        val claims: JwtClaims,
+    ) : JwtParseResult()
+
+    /**
+     * Token tiene formato inválido (no es JWT válido).
+     */
+    data class InvalidFormat(
+        val reason: String,
+    ) : JwtParseResult()
+
+    /**
+     * Token vacío o null.
+     */
+    data object EmptyToken : JwtParseResult()
+}
+
+// Extension functions
+val JwtParseResult.isSuccess: Boolean
+    get() = this is JwtParseResult.Success
+
+val JwtParseResult.claimsOrNull: JwtClaims?
+    get() = (this as? JwtParseResult.Success)?.claims
+
+fun JwtParseResult.getClaimsOrThrow(): JwtClaims =
+    when (this) {
+        is JwtParseResult.Success -> claims
+        is JwtParseResult.InvalidFormat -> throw IllegalArgumentException("Invalid JWT: $reason")
+        is JwtParseResult.EmptyToken -> throw IllegalArgumentException("Empty token")
+    }

@@ -53,3 +53,6 @@ include(":telemetry-core")
 // Fase 4 (Data & Network Extraction)
 include(":network")
 include(":database-core")
+
+// Fase 5 (Auth Decoupling) — DA-12
+include(":auth-core")

@@ -28,5 +28,7 @@ dependencies {
         // Nuevos en Fase 4 (2 artefactos) — DA-23/P43: composite-build local
         api("com.edugo.kmp:network:0.1.0-DEV")
         api("com.edugo.kmp:database-core:0.1.0-DEV")
+        // Nuevo en Fase 5 (1 artefacto) — DA-12: composite-build local; publicación 0.1.0 en Fase 7
+        api("com.edugo.kmp:auth-core:0.1.0-DEV")
     }
 }
