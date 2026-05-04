@@ -49,3 +49,7 @@ include(":config")
 include(":storage")
 include(":settings")
 include(":telemetry-core")
+
+// Fase 4 (Data & Network Extraction)
+include(":network")
+include(":database-core")
