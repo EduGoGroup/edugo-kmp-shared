@@ -11,7 +11,7 @@ repositories {
 dependencies {
     // Plugins KMP/Android/Compose (mismas versiones que edugo-ui-kmp)
     implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:2.3.20")
-    implementation("com.android.tools.build:gradle:9.1.1")
+    implementation("com.android.tools.build:gradle:9.2.0")
     implementation("org.jetbrains.compose:org.jetbrains.compose.gradle.plugin:1.10.3")
     implementation("org.jetbrains.kotlin:compose-compiler-gradle-plugin:2.3.20")
     implementation("org.jetbrains.kotlin:kotlin-serialization:2.3.20")
