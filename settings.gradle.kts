@@ -42,3 +42,10 @@ project(":bom").name = "edugo-kmp-bom"
 include(":foundation")
 include(":core")
 include(":validation")
+
+// Fase 3 (Infrastructure Extraction)
+include(":logger")
+include(":config")
+include(":storage")
+include(":settings")
+include(":telemetry-core")
