@@ -56,3 +56,7 @@ include(":database-core")
 
 // Fase 5 (Auth Decoupling) — DA-12
 include(":auth-core")
+
+// Fase 6 (UI Design Extraction)
+include(":design-core")
+include(":resources-core")
