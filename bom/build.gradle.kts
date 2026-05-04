@@ -15,8 +15,15 @@ javaPlatform {
 
 dependencies {
     constraints {
+        // Heredados de Fase 2 (3 artefactos)
         api("com.edugo.kmp:foundation:0.1.0-DEV")
         api("com.edugo.kmp:core:0.1.0-DEV")
         api("com.edugo.kmp:validation:0.1.0-DEV")
+        // Nuevos en Fase 3 (5 artefactos) — DA-23/P43: composite-build local
+        api("com.edugo.kmp:logger:0.1.0-DEV")
+        api("com.edugo.kmp:config:0.1.0-DEV")
+        api("com.edugo.kmp:storage:0.1.0-DEV")
+        api("com.edugo.kmp:settings:0.1.0-DEV")
+        api("com.edugo.kmp:telemetry-core:0.1.0-DEV")
     }
 }
