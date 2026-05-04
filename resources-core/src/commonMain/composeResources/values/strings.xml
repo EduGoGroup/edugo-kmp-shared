@@ -1,0 +1,49 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <!-- Acciones genéricas (vocabulario `action_*`, R6.5) -->
+    <string name="action_accept">Aceptar</string>
+    <string name="action_cancel">Cancelar</string>
+    <string name="action_save">Guardar</string>
+    <string name="action_edit">Editar</string>
+    <string name="action_delete">Eliminar</string>
+    <string name="action_back">Volver</string>
+    <string name="action_retry">Reintentar</string>
+    <string name="action_dismiss">Cerrar</string>
+    <string name="action_understood">Entendido</string>
+    <string name="action_undo">Deshacer</string>
+    <string name="action_new">Nuevo</string>
+
+    <!-- Errores genéricos -->
+    <string name="error_loading_details">No pudimos cargar los detalles.</string>
+    <string name="error_no_permission">No tienes permiso para ver esto.</string>
+    <string name="error_network_offline">Sin conexión. Revisa tu red e intenta de nuevo.</string>
+    <string name="error_session_expired">Tu sesión expiró. Vuelve a iniciar sesión.</string>
+    <string name="error_resource_not_found">No encontramos lo que buscas.</string>
+    <string name="error_server_unavailable">El servicio no está disponible. Intenta más tarde.</string>
+    <string name="error_generic">Algo salió mal. Intenta de nuevo.</string>
+    <string name="error_unknown">Ocurrió un error inesperado</string>
+
+    <!-- Mensajes generales (sistema de mensajes neutro) -->
+    <string name="message_loading">Cargando…</string>
+    <string name="message_error_title">Error</string>
+    <string name="message_success_title">Éxito</string>
+    <string name="message_warning_title">Advertencia</string>
+    <string name="message_info_title">Información</string>
+
+    <!-- Validación de formularios -->
+    <string name="form_field_required">Este campo es obligatorio</string>
+    <string name="form_fix_errors">Corrige los campos marcados</string>
+
+    <!-- Selectores -->
+    <string name="select_loading">Cargando…</string>
+    <string name="select_load_error">Error al cargar opciones</string>
+
+    <!-- Confirmación de borrado (UX neutra) -->
+    <string name="delete_confirmation_title">Confirmar eliminación</string>
+    <string name="delete_confirmation_message">¿Estás seguro de que deseas eliminar este elemento? Esta acción no se puede deshacer.</string>
+    <string name="delete_cancelled_message">Eliminación cancelada</string>
+
+    <!-- Permisos / persistencia -->
+    <string name="permission_denied">Sin permisos</string>
+    <string name="save_default_message">Guardado</string>
+</resources>

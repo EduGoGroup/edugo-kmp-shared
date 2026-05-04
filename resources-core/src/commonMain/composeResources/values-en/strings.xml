@@ -1,0 +1,49 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <!-- Generic actions (`action_*` vocabulary, R6.5) -->
+    <string name="action_accept">Accept</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_save">Save</string>
+    <string name="action_edit">Edit</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_back">Back</string>
+    <string name="action_retry">Retry</string>
+    <string name="action_dismiss">Dismiss</string>
+    <string name="action_understood">Got it</string>
+    <string name="action_undo">Undo</string>
+    <string name="action_new">New</string>
+
+    <!-- Generic errors -->
+    <string name="error_loading_details">We couldn\'t load the details.</string>
+    <string name="error_no_permission">You don\'t have permission to view this.</string>
+    <string name="error_network_offline">No connection. Check your network and try again.</string>
+    <string name="error_session_expired">Your session expired. Please sign in again.</string>
+    <string name="error_resource_not_found">We couldn\'t find what you were looking for.</string>
+    <string name="error_server_unavailable">The service is unavailable. Try again later.</string>
+    <string name="error_generic">Something went wrong. Please try again.</string>
+    <string name="error_unknown">An unexpected error occurred</string>
+
+    <!-- General messages (neutral message system) -->
+    <string name="message_loading">Loading…</string>
+    <string name="message_error_title">Error</string>
+    <string name="message_success_title">Success</string>
+    <string name="message_warning_title">Warning</string>
+    <string name="message_info_title">Information</string>
+
+    <!-- Form validation -->
+    <string name="form_field_required">This field is required</string>
+    <string name="form_fix_errors">Please fix the highlighted fields</string>
+
+    <!-- Selectors -->
+    <string name="select_loading">Loading…</string>
+    <string name="select_load_error">Error loading options</string>
+
+    <!-- Delete confirmation (neutral UX) -->
+    <string name="delete_confirmation_title">Confirm delete</string>
+    <string name="delete_confirmation_message">Are you sure you want to delete this item? This action cannot be undone.</string>
+    <string name="delete_cancelled_message">Delete cancelled</string>
+
+    <!-- Permissions / persistence -->
+    <string name="permission_denied">No permission</string>
+    <string name="save_default_message">Saved</string>
+</resources>
