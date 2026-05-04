@@ -3,8 +3,6 @@ plugins {
     // P43/P44: NO se aplica `maven-publish` en Fases 0-6 (composite-build local).
 }
 
-version = "0.1.0-DEV"
-
 val enableAndroid = findProperty("enableAndroid")?.toString()?.toBoolean() ?: false
 
 kotlin {

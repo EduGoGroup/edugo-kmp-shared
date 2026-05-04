@@ -4,8 +4,6 @@ plugins {
     // SIN maven-publish durante Fases 0-6 — DA-23/P43.
 }
 
-version = "0.1.0-DEV"
-
 val enableAndroid = findProperty("enableAndroid")?.toString()?.toBoolean() ?: false
 
 kotlin {
