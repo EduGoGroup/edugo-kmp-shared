@@ -1,0 +1,17 @@
+{
+  "environmentName": "DEV",
+  "network": {
+    "timeout": 30000,
+    "webPort": 8080,
+    "debugMode": true
+  },
+  "behavior": {
+    "mockMode": false
+  },
+  "api": {
+    "identityBaseUrl": "http://localhost:8070",
+    "academicBaseUrl": "http://localhost:8060",
+    "learningBaseUrl": "http://localhost:8065",
+    "platformBaseUrl": "http://localhost:8075"
+  }
+}

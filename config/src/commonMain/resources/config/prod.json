@@ -1,0 +1,17 @@
+{
+  "environmentName": "PROD",
+  "network": {
+    "timeout": 60000,
+    "webPort": 80,
+    "debugMode": false
+  },
+  "behavior": {
+    "mockMode": false
+  },
+  "api": {
+    "identityBaseUrl": "https://api.edugo.com/iam",
+    "academicBaseUrl": "https://api.edugo.com/academic",
+    "learningBaseUrl": "https://api.edugo.com/learning",
+    "platformBaseUrl": "https://api.edugo.com/platform"
+  }
+}

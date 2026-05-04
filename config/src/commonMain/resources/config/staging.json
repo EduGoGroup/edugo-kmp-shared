@@ -1,0 +1,17 @@
+{
+  "environmentName": "STAGING",
+  "network": {
+    "timeout": 60000,
+    "webPort": 8080,
+    "debugMode": true
+  },
+  "behavior": {
+    "mockMode": false
+  },
+  "api": {
+    "identityBaseUrl": "https://edugo-api-iam-platform.wittyhill-f6d656fb.eastus.azurecontainerapps.io",
+    "academicBaseUrl": "https://edugo-api-academic.wittyhill-f6d656fb.eastus.azurecontainerapps.io",
+    "learningBaseUrl": "https://edugo-api-learning.wittyhill-f6d656fb.eastus.azurecontainerapps.io",
+    "platformBaseUrl": "https://edugo-api-platform.wittyhill-f6d656fb.eastus.azurecontainerapps.io"
+  }
+}
