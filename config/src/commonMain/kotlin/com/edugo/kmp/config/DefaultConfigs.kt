@@ -33,6 +33,26 @@ internal object DefaultConfigs {
             }
         """.trimIndent(),
 
+        "config/dev-lan.json" to """
+            {
+              "environmentName": "DEV_LAN",
+              "network": {
+                "timeout": 30000,
+                "webPort": 8080,
+                "debugMode": true
+              },
+              "behavior": {
+                "mockMode": false
+              },
+              "api": {
+                "identityBaseUrl": "http://192.168.100.20:8070",
+                "academicBaseUrl": "http://192.168.100.20:8060",
+                "learningBaseUrl": "http://192.168.100.20:8065",
+                "platformBaseUrl": "http://192.168.100.20:8075"
+              }
+            }
+        """.trimIndent(),
+
         "config/staging.json" to """
             {
               "environmentName": "STAGING",

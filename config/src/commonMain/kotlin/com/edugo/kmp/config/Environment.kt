@@ -16,6 +16,14 @@ enum class Environment {
     DEV,
 
     /**
+     * Ambiente de desarrollo apuntando a APIs locales accesibles vía LAN.
+     * Apunta a la IP LAN de la Mac dev (configurada en `dev-lan.json`) para
+     * que un dispositivo físico (iPad / Android device) en la misma WiFi
+     * pueda consumir el backend sin necesidad de cloud o tunneling.
+     */
+    DEV_LAN,
+
+    /**
      * Ambiente de staging/pruebas.
      * Usa servidores de staging para validación antes de producción.
      */
@@ -28,11 +36,11 @@ enum class Environment {
     PROD;
 
     /**
-     * Convierte el enum a lowercase string para nombrar archivos.
-     * Ejemplo: Environment.DEV -> "dev"
+     * Convierte el enum a kebab-case string para nombrar archivos.
+     * Ejemplo: Environment.DEV -> "dev", Environment.DEV_LAN -> "dev-lan"
      */
     val fileName: String
-        get() = name.lowercase()
+        get() = name.lowercase().replace('_', '-')
 
     companion object {
         /**
