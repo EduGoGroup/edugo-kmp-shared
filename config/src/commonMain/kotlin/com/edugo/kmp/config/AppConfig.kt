@@ -39,7 +39,11 @@ data class AppConfigImpl(
     override val api: ApiConfigImpl
 ) : AppConfig {
     override val environment: Environment =
-        Environment.fromStringOrDefault(environmentName, Environment.DEV)
+        Environment.fromString(environmentName)
+            ?: error(
+                "AppConfigImpl.environmentName=\"$environmentName\" no es un Environment válido. " +
+                    "Valores aceptados: ${Environment.entries.joinToString(", ") { it.name }}."
+            )
 
     init {
         if (environment == Environment.PROD && behavior.mockMode) {

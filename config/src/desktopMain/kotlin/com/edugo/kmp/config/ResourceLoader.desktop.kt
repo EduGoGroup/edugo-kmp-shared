@@ -9,7 +9,9 @@ internal actual fun loadResourceAsString(path: String): String? {
         if (stream != null) {
             return stream.bufferedReader().use { it.readText() }
         }
-    } catch (_: Exception) {
+    } catch (ex: Exception) {
+        println("Error loading resource at $path: ${ex.message}")
+        ex.printStackTrace()
         // Resource not found, fall through to fallback
     }
 

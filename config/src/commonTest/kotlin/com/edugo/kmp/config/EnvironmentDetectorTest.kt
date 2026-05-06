@@ -3,24 +3,22 @@ package com.edugo.kmp.config
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
 
+/**
+ * Tests del contrato común de [EnvironmentDetector] — sólo cubren las
+ * semánticas de `forceEnvironment`/`reset` que son agnósticas de la plataforma.
+ *
+ * Las pruebas de detección automática (lectura de la variable real desde el
+ * mecanismo nativo de cada target) y de "fallar cuando no llega la variable"
+ * viven en los source sets específicos de plataforma y se construyen en la
+ * Fase 4 sobre el framework parametrizado, donde podemos manipular el entorno
+ * (System properties, env vars, mocks de `NSBundle`, etc.) de forma controlada.
+ */
 class EnvironmentDetectorTest {
 
     @AfterTest
     fun cleanup() {
         EnvironmentDetector.reset()
-    }
-
-    @Test
-    fun detectReturnsValidEnvironment() {
-        val env = EnvironmentDetector.detect()
-        assertNotNull(env, "Detected environment should not be null")
-        assertTrue(
-            env in listOf(Environment.DEV, Environment.STAGING, Environment.PROD),
-            "Detected environment should be DEV STAGING or PROD but was $env"
-        )
     }
 
     @Test
@@ -30,17 +28,6 @@ class EnvironmentDetectorTest {
         val env = EnvironmentDetector.detect()
 
         assertEquals(Environment.STAGING, env, "Should return forced environment")
-    }
-
-    @Test
-    fun resetRestoresAutomaticDetection() {
-        EnvironmentDetector.forceEnvironment(Environment.PROD)
-        assertEquals(Environment.PROD, EnvironmentDetector.detect())
-
-        EnvironmentDetector.reset()
-
-        val env = EnvironmentDetector.detect()
-        assertNotNull(env, "After reset should still return valid environment")
     }
 
     @Test
@@ -65,25 +52,26 @@ class EnvironmentDetectorTest {
     }
 
     @Test
-    fun resetIsIdempotent() {
+    fun resetClearsTheForcedSlot() {
         EnvironmentDetector.forceEnvironment(Environment.PROD)
+        assertEquals(Environment.PROD, EnvironmentDetector.detect())
 
         EnvironmentDetector.reset()
-        val env1 = EnvironmentDetector.detect()
 
-        EnvironmentDetector.reset()
-        val env2 = EnvironmentDetector.detect()
-
-        assertEquals(env1, env2, "Multiple resets should produce same result")
+        // Tras reset el slot de override está limpio: confirmamos que un nuevo
+        // forceEnvironment puede tomar control sin que persista el valor previo.
+        EnvironmentDetector.forceEnvironment(Environment.STAGING)
+        assertEquals(Environment.STAGING, EnvironmentDetector.detect())
     }
 
     @Test
-    fun detectWithoutForceUsesAutoDetection() {
-        // No forceEnvironment called — should use platform detection
-        val env = EnvironmentDetector.detect()
-        assertTrue(
-            env in listOf(Environment.DEV, Environment.STAGING, Environment.PROD),
-            "Auto-detected environment should be valid"
-        )
+    fun resetIsIdempotent() {
+        EnvironmentDetector.forceEnvironment(Environment.PROD)
+        EnvironmentDetector.reset()
+        EnvironmentDetector.reset()
+        EnvironmentDetector.reset()
+
+        EnvironmentDetector.forceEnvironment(Environment.DEV)
+        assertEquals(Environment.DEV, EnvironmentDetector.detect())
     }
 }

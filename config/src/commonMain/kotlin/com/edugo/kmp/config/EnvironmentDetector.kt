@@ -4,16 +4,20 @@ import com.edugo.kmp.config.EnvironmentDetector.forceEnvironment
 import kotlin.concurrent.Volatile
 
 /**
- * Detects the current environment (DEV, STAGING, PROD) automatically
- * based on platform-specific heuristics.
+ * Resolves the current environment (DEV, DEV_LAN, STAGING, PROD) reading the
+ * canonical variable `APP_ENVIRONMENT` (or its platform-native equivalent).
  *
- * Detection strategies per platform:
- * - Android: Debugger attached or System property `app.environment`
- * - Desktop: Debugger attached or env var `APP_ENVIRONMENT`
- * - iOS: Conservative (DEV default), Phase 2: Info.plist
- * - WasmJS: Conservative (DEV default), Phase 2: hostname detection
+ * Detection strategies per platform — see `STANDARD.md` §3 for the full contract:
+ * - Desktop: JVM system property `app.environment` → env var `APP_ENVIRONMENT`
+ * - Android: JVM system property `app.environment` (typically populated from
+ *            `BuildConfig.BUILD_ENVIRONMENT` by the host app before Koin)
+ * - iOS:     `NSProcessInfo` env var `APP_ENVIRONMENT` → `Info.plist["AppEnvironment"]`
+ * - Web:     `window.__APP_ENVIRONMENT__` → `<meta name="app-environment">`
  *
- * Supports manual override for testing via [forceEnvironment].
+ * No platform falls back to silent defaults or heuristics: if the variable is
+ * missing the detector throws [IllegalStateException] with an actionable message.
+ *
+ * Supports manual override (tests, bootstrap) via [forceEnvironment].
  */
 object EnvironmentDetector {
     @Volatile

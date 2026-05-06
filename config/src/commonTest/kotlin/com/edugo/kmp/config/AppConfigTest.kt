@@ -59,24 +59,31 @@ class AppConfigTest {
     }
 
     @Test
-    fun appConfigImpl_environment_defaults_to_dev_for_unknown() {
-        val config = AppConfigImpl(
-            environmentName = "UNKNOWN",
-            network = NetworkConfigImpl(
-                timeout = 30000L,
-                webPort = 3000,
-                debugMode = true
-            ),
-            behavior = BehaviorConfigImpl(mockMode = false),
-            api = ApiConfigImpl(
-                identityBaseUrl = "http://localhost:8070",
-                academicBaseUrl = "http://localhost:8060",
-                learningBaseUrl = "http://localhost:8065",
-                platformBaseUrl = "http://localhost:8075"
+    fun appConfigImpl_environment_throws_for_unknown() {
+        // Post Fase 1: AppConfigImpl no acepta defaults silenciosos para
+        // environmentName. Si la deserialización trae un valor que no mapea a
+        // Environment, falla con IllegalStateException accionable.
+        try {
+            AppConfigImpl(
+                environmentName = "UNKNOWN",
+                network = NetworkConfigImpl(
+                    timeout = 30000L,
+                    webPort = 3000,
+                    debugMode = true
+                ),
+                behavior = BehaviorConfigImpl(mockMode = false),
+                api = ApiConfigImpl(
+                    identityBaseUrl = "http://localhost:8070",
+                    academicBaseUrl = "http://localhost:8060",
+                    learningBaseUrl = "http://localhost:8065",
+                    platformBaseUrl = "http://localhost:8075"
+                )
             )
-        )
-
-        assertEquals(Environment.DEV, config.environment)
+            kotlin.test.fail("Should throw IllegalStateException for unknown environmentName")
+        } catch (e: IllegalStateException) {
+            assertTrue(e.message!!.contains("UNKNOWN"))
+            assertTrue(e.message!!.contains("DEV"))
+        }
     }
 
     @Test

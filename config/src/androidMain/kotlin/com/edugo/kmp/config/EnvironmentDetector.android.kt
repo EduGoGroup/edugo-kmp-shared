@@ -1,25 +1,22 @@
 package com.edugo.kmp.config
 
-import android.os.Debug
-
+// Order: JVM system property `app.environment` → env var `APP_ENVIRONMENT`. If
+// neither is set with a non-blank value, fail with an actionable message.
+// `BuildConfig.BUILD_ENVIRONMENT` (preferred per STANDARD.md §3.2) lives in the
+// host app module; the bridge to this detector is performed in MainActivity via
+// `EnvironmentDetector.forceEnvironment(...)` before Koin starts.
 internal actual fun detectPlatformEnvironment(): Environment {
-    // Strategy 1: Check system property (set via gradle or CI)
-    val envProperty = System.getProperty("app.environment")
-    if (envProperty != null) {
-        return Environment.fromString(envProperty) ?: Environment.PROD
+    val sysProp = System.getProperty("app.environment")?.trim()
+    if (!sysProp.isNullOrEmpty()) {
+        return Environment.fromString(sysProp)
+            ?: environmentInvalidError("Android", sysProp)
     }
 
-    // Strategy 2: Check if debugger is attached (reliable at runtime)
-    // Wrapped in try-catch because android.os.Debug is unavailable in local unit tests
-    try {
-        if (Debug.isDebuggerConnected()) {
-            return Environment.DEV
-        }
-    } catch (_: Throwable) {
-        // In unit test environment, Android framework classes throw
-        return Environment.DEV
+    val envVar = System.getenv("APP_ENVIRONMENT")?.trim()
+    if (!envVar.isNullOrEmpty()) {
+        return Environment.fromString(envVar)
+            ?: environmentInvalidError("Android", envVar)
     }
 
-    // Strategy 3: Default to PROD for release builds
-    return Environment.PROD
+    environmentMissingError("Android")
 }

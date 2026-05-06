@@ -3,20 +3,21 @@ package com.edugo.kmp.config
 import platform.Foundation.NSBundle
 import platform.Foundation.NSProcessInfo
 
+// Order: scheme env var `APP_ENVIRONMENT` (NSProcessInfo) → Info.plist key
+// `AppEnvironment` (resolved at build time from `Config.xcconfig`). If neither
+// is present with a non-blank value, fail with an actionable message.
 internal actual fun detectPlatformEnvironment(): Environment {
-    // Strategy 1: Runtime env var set by Xcode scheme (APP_ENVIRONMENT=STAGING/DEV)
-    // This is what the scheme's "Environment Variables" section injects at launch time.
-    val processEnv = NSProcessInfo.processInfo.environment["APP_ENVIRONMENT"] as? String
-    if (processEnv != null) {
-        return Environment.fromString(processEnv) ?: Environment.DEV
+    val processEnv = (NSProcessInfo.processInfo.environment["APP_ENVIRONMENT"] as? String)?.trim()
+    if (!processEnv.isNullOrEmpty()) {
+        return Environment.fromString(processEnv)
+            ?: environmentInvalidError("iOS", processEnv)
     }
 
-    // Strategy 2: Info.plist build-time substitution ($(APP_ENVIRONMENT) from xcconfig)
-    val infoDictionary = NSBundle.mainBundle.infoDictionary
-    val plistValue = infoDictionary?.get("AppEnvironment") as? String
-    if (plistValue != null) {
-        return Environment.fromString(plistValue) ?: Environment.DEV
+    val plistValue = (NSBundle.mainBundle.infoDictionary?.get("AppEnvironment") as? String)?.trim()
+    if (!plistValue.isNullOrEmpty()) {
+        return Environment.fromString(plistValue)
+            ?: environmentInvalidError("iOS", plistValue)
     }
 
-    return Environment.DEV
+    environmentMissingError("iOS")
 }

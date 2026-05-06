@@ -17,12 +17,25 @@ Si necesitas añadir una nueva propiedad de configuración a la aplicación, deb
 
 ## Detección de Ambientes
 
-### Lógica por Plataforma
+> **Fuente única de verdad**: `STANDARD.md` (en este mismo módulo) define el contrato
+> completo de la variable `APP_ENVIRONMENT` y su mecanismo nativo por plataforma.
+> Lo que sigue es un resumen.
 
-- **Android**: Se detecta vía `Debug.isDebuggerConnected()`. Ten en cuenta que en pruebas unitarias
-  esto puede fallar y debe manejarse con `try-catch`.
-- **WasmJS**: Utiliza `getHostname()` mediante interop de JS. `localhost` mapea a `DEV`.
-- **iOS**: Prefiere `APP_ENVIRONMENT` inyectado por el esquema de Xcode.
+### Principio
+
+Cada plataforma extrae el valor de su mecanismo nativo (system property JVM,
+`BuildConfig`, `NSProcessInfo`/`Info.plist`, `window.__APP_ENVIRONMENT__` /
+meta tag) y lo mapea a un `Environment`. **No hay heurísticas ni defaults
+silenciosos**: si la variable falta, el detector lanza `IllegalStateException`
+con un mensaje que indica cómo definirla por plataforma.
+
+### Lógica por Plataforma (resumen)
+
+- **Desktop (JVM)**: system property `app.environment` → env var `APP_ENVIRONMENT`.
+- **Android**: system property `app.environment` (típicamente populada desde
+  `BuildConfig.BUILD_ENVIRONMENT` por el host app antes de inicializar Koin).
+- **iOS**: env var `APP_ENVIRONMENT` (`NSProcessInfo`) → `Info.plist["AppEnvironment"]`.
+- **WasmJS**: `window.__APP_ENVIRONMENT__` → `<meta name="app-environment">`.
 
 ### Forzado de Ambiente
 
