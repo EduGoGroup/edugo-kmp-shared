@@ -43,6 +43,15 @@ data class AuthConfig(
                         rateLimitMaxRequests = 5,
                         rateLimitWindow = 1.minutes,
                     )
+
+                Environment.DEV_LAN ->
+                    AuthConfig(
+                        refreshConfig = TokenRefreshConfig.DEVELOPMENT,
+                        circuitBreakerConfig = CircuitBreakerConfig.development(),
+                        retryPolicy = RetryPolicy.AGGRESSIVE,
+                        rateLimitMaxRequests = 20,
+                        rateLimitWindow = 1.minutes,
+                    )
             }
     }
 }

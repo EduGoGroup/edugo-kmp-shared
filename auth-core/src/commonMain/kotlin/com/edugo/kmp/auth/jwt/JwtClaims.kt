@@ -12,7 +12,7 @@ import kotlin.time.Instant
  * Claims extraídos de un token JWT.
  *
  * IMPORTANTE: Este modelo solo representa datos parseados del token.
- * NO garantiza que el token sea válido o no haya sido manipulado.
+ * No garantiza que el token sea válido o no haya sido manipulado.
  * Para validación real, usar JwtValidator.
  *
  * ## Claims Estándar JWT (RFC 7519)
