@@ -2,7 +2,7 @@
 
 > Documento contractual. Define cómo cada plataforma del proyecto EduGo UI KMP recibe, valida y consume la variable de entorno que determina qué archivo `config-{env}.json` se carga en el arranque.
 >
-> **Estado**: Fase 1 cerrada — heurísticas eliminadas; cada plataforma falla con mensaje accionable si la variable no llega. Fase 2 pendiente (pipeline único de inyección).
+> **Estado**: Fase 1 + Fase 2 cerradas. Las 4 plataformas tienen pipeline `-Penv=` end-to-end; iOS tiene default seguro local; el `ResourceLoader` web pre-carga el JSON real desde el bundle.
 
 ---
 
@@ -36,17 +36,14 @@ Cada plataforma respeta la convención de naming de su ecosistema en el identifi
 
 | Aspecto | Valor |
 |---|---|
-| Identificador interno preferido | JVM system property `app.environment` |
-| Identificador alternativo | env var del SO `APP_ENVIRONMENT` |
-| Cómo se pasa por CLI | `./gradlew :platforms:desktop:app:run -Penv=STAGING` (**pendiente Fase 2**) o `-Dapp.environment=STAGING` |
-| Cómo se pasa por IDE | Run Config IntelliJ → `Environment variables` → `APP_ENVIRONMENT=STAGING` |
-| Si falta | `IllegalStateException` con el mensaje accionable de §5 (sysprop o env var). |
+| Identificador interno preferido | constante de build `BUILD_ENVIRONMENT` (generada por Gradle desde `-Penv=`) |
+| Identificador alternativo | JVM system property `app.environment` (poblada automáticamente por el `application` block) o env var del SO `APP_ENVIRONMENT` |
+| Cómo se pasa por CLI | `./gradlew :platforms:desktop:app:run -Penv=STAGING` |
+| Cómo se pasa por IDE | Run Config IntelliJ → `Environment variables` → `APP_ENVIRONMENT=STAGING`, o cualquier run config tipo `GradleRunConfiguration` con `scriptParameters="-Penv=STAGING"` |
+| Si falta | `IllegalStateException` con el mensaje accionable de §5 (BUILD_ENVIRONMENT, sysprop o env var). |
 
-**Pendiente Fase 2**:
-- Agregar `generateBuildConfig` al módulo `platforms/desktop/app` para que `-Penv=` se traduzca a `BUILD_ENVIRONMENT` bakeado y `Main.kt` haga el bridge a `EnvironmentDetector.forceEnvironment(...)` (mismo patrón que Android/Web).
-- Cablear el `application` block de Compose Desktop con la system property `-Dapp.environment=$env` para que `./gradlew run -Penv=...` funcione fuera de IntelliJ sin pasos manuales.
-
-Hoy (Fase 1): el detector desktop lee sysprop / env var y falla limpio si nada llega. El cableo end-to-end es trabajo de Fase 2.
+**Bridge BUILD_ENVIRONMENT → EnvironmentDetector** (mismo patrón que Android/Web):
+`platforms/desktop/app/build.gradle.kts` registra `generateBuildConfig` que escribe `BUILD_ENVIRONMENT: String` desde `-Penv=`. `Main.kt` lo lee, valida con `Environment.fromString(...)` y llama `EnvironmentDetector.forceEnvironment(...)` antes de `buildTelemetry()`. Si `-Penv=` no se pasó, el bridge se salta y el detector cae a la system property `app.environment` (que el `application` block del Compose Desktop popula automáticamente) o a la env var, fallando accionablemente si nada llega.
 
 ### 3.2 Android
 
@@ -75,7 +72,7 @@ Hoy (Fase 1): el detector desktop lee sysprop / env var y falla limpio si nada l
 | Identificador alternativo | `Info.plist["AppEnvironment"]` (resuelto en build-time por `Config.xcconfig`) |
 | Cómo se pasa por CLI | `xcodebuild ... APP_ENVIRONMENT=STAGING` |
 | Cómo se pasa por IDE | Xcode → Edit Scheme → Run → Arguments → Environment Variables → `APP_ENVIRONMENT=STAGING` |
-| Default en `Config.xcconfig` | `APP_ENVIRONMENT = DEV` (**pendiente Fase 2** — fallback seguro de desarrollo local) |
+| Default en `Config.xcconfig` | `APP_ENVIRONMENT = DEV` (fallback seguro de desarrollo local — sólo aplica si CI/release no sobrescriben). |
 | Si falta | `IllegalStateException` durante `MainViewController.bootstrap()` con mensaje accionable. |
 
 **Bridge en iOS**: a diferencia de Android/Web, `MainViewController.bootstrap()` no actúa como puente — invoca `EnvironmentDetector.detect()` directamente. El detector ya cubre las dos fuentes (`NSProcessInfo` → `Info.plist`) y falla por sí mismo si ambas están ausentes.
@@ -90,13 +87,15 @@ Hoy (Fase 1): el detector desktop lee sysprop / env var y falla limpio si nada l
 | Aspecto | Valor |
 |---|---|
 | Identificador interno preferido | constante de build `BUILD_ENVIRONMENT` (generada por Gradle desde `-Penv=`) |
-| Identificador alternativo runtime | meta tag `<meta name="app-environment" content="STAGING">` inyectado en `index.html` durante el build (**pendiente Fase 2**) |
+| Identificador alternativo runtime | meta tag `<meta name="app-environment" content="STAGING">` inyectado en `index.html` durante `processResources` desde `-Penv=` |
 | Identificador runtime de override | `window.__APP_ENVIRONMENT__` (útil en pruebas manuales, pre-bootstrap) |
 | Cómo se pasa por CLI | `./gradlew :platforms:web:app:wasmJsBrowserDevelopmentRun -PenableWeb=true -Penv=STAGING` |
 | Cómo se pasa por IDE | Run Config tipo **`GradleRunConfiguration`** con `scriptParameters="-PenableWeb=true -Penv=STAGING"` |
 | Si falta | `IllegalStateException` durante `Main.main()`. **Sin fallback a hostname.** |
 
-**Bridge BUILD_ENVIRONMENT → EnvironmentDetector**: `Main.main()` lee la constante baked y llama `EnvironmentDetector.forceEnvironment(...)` (mismo patrón que Android). El detector compartido lee `window.__APP_ENVIRONMENT__` / meta tag sólo si el callsite no forzó ya un valor (path runtime que se completa con la inyección del meta tag en Fase 2).
+**Bridge BUILD_ENVIRONMENT → EnvironmentDetector**: `Main.main()` lee la constante baked y llama `EnvironmentDetector.forceEnvironment(...)` (mismo patrón que Android). El detector compartido lee `window.__APP_ENVIRONMENT__` / meta tag sólo si el callsite no forzó ya un valor (útil cuando se sirve un bundle pre-compilado y se quiere overridear sin recompilar).
+
+**Pre-carga del JSON real (Fase 2)**: `Main.main()` llama `MainScope().launch { ConfigPrefetcher.prefetch(env); startApp() }`. `ConfigPrefetcher` hace `fetch("config/{env}.json")` contra el bundle servido por webpack — los JSON del módulo compartido se copian al output de `wasmJsProcessResources` vía `installProcessedWebResources` (ver `platforms/web/app/build.gradle.kts`). Si el fetch falla, `ResourceLoader.wasmJs.kt` cae a `DefaultConfigs` como red de seguridad.
 
 **Heurísticas eliminadas en Fase 1** ✅:
 - `getHostname()` y el `when { localhost → DEV; staging → STAGING; else → PROD }` en `EnvironmentDetector.wasmJs.kt`.
@@ -146,7 +145,7 @@ Sin cambios respecto al estado actual:
 
 Mapeo definido en [Environment.kt](src/commonMain/kotlin/com/edugo/kmp/config/Environment.kt) (`fileName`).
 
-**Nota Fase 2**: el `ResourceLoader` de WasmJS hoy delega siempre a `DefaultConfigs`. Se cambiará para que cargue el JSON real empaquetado en el bundle web; mientras tanto `DefaultConfigs` se mantiene como red de seguridad.
+**WasmJS (Fase 2)**: `ConfigPrefetcher.prefetch(env)` hace `fetch` del JSON empaquetado por webpack al boot, antes de Compose / Koin. `ResourceLoader.wasmJs.kt` lo lee del cache; si la red falló, cae a `DefaultConfigs` como red de seguridad.
 
 ---
 
@@ -188,6 +187,6 @@ Cuando el proyecto necesite una segunda variable (ej. `FEATURE_FLAGS_URL`, `OTEL
 |---|---|---|---|
 | **0** | `STANDARD.md` aprobado | — | ✅ |
 | **1** | Detectores sin heurísticas; fallan explícitamente; bridge callsite documentado en Android/Web; `AppConfigImpl` rechaza `environmentName` inválido | D1, D3, D6 | ✅ |
-| 2 | Pipeline `-Penv=` uniforme en las 4 plataformas + `generateBuildConfig` desktop + Main desktop como bridge + meta tag web inyectado + default `APP_ENVIRONMENT = DEV` en `Config.xcconfig` + WasmJS ResourceLoader real | D2, D4 | pendiente |
+| **2** | Pipeline `-Penv=` uniforme en las 4 plataformas: `generateBuildConfig` desktop + Main desktop como bridge + meta tag web inyectado por `installProcessedWebResources` + default `APP_ENVIRONMENT = DEV` en `Config.xcconfig` + `ConfigPrefetcher` WasmJS que carga el JSON real del bundle | D2, D4 | ✅ cerrada 2026-05-06 |
 | 3 | Run configs por ambiente (`.run/<Plataforma>-<AMBIENTE>.run.xml`) + schemes Xcode versionados | Fase 2 | pendiente |
 | 4 | Framework de tests parametrizado (`AppEnvVar`, `EnvVarMatrix`, contract tests + tests por plataforma con mocks de sysprop / `NSBundle` / DOM) | Fase 1 | pendiente |
