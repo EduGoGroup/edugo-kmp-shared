@@ -2,7 +2,7 @@
 
 > Documento contractual. Define cómo cada plataforma del proyecto EduGo UI KMP recibe, valida y consume la variable de entorno que determina qué archivo `config-{env}.json` se carga en el arranque.
 >
-> **Estado**: Fase 1 + Fase 2 cerradas. Las 4 plataformas tienen pipeline `-Penv=` end-to-end; iOS tiene default seguro local; el `ResourceLoader` web pre-carga el JSON real desde el bundle.
+> **Estado**: Fases 1 + 2 + 3 cerradas. Las 4 plataformas tienen pipeline `-Penv=` end-to-end; iOS tiene default seguro local; el `ResourceLoader` web pre-carga el JSON real desde el bundle; matriz completa de run configs IntelliJ + schemes Xcode versionados (`<Plataforma>-<AMBIENTE>.run.xml` y `iosApp - <AMBIENTE>.xcscheme`).
 
 ---
 
@@ -39,7 +39,7 @@ Cada plataforma respeta la convención de naming de su ecosistema en el identifi
 | Identificador interno preferido | constante de build `BUILD_ENVIRONMENT` (generada por Gradle desde `-Penv=`) |
 | Identificador alternativo | JVM system property `app.environment` (poblada automáticamente por el `application` block) o env var del SO `APP_ENVIRONMENT` |
 | Cómo se pasa por CLI | `./gradlew :platforms:desktop:app:run -Penv=STAGING` |
-| Cómo se pasa por IDE | Run Config IntelliJ → `Environment variables` → `APP_ENVIRONMENT=STAGING`, o cualquier run config tipo `GradleRunConfiguration` con `scriptParameters="-Penv=STAGING"` |
+| Cómo se pasa por IDE | Run config versionado `.run/Desktop-<AMBIENTE>.run.xml` (tipo `GradleRunConfiguration`, `scriptParameters="-Penv=<AMBIENTE>"`, task `:platforms:desktop:app:run`). Una variante por ambiente: `Desktop-DEV`, `Desktop-DEV_LAN`, `Desktop-STAGING`, `Desktop-PROD`. |
 | Si falta | `IllegalStateException` con el mensaje accionable de §5 (BUILD_ENVIRONMENT, sysprop o env var). |
 
 **Bridge BUILD_ENVIRONMENT → EnvironmentDetector** (mismo patrón que Android/Web):
@@ -52,7 +52,7 @@ Cada plataforma respeta la convención de naming de su ecosistema en el identifi
 | Identificador interno preferido | `BuildConfig.BUILD_ENVIRONMENT` (constante bakeada por Gradle) |
 | Identificador alternativo | JVM system property `app.environment` o env var `APP_ENVIRONMENT` (tests instrumentados / forzar override) |
 | Cómo se pasa por CLI | `./gradlew :platforms:mobile:androidApp:installDebug -PenableAndroid=true -Penv=STAGING` |
-| Cómo se pasa por IDE | Run Config tipo **`GradleRunConfiguration`** con `scriptParameters="-PenableAndroid=true -Penv=STAGING"` (Fase 3 unifica todos los `.run/Android-*.run.xml`) |
+| Cómo se pasa por IDE | Run config versionado `.run/Android-<AMBIENTE>.run.xml` (tipo `GradleRunConfiguration`, `scriptParameters="-PenableAndroid=true -Penv=<AMBIENTE>"`, task `:platforms:mobile:androidApp:installAndStartDebug`). Una variante por ambiente: `Android-DEV`, `Android-DEV_LAN`, `Android-STAGING`, `Android-PROD`. |
 | Si falta | `IllegalStateException` durante `MainActivity.onCreate()`. Sin fallback a `BuildConfig.DEBUG`. |
 
 **Bridge BuildConfig → EnvironmentDetector** (patrón estándar):
@@ -71,7 +71,7 @@ Cada plataforma respeta la convención de naming de su ecosistema en el identifi
 | Identificador interno preferido | env var `APP_ENVIRONMENT` del scheme Xcode (resuelta por `NSProcessInfo`) |
 | Identificador alternativo | `Info.plist["AppEnvironment"]` (resuelto en build-time por `Config.xcconfig`) |
 | Cómo se pasa por CLI | `xcodebuild ... APP_ENVIRONMENT=STAGING` |
-| Cómo se pasa por IDE | Xcode → Edit Scheme → Run → Arguments → Environment Variables → `APP_ENVIRONMENT=STAGING` |
+| Cómo se pasa por IDE | Scheme versionado `iosApp - <AMBIENTE>.xcscheme` bajo `iosApp/iosApp.xcodeproj/xcshareddata/xcschemes/`, con `APP_ENVIRONMENT=<AMBIENTE>` en `LaunchAction → EnvironmentVariables`. Uno por ambiente: `iosApp - DEV`, `iosApp - DEV_LAN`, `iosApp - STAGING`, `iosApp - PROD`. |
 | Default en `Config.xcconfig` | `APP_ENVIRONMENT = DEV` (fallback seguro de desarrollo local — sólo aplica si CI/release no sobrescriben). |
 | Si falta | `IllegalStateException` durante `MainViewController.bootstrap()` con mensaje accionable. |
 
@@ -80,7 +80,7 @@ Cada plataforma respeta la convención de naming de su ecosistema en el identifi
 **Heurísticas eliminadas en Fase 1** ✅:
 - Default `"local"` en `MainViewController.readEnvironment()` (función eliminada; el detector centraliza la lectura).
 
-**Schemes a versionar en Fase 3**: uno por ambiente bajo `iosApp/iosApp.xcodeproj/xcshareddata/xcschemes/`.
+**Schemes versionados (Fase 3)** ✅: cuatro archivos uniformes bajo `iosApp/iosApp.xcodeproj/xcshareddata/xcschemes/` (`iosApp - DEV.xcscheme`, `iosApp - DEV_LAN.xcscheme`, `iosApp - STAGING.xcscheme`, `iosApp - PROD.xcscheme`). Todos comparten `BlueprintIdentifier`, ejecutan `LaunchAction` con `buildConfiguration="Debug"` (la semántica del scheme es "apunta a las APIs de ese ambiente", no "cambia el modo de build"; release builds reales se generan vía Archive / `xcodebuild`).
 
 ### 3.4 Web (WasmJS)
 
@@ -90,7 +90,7 @@ Cada plataforma respeta la convención de naming de su ecosistema en el identifi
 | Identificador alternativo runtime | meta tag `<meta name="app-environment" content="STAGING">` inyectado en `index.html` durante `processResources` desde `-Penv=` |
 | Identificador runtime de override | `window.__APP_ENVIRONMENT__` (útil en pruebas manuales, pre-bootstrap) |
 | Cómo se pasa por CLI | `./gradlew :platforms:web:app:wasmJsBrowserDevelopmentRun -PenableWeb=true -Penv=STAGING` |
-| Cómo se pasa por IDE | Run Config tipo **`GradleRunConfiguration`** con `scriptParameters="-PenableWeb=true -Penv=STAGING"` |
+| Cómo se pasa por IDE | Run config versionado `.run/Web-<AMBIENTE>.run.xml` (tipo `GradleRunConfiguration`, `scriptParameters="-PenableWeb=true -Penv=<AMBIENTE>"`, task `:platforms:web:app:wasmJsBrowserDevelopmentRun`). Una variante por ambiente: `Web-DEV`, `Web-DEV_LAN`, `Web-STAGING`, `Web-PROD`. PROD usa también `wasmJsBrowserDevelopmentRun` (smoke local contra `config/prod.json`); el bundle de release se genera con `wasmJsBrowserDistribution`. |
 | Si falta | `IllegalStateException` durante `Main.main()`. **Sin fallback a hostname.** |
 
 **Bridge BUILD_ENVIRONMENT → EnvironmentDetector**: `Main.main()` lee la constante baked y llama `EnvironmentDetector.forceEnvironment(...)` (mismo patrón que Android). El detector compartido lee `window.__APP_ENVIRONMENT__` / meta tag sólo si el callsite no forzó ya un valor (útil cuando se sirve un bundle pre-compilado y se quiere overridear sin recompilar).
@@ -188,5 +188,5 @@ Cuando el proyecto necesite una segunda variable (ej. `FEATURE_FLAGS_URL`, `OTEL
 | **0** | `STANDARD.md` aprobado | — | ✅ |
 | **1** | Detectores sin heurísticas; fallan explícitamente; bridge callsite documentado en Android/Web; `AppConfigImpl` rechaza `environmentName` inválido | D1, D3, D6 | ✅ |
 | **2** | Pipeline `-Penv=` uniforme en las 4 plataformas: `generateBuildConfig` desktop + Main desktop como bridge + meta tag web inyectado por `installProcessedWebResources` + default `APP_ENVIRONMENT = DEV` en `Config.xcconfig` + `ConfigPrefetcher` WasmJS que carga el JSON real del bundle | D2, D4 | ✅ cerrada 2026-05-06 |
-| 3 | Run configs por ambiente (`.run/<Plataforma>-<AMBIENTE>.run.xml`) + schemes Xcode versionados | Fase 2 | pendiente |
+| **3** | Matriz de run configs IntelliJ por plataforma + ambiente (12 archivos `.run/<Plataforma>-<AMBIENTE>.run.xml`, todos `GradleRunConfiguration` con `-Penv=<AMBIENTE>`) + 4 schemes Xcode versionados (`iosApp - <AMBIENTE>.xcscheme`). Eliminadas las run configs legacy (`Android-App.run.xml` tipo nativo, `Android-App-DEV-LAN.run.xml`, `Desktop.run.xml` con env var, `Web-Wasm.run.xml` sin `-Penv=`) y los schemes con sufijos descriptivos (`(Local APIs)`, `(Physical Device)`, `(Azure APIs)`). | Fase 2 | ✅ cerrada 2026-05-06 |
 | 4 | Framework de tests parametrizado (`AppEnvVar`, `EnvVarMatrix`, contract tests + tests por plataforma con mocks de sysprop / `NSBundle` / DOM) | Fase 1 | pendiente |
