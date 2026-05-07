@@ -23,6 +23,9 @@ interface AppConfig {
 
     /** Configuración de endpoints de APIs. */
     val api: ApiConfig
+
+    /** Configuración de telemetría (OpenTelemetry). */
+    val telemetry: TelemetryConfig
 }
 
 /**
@@ -36,7 +39,8 @@ data class AppConfigImpl(
     private val environmentName: String,
     override val network: NetworkConfigImpl,
     override val behavior: BehaviorConfigImpl,
-    override val api: ApiConfigImpl
+    override val api: ApiConfigImpl,
+    override val telemetry: TelemetryConfigImpl = TelemetryConfigImpl()
 ) : AppConfig {
     override val environment: Environment =
         Environment.fromString(environmentName)

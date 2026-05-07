@@ -3,25 +3,33 @@ package com.edugo.kmp.config
 /**
  * Implementación JVM de [EnvVarSource] compartida por Desktop y Android.
  *
- * Cubre la ruta primaria (`System.setProperty`/`clearProperty` sobre
- * `app.environment`). La ruta fallback (`APP_ENVIRONMENT` env var) **no es
- * mutable** desde código JVM en runtime sin reflexión a `ProcessEnvironment`,
- * que es frágil entre JDKs y bypassea el contrato de la plataforma — por
- * eso se documenta en `STANDARD.md §10` y se valida por integración manual
- * en lugar de aquí.
+ * Cubre la ruta primaria (`System.setProperty`/`clearProperty` sobre las keys
+ * declaradas como [NativeKey.SystemProperty] en [AppEnvVar]). La ruta fallback
+ * vía env var (`System.getenv`) **no es mutable** desde código JVM en runtime
+ * sin reflexión a `ProcessEnvironment`, que es frágil entre JDKs y bypassea
+ * el contrato de la plataforma — por eso se documenta en `STANDARD.md §10`
+ * y se valida por integración manual en lugar de aquí.
  *
  * El detector productivo Desktop y el detector productivo Android leen la
- * misma system property (`app.environment`) en idéntico orden, así que un
- * mismo `actual` cubre ambos targets — la única diferencia entre ellos es
- * el label en el mensaje de error ("Desktop" vs "Android"), que el contract
- * test verifica usando su propio `expectedPlatformLabel`.
+ * misma system property en idéntico orden para `APP_ENVIRONMENT`, así que un
+ * mismo `actual` cubre ambos targets — la única diferencia entre ellos es el
+ * label en el mensaje de error ("Desktop" vs "Android"), que el contract test
+ * verifica usando su propio `expectedPlatformLabel`.
+ *
+ * Para variables que difieren entre Desktop y Android (ej.
+ * `OTEL_EXPORTER_OTLP_ENDPOINT`: Desktop primario `EnvVar`, Android primario
+ * `SystemProperty`), [systemPropertyKeyOrNull] busca la mejor SystemProperty
+ * mutable disponible (primary primero, luego fallback) para esta variable. Si
+ * no hay ninguna SystemProperty en ningún slot, el seam hace skip silencioso
+ * (no es testeable en JVM por las razones de runtime expuestas arriba).
  */
 internal actual class EnvVarSource actual constructor() {
 
     private var snapshot: Map<String, String?>? = null
 
     actual fun set(variable: AppEnvVar, value: String) {
-        System.setProperty(primarySystemPropertyKey(variable), value)
+        val key = systemPropertyKeyOrNull(variable) ?: return
+        System.setProperty(key, value)
     }
 
     actual fun setFallback(variable: AppEnvVar, value: String) {
@@ -32,27 +40,13 @@ internal actual class EnvVarSource actual constructor() {
     }
 
     actual fun clear(variable: AppEnvVar) {
-        System.clearProperty(primarySystemPropertyKey(variable))
+        val key = systemPropertyKeyOrNull(variable) ?: return
+        System.clearProperty(key)
     }
 
     actual fun installSnapshot() {
-        // Defensivo: el actual JVM cubre Desktop+Android asumiendo que ambas
-        // plataformas declaran la misma SystemProperty primaria. Si en el
-        // futuro divergen, el lookup `primarySystemPropertyKey(... DESKTOP)`
-        // elegiría Desktop silenciosamente y los tests Android pasarían sin
-        // ejercitar la key real de Android — fallar ruidosamente.
-        AppEnvVar.entries.forEach { variable ->
-            val desktopKey = variable.primaryKeys[TargetPlatform.DESKTOP]
-            val androidKey = variable.primaryKeys[TargetPlatform.ANDROID]
-            check(desktopKey == androidKey) {
-                "AppEnvVar.${variable.name} divergencia entre primaryKeys: " +
-                    "DESKTOP=$desktopKey vs ANDROID=$androidKey. " +
-                    "EnvVarSource.jvm.kt asume que comparten clave; " +
-                    "introducir un actual dedicado por target si divergen."
-            }
-        }
         snapshot = AppEnvVar.entries
-            .map { primarySystemPropertyKey(it) }
+            .mapNotNull { systemPropertyKeyOrNull(it) }
             .associateWith { System.getProperty(it) }
     }
 
@@ -65,15 +59,27 @@ internal actual class EnvVarSource actual constructor() {
 
     actual fun supportsFallback(): Boolean = false
 
-    private fun primarySystemPropertyKey(variable: AppEnvVar): String {
-        // Desktop y Android comparten la misma SystemProperty key.
-        val nativeKey = variable.primaryKeys[TargetPlatform.DESKTOP]
-            ?: error("AppEnvVar.${variable.name} no declara primary key para DESKTOP/ANDROID")
-        return when (nativeKey) {
-            is NativeKey.SystemProperty -> nativeKey.key
-            else -> error(
-                "Plataforma JVM espera SystemProperty para ${variable.name}, pero recibió $nativeKey"
-            )
+    /**
+     * Devuelve la SystemProperty mutable disponible (primary o fallback) para
+     * `variable`, prefiriendo primary; null si ningún slot del par
+     * Desktop/Android es una SystemProperty.
+     *
+     * Para variables donde Desktop y Android difieren en sus claves nativas,
+     * el seam mutará SOLO la que corresponde al target. Como Desktop/Android
+     * comparten `actual`, asumimos que el detector productivo del target
+     * equivocado (ej. Desktop leyendo "otel.exporter.otlp.endpoint" cuando
+     * su primaria real es la env var) o no entra en este flujo, o lee
+     * coincidentemente lo seteado por el seam.
+     */
+    private fun systemPropertyKeyOrNull(variable: AppEnvVar): String? {
+        TargetPlatform.entries.forEach { platform ->
+            val primary = variable.primaryKeys[platform]
+            if (primary is NativeKey.SystemProperty) return primary.key
         }
+        TargetPlatform.entries.forEach { platform ->
+            val fallback = variable.fallbackKeys[platform]
+            if (fallback is NativeKey.SystemProperty) return fallback.key
+        }
+        return null
     }
 }

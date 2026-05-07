@@ -13,5 +13,8 @@
     "academicBaseUrl": "https://api.edugo.com/academic",
     "learningBaseUrl": "https://api.edugo.com/learning",
     "platformBaseUrl": "https://api.edugo.com/platform"
+  },
+  "telemetry": {
+    "otelEndpoint": ""
   }
 }

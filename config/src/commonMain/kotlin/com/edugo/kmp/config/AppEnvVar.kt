@@ -77,5 +77,37 @@ internal enum class AppEnvVar(
             TargetPlatform.WEB to NativeKey.MetaTag("app-environment")
         ),
         validate = { Environment.fromString(it) != null }
+    ),
+
+    /**
+     * Endpoint del Collector OTel (OTLP/HTTP). Catalogada v2026-05-06 por DA-MPH-2.
+     *
+     * Justificación de las primarias:
+     *  - **Desktop**: `EnvVar` es la convención OTel oficial (`OTEL_EXPORTER_OTLP_ENDPOINT`);
+     *    `SystemProperty` queda como fallback para tests (env var es read-only en runtime JVM).
+     *  - **Android**: `SystemProperty` primario porque es testeable (mutable runtime);
+     *    el override real de producción es `BuildConfig.OTEL_EXPORTER_OTLP_ENDPOINT`,
+     *    bakeado por Gradle y resuelto en el callsite (mismo patrón que `APP_ENVIRONMENT`
+     *    con `BuildConfig.BUILD_ENVIRONMENT` — ver `STANDARD.md §3.2 / §10 nota 4`).
+     *  - **iOS**: `ProcessEnv` primario (env var del scheme, igual que `APP_ENVIRONMENT`);
+     *    `PlistKey` fallback interpolado desde `Config.xcconfig`.
+     *  - **Web**: `WindowGlobal` primario (override pre-bootstrap, paralelo a
+     *    `__APP_ENVIRONMENT__`); `MetaTag` fallback (paralelo a `app-environment`).
+     */
+    OTEL_EXPORTER_OTLP_ENDPOINT(
+        canonicalName = "OTEL_EXPORTER_OTLP_ENDPOINT",
+        primaryKeys = mapOf(
+            TargetPlatform.DESKTOP to NativeKey.EnvVar("OTEL_EXPORTER_OTLP_ENDPOINT"),
+            TargetPlatform.ANDROID to NativeKey.SystemProperty("otel.exporter.otlp.endpoint"),
+            TargetPlatform.IOS to NativeKey.ProcessEnv("OTEL_EXPORTER_OTLP_ENDPOINT"),
+            TargetPlatform.WEB to NativeKey.WindowGlobal("__OTEL_EXPORTER_OTLP_ENDPOINT__")
+        ),
+        fallbackKeys = mapOf(
+            TargetPlatform.DESKTOP to NativeKey.SystemProperty("otel.exporter.otlp.endpoint"),
+            TargetPlatform.ANDROID to NativeKey.EnvVar("OTEL_EXPORTER_OTLP_ENDPOINT"),
+            TargetPlatform.IOS to NativeKey.PlistKey("OtelExporterOtlpEndpoint"),
+            TargetPlatform.WEB to NativeKey.MetaTag("otel-exporter-otlp-endpoint")
+        ),
+        validate = { it.isNotBlank() && (it.startsWith("http://") || it.startsWith("https://")) }
     );
 }

@@ -45,6 +45,8 @@ Cada plataforma respeta la convención de naming de su ecosistema en el identifi
 **Bridge BUILD_ENVIRONMENT → EnvironmentDetector** (mismo patrón que Android/Web):
 `platforms/desktop/app/build.gradle.kts` registra `generateBuildConfig` que escribe `BUILD_ENVIRONMENT: String` desde `-Penv=`. `Main.kt` lo lee, valida con `Environment.fromString(...)` y llama `EnvironmentDetector.forceEnvironment(...)` antes de `buildTelemetry()`. Si `-Penv=` no se pasó, el bridge se salta y el detector cae a la system property `app.environment` (que el `application` block del Compose Desktop popula automáticamente) o a la env var, fallando accionablemente si nada llega.
 
+> **Variables adicionales que siguen este patrón**: `OTEL_EXPORTER_OTLP_ENDPOINT` (v2026-05-06). Primaria: `EnvVar("OTEL_EXPORTER_OTLP_ENDPOINT")` — convención OTel oficial. Fallback: `SystemProperty("otel.exporter.otlp.endpoint")` (testeable en runtime). Ver `AppEnvVar.OTEL_EXPORTER_OTLP_ENDPOINT`.
+
 ### 3.2 Android
 
 | Aspecto | Valor |
@@ -64,6 +66,10 @@ Cada plataforma respeta la convención de naming de su ecosistema en el identifi
 - Shortcut `BuildConfig.DEBUG → DEV` en `EduGoApplication`.
 - Default silencioso `?: "PRODUCTION"` en `androidApp/build.gradle.kts` (ahora `?: ""`).
 
+> **Variables adicionales que siguen este patrón**: `OTEL_EXPORTER_OTLP_ENDPOINT` (v2026-05-06). Primaria: `SystemProperty("otel.exporter.otlp.endpoint")` (testeable, mutable runtime); el override real de producción es `BuildConfig.OTEL_EXPORTER_OTLP_ENDPOINT` que se resuelve en el callsite (mismo patrón que `APP_ENVIRONMENT` con `BuildConfig.BUILD_ENVIRONMENT`). Fallback: `EnvVar("OTEL_EXPORTER_OTLP_ENDPOINT")`. Ver `AppEnvVar.OTEL_EXPORTER_OTLP_ENDPOINT`.
+>
+> El default Gradle del módulo `androidApp` para `otelEndpoint` ahora es `""` (cambia desde `"http://10.0.2.2:4318"`); el `AndroidEndpointResolver` (callsite) aplica `"http://10.0.2.2:4318"` como default-plataforma cuando todo está vacío. Esto cumple "fuente de verdad en JSON, sin magic values en Gradle".
+
 ### 3.3 iOS
 
 | Aspecto | Valor |
@@ -82,6 +88,8 @@ Cada plataforma respeta la convención de naming de su ecosistema en el identifi
 
 **Schemes versionados (Fase 3)** ✅: cuatro archivos uniformes bajo `iosApp/iosApp.xcodeproj/xcshareddata/xcschemes/` (`iosApp - DEV.xcscheme`, `iosApp - DEV_LAN.xcscheme`, `iosApp - STAGING.xcscheme`, `iosApp - PROD.xcscheme`). Todos comparten `BlueprintIdentifier`, ejecutan `LaunchAction` con `buildConfiguration="Debug"` (la semántica del scheme es "apunta a las APIs de ese ambiente", no "cambia el modo de build"; release builds reales se generan vía Archive / `xcodebuild`).
 
+> **Variables adicionales que siguen este patrón**: `OTEL_EXPORTER_OTLP_ENDPOINT` (v2026-05-06). Primaria: `ProcessEnv("OTEL_EXPORTER_OTLP_ENDPOINT")` — env var del scheme, igual que `APP_ENVIRONMENT`. Fallback: `PlistKey("OtelExporterOtlpEndpoint")` interpolada desde `Config.xcconfig`. Ver `AppEnvVar.OTEL_EXPORTER_OTLP_ENDPOINT`.
+
 ### 3.4 Web (WasmJS)
 
 | Aspecto | Valor |
@@ -99,6 +107,8 @@ Cada plataforma respeta la convención de naming de su ecosistema en el identifi
 
 **Heurísticas eliminadas en Fase 1** ✅:
 - `getHostname()` y el `when { localhost → DEV; staging → STAGING; else → PROD }` en `EnvironmentDetector.wasmJs.kt`.
+
+> **Variables adicionales que siguen este patrón**: `OTEL_EXPORTER_OTLP_ENDPOINT` (v2026-05-06). Primaria: `WindowGlobal("__OTEL_EXPORTER_OTLP_ENDPOINT__")` — override pre-bootstrap, paralelo a `__APP_ENVIRONMENT__`. Fallback: `MetaTag("otel-exporter-otlp-endpoint")` paralelo a `app-environment`. Ver `AppEnvVar.OTEL_EXPORTER_OTLP_ENDPOINT`.
 
 ---
 
@@ -147,11 +157,15 @@ Mapeo definido en [Environment.kt](src/commonMain/kotlin/com/edugo/kmp/config/En
 
 **WasmJS (Fase 2)**: `ConfigPrefetcher.prefetch(env)` hace `fetch` del JSON empaquetado por webpack al boot, antes de Compose / Koin. `ResourceLoader.wasmJs.kt` lo lee del cache; si la red falló, cae a `DefaultConfigs` como red de seguridad.
 
+> **Subgrupo `telemetry`** (v2026-05-06): cada JSON ahora contiene `"telemetry": {"otelEndpoint": "..."}`. Valores por entorno: DEV `localhost:4318`, DEV_LAN `192.168.100.20:4318`, STAGING/PROD vacíos (override por env-var-nativa cuando exista Collector cloud). Ver `TelemetryConfig` y `AppEnvVar.OTEL_EXPORTER_OTLP_ENDPOINT`.
+
 ---
 
 ## 7. Reglas para agregar una nueva variable de entorno en el futuro
 
-Cuando el proyecto necesite una segunda variable (ej. `FEATURE_FLAGS_URL`, `OTEL_ENDPOINT`), seguir esta receta:
+> **Ejemplo aplicado**: `OTEL_EXPORTER_OTLP_ENDPOINT` se incorporó al catálogo siguiendo esta receta (v2026-05-06). Ver `multi-platform-hardening-plan/02-decisiones.md::DA-MPH-2` y `phase-2-changes.md`.
+
+Cuando el proyecto necesite una nueva variable (ej. `FEATURE_FLAGS_URL`, `LOG_LEVEL`), seguir esta receta:
 
 1. Agregar la entrada al enum `AppEnvVar` en [src/commonMain/kotlin/com/edugo/kmp/config/AppEnvVar.kt](src/commonMain/kotlin/com/edugo/kmp/config/AppEnvVar.kt), declarando `canonicalName`, `primaryKeys` y `fallbackKeys` por `TargetPlatform` y un `validate` opcional.
 2. Agregar el campo correspondiente a `AppConfig` (interfaz e impl) y a los 4 `*.json` + `DefaultConfigs.kt`.
@@ -184,6 +198,7 @@ En resumen: catálogo + tests de estructura son el camino "cero archivos nuevos"
 | D6 | Eliminar heurísticas (hostname web, `Debug.isDebuggerConnected()` android, `BuildConfig.DEBUG → DEV`, default silencioso `PRODUCTION`/`local`/`fromStringOrDefault`) | ✅ ejecutado en Fase 1 |
 | D7 | El framework de tests parametriza por `Environment` y por `AppEnvVar` para que sea extensible a N variables sin reescribir tests | ✅ (a ejecutar en Fase 4) |
 | D8 | El puerto `80701` en `DefaultConfigs.kt` es una **sonda intencional** del diagnóstico, no un bug. No se modifica como parte de este plan. | ✅ |
+| D9 | `OTEL_EXPORTER_OTLP_ENDPOINT` se modela como variable del catálogo `AppEnvVar` con primaryKeys/fallbackKeys por plataforma. JSON con default por entorno (vacío para STAGING/PROD); cada plataforma resuelve inline en su entry point con orden uniforme (`<env-nativa-override> > <BuildConfig/sysprop-bake> > AppConfig.telemetry.otelEndpoint > default-plataforma`). | ✅ |
 
 ---
 
@@ -196,6 +211,7 @@ En resumen: catálogo + tests de estructura son el camino "cero archivos nuevos"
 | **2** | Pipeline `-Penv=` uniforme en las 4 plataformas: `generateBuildConfig` desktop + Main desktop como bridge + meta tag web inyectado por `installProcessedWebResources` + default `APP_ENVIRONMENT = DEV` en `Config.xcconfig` + `ConfigPrefetcher` WasmJS que carga el JSON real del bundle | D2, D4 | ✅ cerrada 2026-05-06 |
 | **3** | Matriz de run configs IntelliJ por plataforma + ambiente (12 archivos `.run/<Plataforma>-<AMBIENTE>.run.xml`, todos `GradleRunConfiguration` con `-Penv=<AMBIENTE>`) + 4 schemes Xcode versionados (`iosApp - <AMBIENTE>.xcscheme`). Eliminadas las run configs legacy (`Android-App.run.xml` tipo nativo, `Android-App-DEV-LAN.run.xml`, `Desktop.run.xml` con env var, `Web-Wasm.run.xml` sin `-Penv=`) y los schemes con sufijos descriptivos (`(Local APIs)`, `(Physical Device)`, `(Azure APIs)`). | Fase 2 | ✅ cerrada 2026-05-06 |
 | **4** | Framework de tests parametrizado (`AppEnvVar`, `EnvVarMatrix`, `EnvVarSource` expect/actual con mocks de sysprop JVM / `IosEnvSeam` / DOM Karma) + `EnvironmentDetectorContractTest` abstracto + subclases per-plataforma + tests de fallback (iOS Plist, Web meta tag) + test de extensibilidad multi-variable. Validado en las 4 plataformas (Desktop / Android host / iOS Simulator ARM64 / WasmJS Karma+Chrome). | Fase 1 | ✅ cerrada 2026-05-06 |
+| **5** | `OTEL_EXPORTER_OTLP_ENDPOINT` extiende el catálogo. Subgrupo `telemetry` en `AppConfig`. 4 plataformas refactorizan a resolver inline con orden uniforme. JSONs DEV/DEV_LAN tienen endpoint hardcoded local; STAGING/PROD vacíos. | DA-MPH-2 (multi-platform-hardening-plan) | ✅ cerrada 2026-05-06 |
 
 ---
 

@@ -13,5 +13,8 @@
     "academicBaseUrl": "http://localhost:8060",
     "learningBaseUrl": "http://localhost:8065",
     "platformBaseUrl": "http://localhost:8075"
+  },
+  "telemetry": {
+    "otelEndpoint": "http://localhost:4318"
   }
 }

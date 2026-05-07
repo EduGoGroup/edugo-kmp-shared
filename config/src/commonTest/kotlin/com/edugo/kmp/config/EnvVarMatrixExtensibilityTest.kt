@@ -66,4 +66,41 @@ internal class EnvVarMatrixExtensibilityTest {
         assertTrue(v.fallbackKeys[TargetPlatform.IOS] is NativeKey.PlistKey)
         assertTrue(v.fallbackKeys[TargetPlatform.WEB] is NativeKey.MetaTag)
     }
+
+    @Test
+    fun otelEndpointDeclaresKeysForAllFourPlatforms() {
+        val v = AppEnvVar.OTEL_EXPORTER_OTLP_ENDPOINT
+        TargetPlatform.entries.forEach { platform ->
+            assertTrue(
+                platform in v.primaryKeys,
+                "${v.name} debe declarar primary key para $platform"
+            )
+            assertTrue(
+                platform in v.fallbackKeys,
+                "${v.name} debe declarar fallback key para $platform"
+            )
+        }
+    }
+
+    @Test
+    fun otelEndpointValidatorAcceptsHttpAndHttps() {
+        val v = AppEnvVar.OTEL_EXPORTER_OTLP_ENDPOINT
+        assertTrue(v.validate("http://x"))
+        assertTrue(v.validate("https://x"))
+    }
+
+    @Test
+    fun otelEndpointValidatorRejectsBlankAndNonUrl() {
+        val v = AppEnvVar.OTEL_EXPORTER_OTLP_ENDPOINT
+        assertFalse(v.validate(""))
+        assertFalse(v.validate("foo"))
+    }
+
+    @Test
+    fun multipleVariablesIterableViaEnumEntries() {
+        val entries = AppEnvVar.entries
+        assertTrue(entries.size >= 2, "AppEnvVar debe tener al menos 2 variables")
+        val canonicalNames = entries.map { it.canonicalName }
+        assertEquals(canonicalNames.toSet().size, canonicalNames.size, "Los nombres canónicos deben ser distintos")
+    }
 }

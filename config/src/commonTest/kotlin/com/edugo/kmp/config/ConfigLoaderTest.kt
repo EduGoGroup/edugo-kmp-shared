@@ -23,6 +23,7 @@ class ConfigLoaderTest {
         assertEquals(8080, config.network.webPort)
         assertEquals(30000L, config.network.timeout)
         assertTrue(config.network.debugMode)
+        assertEquals("http://localhost:4318", config.telemetry.otelEndpoint)
     }
 
     @Test
@@ -38,6 +39,7 @@ class ConfigLoaderTest {
         assertEquals(8080, config.network.webPort)
         assertEquals(60000L, config.network.timeout)
         assertTrue(config.network.debugMode)
+        assertEquals("", config.telemetry.otelEndpoint)
     }
 
     @Test
@@ -52,6 +54,7 @@ class ConfigLoaderTest {
         assertEquals(80, config.network.webPort)
         assertEquals(60000L, config.network.timeout)
         assertFalse(config.network.debugMode)
+        assertEquals("", config.telemetry.otelEndpoint)
     }
 
     @Test

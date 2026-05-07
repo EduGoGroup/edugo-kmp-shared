@@ -29,6 +29,9 @@ internal object DefaultConfigs {
                 "academicBaseUrl": "http://localhost:8060",
                 "learningBaseUrl": "http://localhost:8065",
                 "platformBaseUrl": "http://localhost:8075"
+              },
+              "telemetry": {
+                "otelEndpoint": "http://localhost:4318"
               }
             }
         """.trimIndent(),
@@ -49,6 +52,9 @@ internal object DefaultConfigs {
                 "academicBaseUrl": "http://192.168.100.20:8060",
                 "learningBaseUrl": "http://192.168.100.20:8065",
                 "platformBaseUrl": "http://192.168.100.20:8075"
+              },
+              "telemetry": {
+                "otelEndpoint": "http://192.168.100.20:4318"
               }
             }
         """.trimIndent(),
@@ -69,6 +75,9 @@ internal object DefaultConfigs {
                 "academicBaseUrl": "https://edugo-api-academic.wittyhill-f6d656fb.eastus.azurecontainerapps.io",
                 "learningBaseUrl": "https://edugo-api-learning.wittyhill-f6d656fb.eastus.azurecontainerapps.io",
                 "platformBaseUrl": "https://edugo-api-platform.wittyhill-f6d656fb.eastus.azurecontainerapps.io"
+              },
+              "telemetry": {
+                "otelEndpoint": ""
               }
             }
         """.trimIndent(),
@@ -89,6 +98,9 @@ internal object DefaultConfigs {
                 "academicBaseUrl": "https://api.edugo.com/academic",
                 "learningBaseUrl": "https://api.edugo.com/learning",
                 "platformBaseUrl": "https://api.edugo.com/platform"
+              },
+              "telemetry": {
+                "otelEndpoint": ""
               }
             }
         """.trimIndent()

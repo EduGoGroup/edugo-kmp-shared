@@ -296,6 +296,17 @@ class AppConfigTest {
     }
 
     @Test
+    fun appConfigImpl_telemetry_default_when_omitted_in_constructor() {
+        val config = AppConfigImpl(
+            "DEV",
+            NetworkConfigImpl(30000L, 3000, true),
+            BehaviorConfigImpl(mockMode = false),
+            ApiConfigImpl("http://localhost:8070", "http://localhost:8060", "http://localhost:8065", "http://localhost:8075")
+        )
+        assertEquals("", config.telemetry.otelEndpoint)
+    }
+
+    @Test
     fun new_schema_properties_are_accessible() {
         val config = AppConfigImpl(
             "DEV",

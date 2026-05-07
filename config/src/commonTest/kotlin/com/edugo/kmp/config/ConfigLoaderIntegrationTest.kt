@@ -23,6 +23,18 @@ class ConfigLoaderIntegrationTest {
         assertEquals(8080, config.network.webPort)
         assertEquals(30000L, config.network.timeout)
         assertEquals(true, config.network.debugMode)
+        assertEquals("http://localhost:4318", config.telemetry.otelEndpoint)
+    }
+
+    @Test
+    fun loadDevLanConfigHasCorrectValues() {
+        val config = ConfigLoader.load(Environment.DEV_LAN)
+
+        assertEquals(Environment.DEV_LAN, config.environment)
+        assertEquals("http://192.168.100.20:8060", config.api.academicBaseUrl)
+        assertEquals("http://192.168.100.20:8065", config.api.learningBaseUrl)
+        assertEquals("http://192.168.100.20:8075", config.api.platformBaseUrl)
+        assertEquals("http://192.168.100.20:4318", config.telemetry.otelEndpoint)
     }
 
     @Test
@@ -36,6 +48,7 @@ class ConfigLoaderIntegrationTest {
         assertTrue(config.api.platformBaseUrl.isNotBlank())
         assertEquals(60000L, config.network.timeout)
         assertEquals(true, config.network.debugMode)
+        assertEquals("", config.telemetry.otelEndpoint)
     }
 
     @Test
@@ -49,6 +62,7 @@ class ConfigLoaderIntegrationTest {
         assertEquals(80, config.network.webPort)
         assertEquals(60000L, config.network.timeout)
         assertEquals(false, config.network.debugMode)
+        assertEquals("", config.telemetry.otelEndpoint)
     }
 
     @Test

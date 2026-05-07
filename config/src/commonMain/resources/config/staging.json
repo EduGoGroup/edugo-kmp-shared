@@ -13,5 +13,8 @@
     "academicBaseUrl": "https://edugo-api-academic.wittyhill-f6d656fb.eastus.azurecontainerapps.io",
     "learningBaseUrl": "https://edugo-api-learning.wittyhill-f6d656fb.eastus.azurecontainerapps.io",
     "platformBaseUrl": "https://edugo-api-platform.wittyhill-f6d656fb.eastus.azurecontainerapps.io"
+  },
+  "telemetry": {
+    "otelEndpoint": ""
   }
 }
