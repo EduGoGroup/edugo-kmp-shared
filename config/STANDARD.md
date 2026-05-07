@@ -2,7 +2,7 @@
 
 > Documento contractual. Define cómo cada plataforma del proyecto EduGo UI KMP recibe, valida y consume la variable de entorno que determina qué archivo `config-{env}.json` se carga en el arranque.
 >
-> **Estado**: Fases 1 + 2 + 3 cerradas. Las 4 plataformas tienen pipeline `-Penv=` end-to-end; iOS tiene default seguro local; el `ResourceLoader` web pre-carga el JSON real desde el bundle; matriz completa de run configs IntelliJ + schemes Xcode versionados (`<Plataforma>-<AMBIENTE>.run.xml` y `iosApp - <AMBIENTE>.xcscheme`).
+> **Estado**: Fases 1 + 2 + 3 + 4 cerradas. Las 4 plataformas tienen pipeline `-Penv=` end-to-end; iOS tiene default seguro local; el `ResourceLoader` web pre-carga el JSON real desde el bundle; matriz completa de run configs IntelliJ + schemes Xcode versionados (`<Plataforma>-<AMBIENTE>.run.xml` y `iosApp - <AMBIENTE>.xcscheme`); framework parametrizado de tests (`AppEnvVar` + `EnvVarMatrix` + `EnvVarSource`) corre el mismo contrato sobre las 4 plataformas con mocks de sysprop / `NSBundle` / DOM.
 
 ---
 
@@ -153,16 +153,22 @@ Mapeo definido en [Environment.kt](src/commonMain/kotlin/com/edugo/kmp/config/En
 
 Cuando el proyecto necesite una segunda variable (ej. `FEATURE_FLAGS_URL`, `OTEL_ENDPOINT`), seguir esta receta:
 
-1. Agregar el nombre canónico al enum `AppEnvVar` en `src/commonTest/.../EnvVarsContract.kt` (Fase 4).
+1. Agregar la entrada al enum `AppEnvVar` en [src/commonMain/kotlin/com/edugo/kmp/config/AppEnvVar.kt](src/commonMain/kotlin/com/edugo/kmp/config/AppEnvVar.kt), declarando `canonicalName`, `primaryKeys` y `fallbackKeys` por `TargetPlatform` y un `validate` opcional.
 2. Agregar el campo correspondiente a `AppConfig` (interfaz e impl) y a los 4 `*.json` + `DefaultConfigs.kt`.
-3. Agregar la expectativa por ambiente a `EnvVarMatrix.expectations` (Fase 4).
+3. Si la nueva variable necesita un detector dedicado, replicar el patrón de `EnvironmentDetector.<platform>.kt` (lectura de la primaria, fallback, fallo accionable).
 4. Decidir el mecanismo nativo por plataforma siguiendo la misma tabla de §3:
    - Desktop: system prop / env var
    - Android: `BuildConfig.<NUEVA_VAR>` bakeada por `-P<flag>=`
    - iOS: env var del scheme + key en `Info.plist`
    - Web: constante `BUILD_<VAR>` o meta tag `<meta name="app-…">`
 
-**Cero archivos de test nuevos**: el framework parametrizado los itera todos.
+**Reuso del framework de tests** (alcance real):
+
+- `EnvVarSource` (expect/actual) ya sabe `set/clear/setFallback/snapshot` contra cualquier `AppEnvVar` consultando `primaryKeys`/`fallbackKeys`, así que **no requiere cambios** al añadir una variable.
+- `EnvVarMatrixExtensibilityTest` valida estructuralmente que la nueva entrada declare claves para las 4 plataformas y que su `validate` se comporte como se espera — basta con extenderlo (un par de aserciones extra).
+- `EnvironmentDetectorContractTest` está hardcodeado a `APP_ENVIRONMENT` y a los 4 valores de `Environment` (es la única variable que mapea a un detector compartido). Para una variable distinta con su propio detector, aportar un test parametrizado equivalente (puede reutilizar `EnvVarMatrix` y `EnvVarSource`) en el source set apropiado.
+
+En resumen: catálogo + tests de estructura son el camino "cero archivos nuevos"; cualquier variable con semántica de detección propia necesitará su test parametrizado dedicado, pero apoyándose en la misma infraestructura.
 
 ---
 
@@ -189,4 +195,49 @@ Cuando el proyecto necesite una segunda variable (ej. `FEATURE_FLAGS_URL`, `OTEL
 | **1** | Detectores sin heurísticas; fallan explícitamente; bridge callsite documentado en Android/Web; `AppConfigImpl` rechaza `environmentName` inválido | D1, D3, D6 | ✅ |
 | **2** | Pipeline `-Penv=` uniforme en las 4 plataformas: `generateBuildConfig` desktop + Main desktop como bridge + meta tag web inyectado por `installProcessedWebResources` + default `APP_ENVIRONMENT = DEV` en `Config.xcconfig` + `ConfigPrefetcher` WasmJS que carga el JSON real del bundle | D2, D4 | ✅ cerrada 2026-05-06 |
 | **3** | Matriz de run configs IntelliJ por plataforma + ambiente (12 archivos `.run/<Plataforma>-<AMBIENTE>.run.xml`, todos `GradleRunConfiguration` con `-Penv=<AMBIENTE>`) + 4 schemes Xcode versionados (`iosApp - <AMBIENTE>.xcscheme`). Eliminadas las run configs legacy (`Android-App.run.xml` tipo nativo, `Android-App-DEV-LAN.run.xml`, `Desktop.run.xml` con env var, `Web-Wasm.run.xml` sin `-Penv=`) y los schemes con sufijos descriptivos (`(Local APIs)`, `(Physical Device)`, `(Azure APIs)`). | Fase 2 | ✅ cerrada 2026-05-06 |
-| 4 | Framework de tests parametrizado (`AppEnvVar`, `EnvVarMatrix`, contract tests + tests por plataforma con mocks de sysprop / `NSBundle` / DOM) | Fase 1 | pendiente |
+| **4** | Framework de tests parametrizado (`AppEnvVar`, `EnvVarMatrix`, `EnvVarSource` expect/actual con mocks de sysprop JVM / `IosEnvSeam` / DOM Karma) + `EnvironmentDetectorContractTest` abstracto + subclases per-plataforma + tests de fallback (iOS Plist, Web meta tag) + test de extensibilidad multi-variable. Validado en las 4 plataformas (Desktop / Android host / iOS Simulator ARM64 / WasmJS Karma+Chrome). | Fase 1 | ✅ cerrada 2026-05-06 |
+
+---
+
+## 10. Cobertura de testing
+
+Comandos para ejecutar el contract test parametrizado por plataforma (desde `EduUI/edugo-ui-kmp/`):
+
+| Plataforma | Comando | Pre-requisito | Tests ejecutados |
+|---|---|---|---|
+| Desktop (JVM) | `./gradlew :edugo-kmp-shared:config:desktopTest` | JDK 21 | 5 contract + 4 extensibility |
+| Android host | `./gradlew :edugo-kmp-shared:config:testAndroidHostTest -PenableAndroid=true` | Android SDK | 5 contract + 4 extensibility |
+| iOS Simulator | `./gradlew :edugo-kmp-shared:config:iosSimulatorArm64Test -PenableIos=true` | Xcode 15+, simulador booted (`xcrun simctl boot "iPhone 16"`) | 5 contract + 2 fallback Plist + 4 extensibility |
+| Web (WasmJS) | `./gradlew :edugo-kmp-shared:config:wasmJsBrowserTest -PenableWeb=true` | Chrome / Chromium | 5 contract + 2 fallback meta tag + 4 extensibility |
+| Suite completa | `./gradlew :edugo-kmp-shared:config:allTests -PenableAndroid=true -PenableIos=true -PenableWeb=true` | todo lo anterior | todos |
+
+**Limitaciones documentadas (no son bugs, son trade-offs explícitos del framework):**
+
+1. **JVM env var no es mutable en runtime**. `System.getenv("APP_ENVIRONMENT")` es read-only sin reflexión a `ProcessEnvironment`, que es frágil entre JDKs y bypassea el contrato. El framework cubre la ruta primaria (`System.setProperty("app.environment", ...)`); la ruta de env var fallback se valida por integración manual: `APP_ENVIRONMENT=PROD ./gradlew :edugo-kmp-shared:config:desktopTest --tests "*EnvironmentDetectorTest*"` (los tests legacy `EnvironmentDetectorTest`/`ConfigLoaderIntegrationTest` ya cubren `forceEnvironment` y la ruta de bridging — el env var real se prueba por inspección manual cuando se hace un cambio relevante).
+
+2. **iOS sólo se valida en simulador, no en device real**. `NSProcessInfo.processInfo.environment` se comporta idéntico en simulator y device, así que la cobertura es equivalente. Los tests usan `IosEnvSeam` para inyectar fakes en lugar de mutar `NSBundle`/`NSProcessInfo` (que son read-only en runtime — no hay API pública para mutarlos desde el proceso).
+
+3. **WasmJS requiere DOM real**. Los tests corren bajo Karma + Chrome headless (`browser { testTask { enabled = true } }` en `kmp.android.gradle.kts`). Cambiar a `nodejs()` rompería `EnvVarSource` por falta de `document` y `window` — por eso el plugin lo deja explícitamente desactivado.
+
+4. **El detector Android compartido (`EnvironmentDetector.android.kt`) sólo lee `System.getProperty("app.environment")` + env var**. `BuildConfig.BUILD_ENVIRONMENT` vive en el módulo `androidApp`; el bridge se hace en `MainActivity.onCreate()` con `EnvironmentDetector.forceEnvironment(...)`. Por eso los tests de `:config` no necesitan mockear `BuildConfig` y comparten `actual EnvVarSource` con Desktop vía source set intermedio `jvmCommonTest`.
+
+**Estructura de source sets de tests:**
+
+```
+config/src/
+  commonMain/kotlin/.../AppEnvVar.kt                       ← catálogo (internal)
+  commonTest/kotlin/.../EnvVarSource.kt                    ← expect class
+  commonTest/kotlin/.../EnvVarMatrix.kt                    ← DSL declarativo
+  commonTest/kotlin/.../EnvironmentDetectorContractTest.kt ← contract abstracto
+  commonTest/kotlin/.../EnvVarMatrixExtensibilityTest.kt   ← multi-variable smoke
+  jvmCommonTest/kotlin/.../EnvVarSource.jvm.kt             ← actual JVM (Desktop+Android)
+  desktopTest/kotlin/.../DesktopEnvironmentDetectorContractTest.kt
+  androidHostTest/kotlin/.../AndroidEnvironmentDetectorContractTest.kt
+  iosMain/kotlin/.../IosEnvSeam.kt                         ← seam internal-only
+  iosTest/kotlin/.../EnvVarSource.ios.kt                   ← actual iOS
+  iosTest/kotlin/.../IosEnvironmentDetectorContractTest.kt
+  iosTest/kotlin/.../IosFallbackPlistTest.kt
+  wasmJsTest/kotlin/.../EnvVarSource.wasmJs.kt             ← actual WasmJS
+  wasmJsTest/kotlin/.../WasmJsEnvironmentDetectorContractTest.kt
+  wasmJsTest/kotlin/.../WasmJsFallbackMetaTest.kt
+```
