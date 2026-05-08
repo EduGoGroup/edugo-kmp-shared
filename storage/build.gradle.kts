@@ -17,6 +17,10 @@ kotlin {
             dependencies {
                 api(project(":foundation"))
                 implementation(project(":logger"))
+                // DA-MPH-6: ResetClientStateUseCase consume Telemetry + AnalyticsRecorder + CrashRecorder
+                // del módulo telemetry-core. Agregado como `api` porque el use case lo expone como
+                // parámetro de constructor público (clientes que instancian el use case necesitan ver Telemetry).
+                api(project(":telemetry-core"))
                 implementation(libs.multiplatform.settings)
                 implementation(libs.multiplatform.settings.no.arg)
                 implementation(libs.multiplatform.settings.coroutines)
