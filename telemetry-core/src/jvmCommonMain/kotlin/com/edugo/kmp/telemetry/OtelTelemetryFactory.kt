@@ -51,12 +51,26 @@ public object OtelTelemetryFactory {
      * [extraLogProcessor] y/o [extraMetricReader] que persistan a SQLite y dejen
      * que un Worker WorkManager los reenvíe al Collector. Desktop pasa todo
      * `null` y mantiene su pipeline en RAM.
+     *
+     * @param installDirectBatchExporters Cuando `true` (default Desktop), el SDK
+     *   registra los `Batch*Processor` HTTP directos del SDK estándar
+     *   (`BatchSpanProcessor`, `BatchLogRecordProcessor`, `PeriodicMetricReader`)
+     *   contra el `endpoint` del Collector. Cuando `false` (single-pipeline
+     *   Android — DA-MPH-3 del plan multi-platform-hardening), el SDK queda sin
+     *   ningún exporter directo y el envío al Collector sale exclusivamente del
+     *   `extraSpanProcessor` / `extraLogProcessor` / `extraMetricReader` que
+     *   pasen los consumers (típicamente `BufferedSpanProcessor` + outbox SQLite
+     *   drenado por `OtelOutboxWorker`). Romper la simetría sólo donde la
+     *   decisión arquitectónica difiere: Desktop confía en SDK batch directo
+     *   (oficina, red estable); Android confía en outbox SQLite + worker (campo,
+     *   red intermitente).
      */
     public fun create(
         config: TelemetryConfig,
         extraSpanProcessor: SpanProcessor? = null,
         extraLogProcessor: LogRecordProcessor? = null,
         extraMetricReader: MetricReader? = null,
+        installDirectBatchExporters: Boolean = true,
     ): Telemetry {
         if (!config.enabled) return Telemetry.Noop
 
@@ -64,7 +78,13 @@ public object OtelTelemetryFactory {
         // Esto permite (por error) llamar create() dos veces sin romper.
         sdkRef.get()?.let { return buildTelemetry(it, config.serviceName) }
 
-        val sdk = buildSdk(config, extraSpanProcessor, extraLogProcessor, extraMetricReader)
+        val sdk = buildSdk(
+            config = config,
+            extraSpanProcessor = extraSpanProcessor,
+            extraLogProcessor = extraLogProcessor,
+            extraMetricReader = extraMetricReader,
+            installDirectBatchExporters = installDirectBatchExporters,
+        )
         if (sdkRef.compareAndSet(null, sdk)) {
             return buildTelemetry(sdk, config.serviceName)
         }
@@ -96,47 +116,59 @@ public object OtelTelemetryFactory {
         extraSpanProcessor: SpanProcessor?,
         extraLogProcessor: LogRecordProcessor?,
         extraMetricReader: MetricReader?,
+        installDirectBatchExporters: Boolean,
     ): OpenTelemetrySdk {
         val resource = buildResource(config)
 
-        val spanExporter = OtlpHttpSpanExporter.builder()
-            .setEndpoint("${config.endpoint.removeSuffix("/")}/v1/traces")
-            .build()
-        val metricExporter = OtlpHttpMetricExporter.builder()
-            .setEndpoint("${config.endpoint.removeSuffix("/")}/v1/metrics")
-            .build()
-        val logExporter = OtlpHttpLogRecordExporter.builder()
-            .setEndpoint("${config.endpoint.removeSuffix("/")}/v1/logs")
-            .build()
-
         val tracerProvider = SdkTracerProvider.builder()
             .setResource(resource)
-            .addSpanProcessor(
-                BatchSpanProcessor.builder(spanExporter)
-                    .setScheduleDelay(Duration.ofSeconds(5))
-                    .build()
-            )
-            .apply { extraSpanProcessor?.let { addSpanProcessor(it) } }
+            .apply {
+                if (installDirectBatchExporters) {
+                    val spanExporter = OtlpHttpSpanExporter.builder()
+                        .setEndpoint("${config.endpoint.removeSuffix("/")}/v1/traces")
+                        .build()
+                    addSpanProcessor(
+                        BatchSpanProcessor.builder(spanExporter)
+                            .setScheduleDelay(Duration.ofSeconds(5))
+                            .build()
+                    )
+                }
+                extraSpanProcessor?.let { addSpanProcessor(it) }
+            }
             .build()
 
         val meterProvider = SdkMeterProvider.builder()
             .setResource(resource)
-            .registerMetricReader(
-                PeriodicMetricReader.builder(metricExporter)
-                    .setInterval(Duration.ofSeconds(15))
-                    .build()
-            )
-            .apply { extraMetricReader?.let { registerMetricReader(it) } }
+            .apply {
+                if (installDirectBatchExporters) {
+                    val metricExporter = OtlpHttpMetricExporter.builder()
+                        .setEndpoint("${config.endpoint.removeSuffix("/")}/v1/metrics")
+                        .build()
+                    registerMetricReader(
+                        PeriodicMetricReader.builder(metricExporter)
+                            .setInterval(Duration.ofSeconds(15))
+                            .build()
+                    )
+                }
+                extraMetricReader?.let { registerMetricReader(it) }
+            }
             .build()
 
         val loggerProvider = SdkLoggerProvider.builder()
             .setResource(resource)
-            .addLogRecordProcessor(
-                BatchLogRecordProcessor.builder(logExporter)
-                    .setScheduleDelay(Duration.ofSeconds(5))
-                    .build()
-            )
-            .apply { extraLogProcessor?.let { addLogRecordProcessor(it) } }
+            .apply {
+                if (installDirectBatchExporters) {
+                    val logExporter = OtlpHttpLogRecordExporter.builder()
+                        .setEndpoint("${config.endpoint.removeSuffix("/")}/v1/logs")
+                        .build()
+                    addLogRecordProcessor(
+                        BatchLogRecordProcessor.builder(logExporter)
+                            .setScheduleDelay(Duration.ofSeconds(5))
+                            .build()
+                    )
+                }
+                extraLogProcessor?.let { addLogRecordProcessor(it) }
+            }
             .build()
 
         return OpenTelemetrySdk.builder()
