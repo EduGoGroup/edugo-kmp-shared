@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.Flow
 interface TokenRefreshManager {
     suspend fun refreshIfNeeded(): Result<TokenPair>
 
-    suspend fun forceRefresh(): Result<TokenPair>
+    suspend fun forceRefresh(reason: RefreshReason): Result<TokenPair>
 
     fun shouldRefresh(token: TokenPair): Boolean
 

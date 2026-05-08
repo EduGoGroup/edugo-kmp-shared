@@ -35,10 +35,11 @@ class TokenRefreshManagerSingleFlightTest {
         private val responseDelayMs: Long,
     ) : RefreshTokenSource {
         val callCount: Int get() = delegate.callCount
+        val lastReason: RefreshReason? get() = delegate.lastReason
 
-        override suspend fun refresh(refreshToken: String): Result<TokenPair> {
+        override suspend fun refresh(refreshToken: String, reason: RefreshReason): Result<TokenPair> {
             if (responseDelayMs > 0) delay(responseDelayMs)
-            return delegate.refresh(refreshToken)
+            return delegate.refresh(refreshToken, reason)
         }
     }
 
@@ -100,7 +101,7 @@ class TokenRefreshManagerSingleFlightTest {
             val source = createSource()
             val manager = createManager(this, source)
 
-            val results = (1..4).map { async { manager.forceRefresh() } }.awaitAll()
+            val results = (1..4).map { async { manager.forceRefresh(RefreshReason.ApiCall) } }.awaitAll()
 
             assertEquals(
                 1,
@@ -113,6 +114,49 @@ class TokenRefreshManagerSingleFlightTest {
         }
 
     @Test
+    fun forceRefreshPropagatesReasonToSource() =
+        runTest {
+            val source = createSource(responseDelayMs = 0)
+            val provider = FakeTokenProvider()
+            val manager = createManager(this, source, provider)
+
+            val bootstrapResult = manager.forceRefresh(RefreshReason.Bootstrap)
+            check(bootstrapResult is Result.Success)
+            assertEquals(
+                RefreshReason.Bootstrap,
+                source.lastReason,
+                "forceRefresh(Bootstrap) must reach the source with Bootstrap",
+            )
+
+            // Restablecer el contexto del provider para que el siguiente forceRefresh dispare
+            // un nuevo refresh real (el manager limpia refreshJob al terminar).
+            val apiCallResult = manager.forceRefresh(RefreshReason.ApiCall)
+            check(apiCallResult is Result.Success)
+            assertEquals(
+                RefreshReason.ApiCall,
+                source.lastReason,
+                "forceRefresh(ApiCall) must reach the source with ApiCall",
+            )
+            assertEquals(2, source.callCount, "Both calls must hit the source")
+        }
+
+    @Test
+    fun refreshIfNeededReachesSourceWithApiCall() =
+        runTest {
+            val source = createSource(responseDelayMs = 0)
+            val manager = createManager(this, source)
+
+            val result = manager.refreshIfNeeded()
+            check(result is Result.Success)
+
+            assertEquals(
+                RefreshReason.ApiCall,
+                source.lastReason,
+                "refreshIfNeeded() must reach the source as ApiCall (proactive/reactive use, not bootstrap)",
+            )
+        }
+
+    @Test
     fun mixedRefreshIfNeededAndForceRefreshCollapseToSingleRefresh() =
         runTest {
             val source = createSource()
@@ -121,9 +165,9 @@ class TokenRefreshManagerSingleFlightTest {
             val results =
                 listOf(
                     async { manager.refreshIfNeeded() },
-                    async { manager.forceRefresh() },
+                    async { manager.forceRefresh(RefreshReason.ApiCall) },
                     async { manager.refreshIfNeeded() },
-                    async { manager.forceRefresh() },
+                    async { manager.forceRefresh(RefreshReason.ApiCall) },
                 ).awaitAll()
 
             assertEquals(

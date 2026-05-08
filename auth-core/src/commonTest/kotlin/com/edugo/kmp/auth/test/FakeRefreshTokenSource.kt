@@ -1,5 +1,6 @@
 package com.edugo.kmp.auth.test
 
+import com.edugo.kmp.auth.token.RefreshReason
 import com.edugo.kmp.auth.token.RefreshTokenSource
 import com.edugo.kmp.auth.token.TokenPair
 import com.edugo.kmp.foundation.result.Result
@@ -21,10 +22,13 @@ class FakeRefreshTokenSource(
         private set
     var lastRefreshToken: String? = null
         private set
+    var lastReason: RefreshReason? = null
+        private set
 
-    override suspend fun refresh(refreshToken: String): Result<TokenPair> {
+    override suspend fun refresh(refreshToken: String, reason: RefreshReason): Result<TokenPair> {
         callCount++
         lastRefreshToken = refreshToken
+        lastReason = reason
         return nextResult
     }
 }

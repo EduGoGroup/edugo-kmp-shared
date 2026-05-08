@@ -72,17 +72,19 @@ class TokenRefreshManagerImpl(
             // and shouldRefresh will be false; we don't want to fire a redundant refresh.
             refreshJob?.let { return@withLock it.await() }
 
-            executeRefresh()
+            // refreshIfNeeded is called by reactive 401 retries and the proactive auto-refresh
+            // scheduler — both happen during normal app usage, so they map to ApiCall.
+            executeRefresh(RefreshReason.ApiCall)
         }
     }
 
-    override suspend fun forceRefresh(): Result<TokenPair> {
+    override suspend fun forceRefresh(reason: RefreshReason): Result<TokenPair> {
         refreshJob?.let { return it.await() }
 
         return refreshMutex.withLock {
             refreshJob?.let { return@withLock it.await() }
 
-            executeRefresh()
+            executeRefresh(reason)
         }
     }
 
@@ -91,8 +93,8 @@ class TokenRefreshManagerImpl(
      * can await it, and clears the slot on completion. Must be called while holding
      * [refreshMutex].
      */
-    private suspend fun executeRefresh(): Result<TokenPair> {
-        val job = scope.async { performRefresh() }
+    private suspend fun executeRefresh(reason: RefreshReason): Result<TokenPair> {
+        val job = scope.async { performRefresh(reason) }
         refreshJob = job
         refreshJobCancellable = job
         return try {
@@ -113,7 +115,7 @@ class TokenRefreshManagerImpl(
         return timeUntilExpiration <= threshold
     }
 
-    private suspend fun performRefresh(): Result<TokenPair> {
+    private suspend fun performRefresh(reason: RefreshReason): Result<TokenPair> {
         val refreshToken =
             when (val r = tokenProvider.currentRefreshToken()) {
                 is Result.Success -> r.data
@@ -129,7 +131,7 @@ class TokenRefreshManagerImpl(
                 delay(delayMs)
             }
 
-            when (val result = refreshTokenSource.refresh(refreshToken)) {
+            when (val result = refreshTokenSource.refresh(refreshToken, reason)) {
                 is Result.Success -> {
                     val pair = result.data
                     _onRefreshSuccess.emit(pair)
@@ -260,7 +262,9 @@ class TokenRefreshManagerImpl(
         // Route the proactive refresh through the same single-flight path as reactive
         // refreshes. If a 401-driven refresh is already in flight when our timer fires,
         // we await its result instead of firing a parallel POST /auth/refresh.
-        val result = forceRefresh()
+        // The proactive scheduler runs during normal app usage, so it maps to ApiCall
+        // (Bootstrap is reserved for restoreSession on app start).
+        val result = forceRefresh(RefreshReason.ApiCall)
         when (result) {
             is Result.Success -> {
                 scheduleNextRefresh(result.data)

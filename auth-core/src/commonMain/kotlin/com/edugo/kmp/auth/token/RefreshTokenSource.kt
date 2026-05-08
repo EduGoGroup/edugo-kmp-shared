@@ -19,5 +19,5 @@ import com.edugo.kmp.foundation.result.Result
  *   `RefreshFailureReason` por el manager.
  */
 interface RefreshTokenSource {
-    suspend fun refresh(refreshToken: String): Result<TokenPair>
+    suspend fun refresh(refreshToken: String, reason: RefreshReason): Result<TokenPair>
 }
