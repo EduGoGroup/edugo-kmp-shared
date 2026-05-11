@@ -25,13 +25,13 @@ internal object DefaultConfigs {
                 "mockMode": false
               },
               "api": {
-                "identityBaseUrl": "http://localhost:8070",
-                "academicBaseUrl": "http://localhost:8060",
-                "learningBaseUrl": "http://localhost:8065",
-                "platformBaseUrl": "http://localhost:8075"
+                "identityBaseUrl": "http://10.0.2.2:8070",
+                "academicBaseUrl": "http://10.0.2.2:8060",
+                "learningBaseUrl": "http://10.0.2.2:8065",
+                "platformBaseUrl": "http://10.0.2.2:8075"
               },
               "telemetry": {
-                "otelEndpoint": "http://localhost:4318"
+                "otelEndpoint": "http://10.0.2.2:4318"
               }
             }
         """.trimIndent(),
