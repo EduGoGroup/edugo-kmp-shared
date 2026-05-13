@@ -97,4 +97,73 @@ class PermissionMatcherTest {
         // explícito acá para que cualquier cambio futuro sea consciente.
         assertTrue(PermissionMatcher.matches("users.*", "users.read:own"))
     }
+
+    // ==================== Leading wildcard `*.suffix` ====================
+
+    @Test
+    fun `leading wildcard matches single segment prefix`() {
+        assertTrue(PermissionMatcher.matches("*.create", "users.create"))
+    }
+
+    @Test
+    fun `leading wildcard matches multi level path`() {
+        assertTrue(PermissionMatcher.matches("*.create", "academic.units.create"))
+        assertTrue(PermissionMatcher.matches("*.delete", "admin.users.delete"))
+    }
+
+    @Test
+    fun `leading wildcard does not match different suffix`() {
+        assertFalse(PermissionMatcher.matches("*.delete", "users.create"))
+    }
+
+    @Test
+    fun `leading wildcard does not match own request`() {
+        // El sufijo `:own` es semánticamente distinto: `*.create` no
+        // matchea `users.create:own` porque el request termina en `:own`,
+        // no en `.create`.
+        assertFalse(PermissionMatcher.matches("*.create", "users.create:own"))
+    }
+
+    @Test
+    fun `leading wildcard does not match single segment request`() {
+        // Necesita al menos un `.` antes del sufijo.
+        assertFalse(PermissionMatcher.matches("*.create", "create"))
+    }
+
+    @Test
+    fun `leading wildcard does not match embedded suffix without dot delimiter`() {
+        assertFalse(PermissionMatcher.matches("*.create", "usercreate"))
+    }
+
+    // ==================== Wildcard medio `prefix.*.suffix` ====================
+
+    @Test
+    fun `middle wildcard matches direct child path`() {
+        assertTrue(PermissionMatcher.matches("academic.*.create", "academic.units.create"))
+    }
+
+    @Test
+    fun `middle wildcard matches path with extra middle segments`() {
+        assertTrue(PermissionMatcher.matches("academic.*.create", "academic.units.subitems.create"))
+    }
+
+    @Test
+    fun `middle wildcard does not match without middle segment`() {
+        assertFalse(PermissionMatcher.matches("academic.*.create", "academic.create"))
+    }
+
+    @Test
+    fun `middle wildcard does not match different prefix`() {
+        assertFalse(PermissionMatcher.matches("academic.*.create", "admin.units.create"))
+    }
+
+    @Test
+    fun `middle wildcard does not match different suffix`() {
+        assertFalse(PermissionMatcher.matches("academic.*.create", "academic.units.delete"))
+    }
+
+    @Test
+    fun `middle wildcard does not match own request`() {
+        assertFalse(PermissionMatcher.matches("academic.*.create", "academic.units.create:own"))
+    }
 }

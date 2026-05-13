@@ -84,7 +84,7 @@ class PermissionMatcherGoldenTest {
         // `EduBack/edugo-shared/auth/testdata/permission_matcher_golden.json`.
         private const val GOLDEN_JSON = """
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "matcher_cases": [
     {"id": "M01", "name": "wildcard total matchea request concreto", "pattern": "*", "request": "users.read", "expected": true},
     {"id": "M02", "name": "wildcard total matchea request multinivel", "pattern": "*", "request": "admin.users.read", "expected": true},
@@ -117,7 +117,21 @@ class PermissionMatcherGoldenTest {
     {"id": "M29", "name": "subtree no matchea request mas corto que prefix", "pattern": "users.read.*", "request": "users", "expected": false},
     {"id": "M30", "name": "subtree no matchea hermano distinto del subarbol", "pattern": "users.read.*", "request": "users.write", "expected": false},
     {"id": "M31", "name": "subtree de tres niveles cubre nieto", "pattern": "admin.users.read.*", "request": "admin.users.read.detail", "expected": true},
-    {"id": "M32", "name": "request mas largo sin punto delimitador no matchea subtree", "pattern": "users.*", "request": "usersxread", "expected": false}
+    {"id": "M32", "name": "request mas largo sin punto delimitador no matchea subtree", "pattern": "users.*", "request": "usersxread", "expected": false},
+    {"id": "M33", "name": "leading wildcard punto create matchea root simple", "pattern": "*.create", "request": "users.create", "expected": true},
+    {"id": "M34", "name": "leading wildcard punto create matchea path multinivel", "pattern": "*.create", "request": "academic.units.create", "expected": true},
+    {"id": "M35", "name": "leading wildcard punto delete no matchea sufijo distinto", "pattern": "*.delete", "request": "users.create", "expected": false},
+    {"id": "M36", "name": "leading wildcard punto create no matchea cuando termina en own", "pattern": "*.create", "request": "users.create:own", "expected": false},
+    {"id": "M37", "name": "leading wildcard punto create no matchea segmento unico", "pattern": "*.create", "request": "create", "expected": false},
+    {"id": "M38", "name": "leading wildcard punto create no matchea sufijo embebido sin punto", "pattern": "*.create", "request": "usercreate", "expected": false},
+    {"id": "M39", "name": "wildcard medio matchea hijo directo del prefix", "pattern": "academic.*.create", "request": "academic.units.create", "expected": true},
+    {"id": "M40", "name": "wildcard medio matchea path con segmentos extra", "pattern": "academic.*.create", "request": "academic.units.subitems.create", "expected": true},
+    {"id": "M41", "name": "wildcard medio no matchea sin segmento intermedio", "pattern": "academic.*.create", "request": "academic.create", "expected": false},
+    {"id": "M42", "name": "wildcard medio no matchea prefix distinto", "pattern": "academic.*.create", "request": "admin.units.create", "expected": false},
+    {"id": "M43", "name": "wildcard medio no matchea sufijo distinto", "pattern": "academic.*.create", "request": "academic.units.delete", "expected": false},
+    {"id": "M44", "name": "wildcard medio no matchea cuando termina en own", "pattern": "academic.*.create", "request": "academic.units.create:own", "expected": false},
+    {"id": "M45", "name": "wildcard medio admin estrella delete matchea recurso multinivel", "pattern": "admin.*.delete", "request": "admin.users.delete", "expected": true},
+    {"id": "M46", "name": "leading wildcard own matchea request con sufijo own", "pattern": "*.read:own", "request": "users.read:own", "expected": true}
   ],
   "grants_cases": [
     {"id": "G01", "name": "grants vacios default deny", "allow": [], "deny": [], "request": "users.read", "expected": false},
@@ -147,7 +161,14 @@ class PermissionMatcherGoldenTest {
     {"id": "G25", "name": "auditor read only permite reads", "allow": ["*"], "deny": ["admin.users.delete", "admin.schools.delete"], "request": "admin.users.read", "expected": true},
     {"id": "G26", "name": "deny precedence cuando allow y deny matchean ambos", "allow": ["users.read"], "deny": ["users.read"], "request": "users.read", "expected": false},
     {"id": "G27", "name": "default deny con solo deny sin allow", "allow": [], "deny": ["users.delete"], "request": "users.read", "expected": false},
-    {"id": "G28", "name": "subtree allow cubre prefix sin punto", "allow": ["users.*"], "deny": [], "request": "users", "expected": true}
+    {"id": "G28", "name": "subtree allow cubre prefix sin punto", "allow": ["users.*"], "deny": [], "request": "users", "expected": true},
+    {"id": "G29", "name": "readonly auditor allow estrella con deny estrella punto create niega create de cualquier dominio", "allow": ["*"], "deny": ["*.create", "*.update", "*.delete"], "request": "academic.units.create", "expected": false},
+    {"id": "G30", "name": "readonly auditor permite reads pese a denies estrella punto verbos", "allow": ["*"], "deny": ["*.create", "*.update", "*.delete"], "request": "academic.units.read", "expected": true},
+    {"id": "G31", "name": "deny estrella punto delete no afecta own porque distinto sufijo", "allow": ["*"], "deny": ["*.delete"], "request": "admin.users.read:own", "expected": true},
+    {"id": "G32", "name": "deny wildcard medio academic estrella create solo tumba creates academicos", "allow": ["*"], "deny": ["academic.*.create"], "request": "academic.units.create", "expected": false},
+    {"id": "G33", "name": "deny wildcard medio academic estrella create no afecta admin", "allow": ["*"], "deny": ["academic.*.create"], "request": "admin.users.create", "expected": true},
+    {"id": "G34", "name": "allow leading wildcard estrella punto read cubre cualquier read", "allow": ["*.read"], "deny": [], "request": "academic.grades.read", "expected": true},
+    {"id": "G35", "name": "allow leading wildcard estrella punto read no cubre write", "allow": ["*.read"], "deny": [], "request": "academic.grades.write", "expected": false}
   ]
 }
 """
