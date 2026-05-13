@@ -1,0 +1,155 @@
+package com.edugo.kmp.auth.authorization
+
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
+
+/**
+ * Paridad cross-language con el matcher Go (`auth.PermissionMatches`,
+ * `auth.EvaluateGrants`). El JSON canónico vive en
+ * `EduUI/edugo-ui-kmp/e2e-integration-plan/permissions-redesign-spec/`
+ * `fixtures/permission_matcher_golden.json` y se incrusta acá como
+ * raw string para evitar pelearse con la carga de recursos en KMP.
+ *
+ * Si modificas el JSON canónico, copia el contenido también acá y a
+ * `EduBack/edugo-shared/auth/testdata/permission_matcher_golden.json`.
+ */
+class PermissionMatcherGoldenTest {
+
+    @Serializable
+    private data class GoldenFile(
+        val version: String,
+        @SerialName("matcher_cases") val matcherCases: List<MatcherCase>,
+        @SerialName("grants_cases") val grantsCases: List<GrantsCase>,
+    )
+
+    @Serializable
+    private data class MatcherCase(
+        val id: String,
+        val name: String,
+        val pattern: String,
+        val request: String,
+        val expected: Boolean,
+    )
+
+    @Serializable
+    private data class GrantsCase(
+        val id: String,
+        val name: String,
+        val allow: List<String>,
+        val deny: List<String>,
+        val request: String,
+        val expected: Boolean,
+    )
+
+    private val json = Json { ignoreUnknownKeys = true }
+
+    private fun loadGolden(): GoldenFile = json.decodeFromString(GOLDEN_JSON)
+
+    @Test
+    fun testPermissionMatcherGolden() {
+        val golden = loadGolden()
+        assertTrue(golden.matcherCases.isNotEmpty(), "fixture sin matcher_cases")
+        for (c in golden.matcherCases) {
+            val got = PermissionMatcher.matches(c.pattern, c.request)
+            assertEquals(
+                c.expected,
+                got,
+                "[${c.id}] ${c.name}: pattern=${c.pattern} request=${c.request}",
+            )
+        }
+    }
+
+    @Test
+    fun testEvaluateGrantsGolden() {
+        val golden = loadGolden()
+        assertTrue(golden.grantsCases.isNotEmpty(), "fixture sin grants_cases")
+        for (c in golden.grantsCases) {
+            val grants = Grants(allow = c.allow, deny = c.deny)
+            val got = grants.evaluate(c.request)
+            assertEquals(
+                c.expected,
+                got,
+                "[${c.id}] ${c.name}: allow=${c.allow} deny=${c.deny} request=${c.request}",
+            )
+        }
+    }
+
+    companion object {
+        // Copia byte-equivalente del fixture canónico. Mantener sincronizado
+        // con `fixtures/permission_matcher_golden.json` y la copia Go en
+        // `EduBack/edugo-shared/auth/testdata/permission_matcher_golden.json`.
+        private const val GOLDEN_JSON = """
+{
+  "version": "1.0.0",
+  "matcher_cases": [
+    {"id": "M01", "name": "wildcard total matchea request concreto", "pattern": "*", "request": "users.read", "expected": true},
+    {"id": "M02", "name": "wildcard total matchea request multinivel", "pattern": "*", "request": "admin.users.read", "expected": true},
+    {"id": "M03", "name": "wildcard total matchea request vacio", "pattern": "*", "request": "", "expected": true},
+    {"id": "M04", "name": "match exacto positivo simple", "pattern": "users.read", "request": "users.read", "expected": true},
+    {"id": "M05", "name": "match exacto positivo multinivel", "pattern": "admin.users.read", "request": "admin.users.read", "expected": true},
+    {"id": "M06", "name": "match exacto negativo distinto recurso", "pattern": "users.read", "request": "users.write", "expected": false},
+    {"id": "M07", "name": "match exacto negativo distinto root", "pattern": "users.read", "request": "schools.read", "expected": false},
+    {"id": "M08", "name": "subtree cubre el prefix solo", "pattern": "users.*", "request": "users", "expected": true},
+    {"id": "M09", "name": "subtree cubre hijo directo", "pattern": "users.*", "request": "users.read", "expected": true},
+    {"id": "M10", "name": "subtree cubre nieto", "pattern": "users.*", "request": "users.read.detail", "expected": true},
+    {"id": "M11", "name": "subtree no matchea root distinto", "pattern": "users.*", "request": "schools.read", "expected": false},
+    {"id": "M12", "name": "subtree no matchea sibling prefix admins vs admin", "pattern": "admin.*", "request": "admins.read", "expected": false},
+    {"id": "M13", "name": "subtree no matchea otro root con substring", "pattern": "user.*", "request": "users.read", "expected": false},
+    {"id": "M14", "name": "wildcard de dos niveles cubre prefix", "pattern": "admin.users.*", "request": "admin.users", "expected": true},
+    {"id": "M15", "name": "wildcard de dos niveles cubre hijo", "pattern": "admin.users.*", "request": "admin.users.read", "expected": true},
+    {"id": "M16", "name": "wildcard de dos niveles no cubre nivel superior", "pattern": "admin.users.*", "request": "admin.read", "expected": false},
+    {"id": "M17", "name": "wildcard de dos niveles no cubre sibling", "pattern": "admin.users.*", "request": "admin.schools.read", "expected": false},
+    {"id": "M18", "name": "own match exacto positivo", "pattern": "users.read:own", "request": "users.read:own", "expected": true},
+    {"id": "M19", "name": "pattern con own no matchea request sin own", "pattern": "users.read:own", "request": "users.read", "expected": false},
+    {"id": "M20", "name": "pattern sin own no matchea request con own", "pattern": "users.read", "request": "users.read:own", "expected": false},
+    {"id": "M21", "name": "subtree users punto estrella matchea users.read:own por startsWith heredado de Go", "pattern": "users.*", "request": "users.read:own", "expected": true},
+    {"id": "M22", "name": "subtree admin.* matchea admin.users.read:own", "pattern": "admin.*", "request": "admin.users.read:own", "expected": true},
+    {"id": "M23", "name": "pattern vacio matchea request vacio por igualdad", "pattern": "", "request": "", "expected": true},
+    {"id": "M24", "name": "pattern vacio no matchea request no vacio", "pattern": "", "request": "users.read", "expected": false},
+    {"id": "M25", "name": "pattern invalido xx no matchea request distinto", "pattern": "xx", "request": "users.read", "expected": false},
+    {"id": "M26", "name": "pattern invalido xx matchea por igualdad exacta", "pattern": "xx", "request": "xx", "expected": true},
+    {"id": "M27", "name": "pattern punto estrella matchea prefix vacio", "pattern": ".*", "request": "", "expected": true},
+    {"id": "M28", "name": "pattern punto estrella matchea request con punto inicial", "pattern": ".*", "request": ".foo", "expected": true},
+    {"id": "M29", "name": "subtree no matchea request mas corto que prefix", "pattern": "users.read.*", "request": "users", "expected": false},
+    {"id": "M30", "name": "subtree no matchea hermano distinto del subarbol", "pattern": "users.read.*", "request": "users.write", "expected": false},
+    {"id": "M31", "name": "subtree de tres niveles cubre nieto", "pattern": "admin.users.read.*", "request": "admin.users.read.detail", "expected": true},
+    {"id": "M32", "name": "request mas largo sin punto delimitador no matchea subtree", "pattern": "users.*", "request": "usersxread", "expected": false}
+  ],
+  "grants_cases": [
+    {"id": "G01", "name": "grants vacios default deny", "allow": [], "deny": [], "request": "users.read", "expected": false},
+    {"id": "G02", "name": "allow exacto matchea request exacto", "allow": ["users.read"], "deny": [], "request": "users.read", "expected": true},
+    {"id": "G03", "name": "allow exacto no matchea request distinto", "allow": ["users.read"], "deny": [], "request": "users.write", "expected": false},
+    {"id": "G04", "name": "allow wildcard total cubre cualquier request", "allow": ["*"], "deny": [], "request": "admin.users.delete", "expected": true},
+    {"id": "G05", "name": "allow subtree cubre hijo", "allow": ["users.*"], "deny": [], "request": "users.read", "expected": true},
+    {"id": "G06", "name": "allow subtree no cubre otro root", "allow": ["users.*"], "deny": [], "request": "schools.read", "expected": false},
+    {"id": "G07", "name": "deny especifico tumba allow amplio", "allow": ["users.*"], "deny": ["users.delete"], "request": "users.delete", "expected": false},
+    {"id": "G08", "name": "deny especifico no afecta otro hijo del allow amplio", "allow": ["users.*"], "deny": ["users.delete"], "request": "users.read", "expected": true},
+    {"id": "G09", "name": "deny amplio tumba allow especifico", "allow": ["users.read"], "deny": ["users.*"], "request": "users.read", "expected": false},
+    {"id": "G10", "name": "allow y deny no relacionados permite request del allow", "allow": ["users.read"], "deny": ["schools.write"], "request": "users.read", "expected": true},
+    {"id": "G11", "name": "allow y deny no relacionados niega request fuera del allow", "allow": ["users.read"], "deny": ["schools.write"], "request": "courses.read", "expected": false},
+    {"id": "G12", "name": "multiples allow uno matchea", "allow": ["users.read", "schools.read", "courses.read"], "deny": [], "request": "schools.read", "expected": true},
+    {"id": "G13", "name": "multiples allow ninguno matchea", "allow": ["users.read", "schools.read"], "deny": [], "request": "courses.read", "expected": false},
+    {"id": "G14", "name": "multiples deny uno matchea tumba allow", "allow": ["*"], "deny": ["users.delete", "schools.delete"], "request": "users.delete", "expected": false},
+    {"id": "G15", "name": "multiples deny ninguno matchea respeta allow", "allow": ["*"], "deny": ["users.delete", "schools.delete"], "request": "users.read", "expected": true},
+    {"id": "G16", "name": "allow own pattern cubre request own", "allow": ["users.read:own"], "deny": [], "request": "users.read:own", "expected": true},
+    {"id": "G17", "name": "allow own pattern no cubre request sin own", "allow": ["users.read:own"], "deny": [], "request": "users.read", "expected": false},
+    {"id": "G18", "name": "deny own no afecta request sin own", "allow": ["users.read"], "deny": ["users.read:own"], "request": "users.read", "expected": true},
+    {"id": "G19", "name": "school admin combinacion realista permite usuarios", "allow": ["admin.users.*", "admin.schools.*", "admin.courses.*"], "deny": [], "request": "admin.users.create", "expected": true},
+    {"id": "G20", "name": "school admin combinacion realista niega fuera del alcance", "allow": ["admin.users.*", "admin.schools.*", "admin.courses.*"], "deny": [], "request": "admin.billing.read", "expected": false},
+    {"id": "G21", "name": "school admin no llega a otro tenant root", "allow": ["admin.users.*", "admin.schools.*"], "deny": [], "request": "users.read", "expected": false},
+    {"id": "G22", "name": "super admin allow estrella cubre todo", "allow": ["*"], "deny": [], "request": "admin.tenants.delete", "expected": true},
+    {"id": "G23", "name": "super admin allow estrella cubre own", "allow": ["*"], "deny": [], "request": "users.read:own", "expected": true},
+    {"id": "G24", "name": "auditor read only allow amplio con deny en delete subarbol", "allow": ["*"], "deny": ["admin.users.delete", "admin.schools.delete", "admin.courses.delete"], "request": "admin.users.delete", "expected": false},
+    {"id": "G25", "name": "auditor read only permite reads", "allow": ["*"], "deny": ["admin.users.delete", "admin.schools.delete"], "request": "admin.users.read", "expected": true},
+    {"id": "G26", "name": "deny precedence cuando allow y deny matchean ambos", "allow": ["users.read"], "deny": ["users.read"], "request": "users.read", "expected": false},
+    {"id": "G27", "name": "default deny con solo deny sin allow", "allow": [], "deny": ["users.delete"], "request": "users.read", "expected": false},
+    {"id": "G28", "name": "subtree allow cubre prefix sin punto", "allow": ["users.*"], "deny": [], "request": "users", "expected": true}
+  ]
+}
+"""
+    }
+}
