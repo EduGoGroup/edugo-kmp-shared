@@ -11,6 +11,7 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.style.TextOverflow
 import com.edugo.kmp.design.DSTheme
 import com.edugo.kmp.design.Sizes
 import com.edugo.kmp.design.tokens.ButtonSpacing
@@ -38,7 +39,7 @@ fun DSElevatedButton(
             )
             Spacer(Modifier.width(ButtonSpacing.iconSpacing))
         }
-        Text(text)
+        Text(text, maxLines = 1, softWrap = false, overflow = TextOverflow.Ellipsis)
         trailingIcon?.let { icon ->
             Spacer(Modifier.width(ButtonSpacing.iconSpacing))
             Icon(

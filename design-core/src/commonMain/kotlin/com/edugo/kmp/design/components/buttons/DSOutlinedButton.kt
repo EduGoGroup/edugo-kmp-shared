@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.style.TextOverflow
 import com.edugo.kmp.design.DSTheme
 import com.edugo.kmp.design.Sizes
 import com.edugo.kmp.design.tokens.ButtonSpacing
@@ -45,7 +46,8 @@ fun DSOutlinedButton(
             )
             Spacer(Modifier.width(ButtonSpacing.iconSpacing))
         }
-        Text(text)
+        // Label de un botón nunca se parte: si no cabe, se trunca con ellipsis.
+        Text(text, maxLines = 1, softWrap = false, overflow = TextOverflow.Ellipsis)
         trailingIcon?.let { icon ->
             Spacer(Modifier.width(ButtonSpacing.iconSpacing))
             Icon(
