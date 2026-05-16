@@ -35,22 +35,14 @@ Carga archivos JSON ubicados en `resources/config/` de forma específica para ca
 
 ## Cómo Usar
 
-### Inicialización en Android
-
-Es obligatorio inicializar el contexto antes de cargar la configuración:
-
-```kotlin
-AndroidContextHolder.init(applicationContext)
-```
-
-### Carga de Configuración
-
 ```kotlin
 val environment = EnvironmentDetector.detect()
 val config = ConfigLoader.load(environment)
 
 println(config.academicApiBaseUrl)
 ```
+
+Los valores se resuelven desde `GeneratedConfigs` (emitido en build-time desde los JSON de `src/commonMain/resources/config/`). No hay I/O en runtime ni dependencia de `Context` Android.
 
 ## Dependencias
 

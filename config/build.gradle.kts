@@ -1,9 +1,160 @@
+import groovy.json.JsonSlurper
+
 plugins {
     id("kmp.android")
     // P43/P44: NO se aplica `maven-publish` en Fases 0-6 (composite-build local).
 }
 
 val enableAndroid = findProperty("enableAndroid")?.toString()?.toBoolean() ?: false
+
+// =============================================================================
+// Code-gen de AppConfig por ambiente
+// =============================================================================
+// Los archivos `src/commonMain/resources/config/*.json` son la fuente de verdad
+// versionada de la configuración por ambiente. En vez de leerlos en runtime
+// (que falla en iOS porque `commonMain/resources` no se empaca en .framework/.app),
+// los compilamos en build-time a un `object GeneratedConfigs` con constantes
+// `AppConfig`. Resultado: cero I/O en runtime, comportamiento idéntico en
+// Android/iOS/Desktop/Web, y validators (`require` de TelemetryConfig, init de
+// AppConfigImpl) ejecutan en build-time si los JSON están mal — fail loud.
+// =============================================================================
+val configResourcesDir = layout.projectDirectory.dir("src/commonMain/resources/config")
+val generatedConfigsDir = layout.buildDirectory.dir("generated/source/config/commonMain/kotlin")
+
+val generateAppConfigs by tasks.registering {
+    group = "build"
+    description = "Genera GeneratedConfigs.kt a partir de los JSON en commonMain/resources/config/."
+
+    inputs.dir(configResourcesDir).withPropertyName("configJsons")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
+    outputs.dir(generatedConfigsDir).withPropertyName("generatedConfigsDir")
+
+    // Capturas locales para no referenciar el script desde el `doLast` (requisito
+    // de la configuration cache: el action no puede serializar al Project ni a
+    // top-level helpers del script).
+    val inputDirFile = configResourcesDir.asFile
+    val outputDirProvider = generatedConfigsDir
+
+    doLast {
+        val outDir = outputDirProvider.get().asFile.resolve("com/edugo/kmp/config")
+        outDir.mkdirs()
+        val outFile = outDir.resolve("GeneratedConfigs.kt")
+
+        fun kotlinStringLiteral(s: String): String {
+            val escaped = s
+                .replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\n", "\\n")
+                .replace("\r", "\\r")
+                .replace("\t", "\\t")
+                .replace("\$", "\\\$")
+            return "\"" + escaped + "\""
+        }
+
+        // Orden determinista: case-insensitive sobre el filename.
+        val jsonFiles = inputDirFile.listFiles { f ->
+            f.isFile && f.name.endsWith(".json")
+        }?.sortedBy { it.name.lowercase() } ?: emptyList()
+
+        if (jsonFiles.isEmpty()) {
+            throw GradleException(
+                "No se encontraron archivos config/*.json en ${inputDirFile.absolutePath}."
+            )
+        }
+
+        val slurper = JsonSlurper()
+        val entries = mutableListOf<Pair<String, String>>()
+
+        jsonFiles.forEach { jsonFile ->
+            @Suppress("UNCHECKED_CAST")
+            val parsed = slurper.parse(jsonFile) as? Map<String, Any?>
+                ?: throw GradleException("JSON inválido o no-objeto en ${jsonFile.name}.")
+
+            val envName = parsed["environmentName"]?.toString()
+                ?: throw GradleException("Falta 'environmentName' en ${jsonFile.name}.")
+
+            // Enum constant name: DEV, DEV_LAN, STAGING, PROD (uppercase + underscore).
+            val constName = envName.trim().uppercase().replace('-', '_')
+
+            @Suppress("UNCHECKED_CAST")
+            val network = (parsed["network"] as? Map<String, Any?>)
+                ?: throw GradleException("Falta bloque 'network' en ${jsonFile.name}.")
+            @Suppress("UNCHECKED_CAST")
+            val behavior = (parsed["behavior"] as? Map<String, Any?>)
+                ?: throw GradleException("Falta bloque 'behavior' en ${jsonFile.name}.")
+            @Suppress("UNCHECKED_CAST")
+            val api = (parsed["api"] as? Map<String, Any?>)
+                ?: throw GradleException("Falta bloque 'api' en ${jsonFile.name}.")
+            @Suppress("UNCHECKED_CAST")
+            val telemetry = (parsed["telemetry"] as? Map<String, Any?>) ?: emptyMap()
+
+            val timeoutMs = (network["timeout"] as? Number)?.toLong()
+                ?: throw GradleException("Falta 'network.timeout' (Long) en ${jsonFile.name}.")
+            val webPort = (network["webPort"] as? Number)?.toInt()
+                ?: throw GradleException("Falta 'network.webPort' (Int) en ${jsonFile.name}.")
+            val debugMode = network["debugMode"] as? Boolean
+                ?: throw GradleException("Falta 'network.debugMode' (Boolean) en ${jsonFile.name}.")
+
+            val mockMode = behavior["mockMode"] as? Boolean ?: false
+
+            val identityBaseUrl = api["identityBaseUrl"]?.toString()
+                ?: throw GradleException("Falta 'api.identityBaseUrl' en ${jsonFile.name}.")
+            val academicBaseUrl = api["academicBaseUrl"]?.toString()
+                ?: throw GradleException("Falta 'api.academicBaseUrl' en ${jsonFile.name}.")
+            val learningBaseUrl = api["learningBaseUrl"]?.toString()
+                ?: throw GradleException("Falta 'api.learningBaseUrl' en ${jsonFile.name}.")
+            val platformBaseUrl = api["platformBaseUrl"]?.toString()
+                ?: throw GradleException("Falta 'api.platformBaseUrl' en ${jsonFile.name}.")
+
+            val otelEndpoint = telemetry["otelEndpoint"]?.toString() ?: ""
+
+            val literal = buildString {
+                append("    val ").append(constName).append(": AppConfig = AppConfigImpl(\n")
+                append("        environmentName = ").append(kotlinStringLiteral(envName)).append(",\n")
+                append("        network = NetworkConfigImpl(\n")
+                append("            timeout = ").append(timeoutMs).append("L,\n")
+                append("            webPort = ").append(webPort).append(",\n")
+                append("            debugMode = ").append(debugMode).append(",\n")
+                append("        ),\n")
+                append("        behavior = BehaviorConfigImpl(\n")
+                append("            mockMode = ").append(mockMode).append(",\n")
+                append("        ),\n")
+                append("        api = ApiConfigImpl(\n")
+                append("            identityBaseUrl = ").append(kotlinStringLiteral(identityBaseUrl)).append(",\n")
+                append("            academicBaseUrl = ").append(kotlinStringLiteral(academicBaseUrl)).append(",\n")
+                append("            learningBaseUrl = ").append(kotlinStringLiteral(learningBaseUrl)).append(",\n")
+                append("            platformBaseUrl = ").append(kotlinStringLiteral(platformBaseUrl)).append(",\n")
+                append("        ),\n")
+                append("        telemetry = TelemetryConfigImpl(\n")
+                append("            otelEndpoint = ").append(kotlinStringLiteral(otelEndpoint)).append(",\n")
+                append("        ),\n")
+                append("    )")
+            }
+            entries += constName to literal
+        }
+
+        val body = buildString {
+            append("// AUTOGENERADO por la task `generateAppConfigs` (config/build.gradle.kts).\n")
+            append("// NO EDITAR A MANO. La fuente de verdad son los JSON en\n")
+            append("// src/commonMain/resources/config/.\n")
+            append("package com.edugo.kmp.config\n\n")
+            append("/**\n")
+            append(" * Configuraciones por ambiente, compiladas en build-time a partir de los JSON\n")
+            append(" * en `commonMain/resources/config/`. Consumido por [ConfigLoader.load].\n")
+            append(" *\n")
+            append(" * Sin I/O en runtime: la misma constante se sirve en Android, iOS, Desktop y Web.\n")
+            append(" */\n")
+            append("internal object GeneratedConfigs {\n")
+            entries.forEachIndexed { idx, (_, literal) ->
+                append(literal)
+                if (idx != entries.lastIndex) append("\n\n") else append("\n")
+            }
+            append("}\n")
+        }
+
+        outFile.writeText(body)
+    }
+}
 
 kotlin {
     // Fase 4 — `expect class EnvVarSource` (beta en Kotlin 2.x). El flag
@@ -21,6 +172,7 @@ kotlin {
 
     sourceSets {
         val commonMain by getting {
+            kotlin.srcDir(generateAppConfigs.map { it.outputs.files })
             dependencies {
                 api(project(":foundation"))
                 implementation(project(":core"))

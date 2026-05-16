@@ -3,10 +3,13 @@ package com.edugo.kmp.config
 import kotlinx.serialization.json.Json
 
 /**
- * Cargador de configuración desde archivos JSON.
+ * Cargador de configuración por ambiente.
  *
- * Lee archivos de resources/config/ según el ambiente especificado
- * y deserializa el contenido en un objeto AppConfig.
+ * Sirve las constantes generadas en build-time desde [GeneratedConfigs] (que se
+ * compila a partir de los JSON en `src/commonMain/resources/config/` vía la
+ * task Gradle `generateAppConfigs`). No hay I/O en runtime ni fallback silencioso:
+ * agregar un `Environment` nuevo sin actualizar `GeneratedConfigs` provoca un
+ * `when` no exhaustivo y el compilador falla.
  *
  * Uso:
  * ```kotlin
@@ -23,20 +26,14 @@ object ConfigLoader {
     /**
      * Carga la configuración para el ambiente especificado.
      *
-     * @param environment Ambiente a cargar (DEV, STAGING, PROD)
-     * @return AppConfig con la configuración cargada
-     * @throws IllegalStateException si el archivo no existe o el JSON es inválido
+     * @param environment Ambiente a cargar (DEV, DEV_LAN, STAGING, PROD)
+     * @return AppConfig generada en build-time desde el JSON correspondiente
      */
-    fun load(environment: Environment): AppConfig {
-        val fileName = "config/${environment.fileName}.json"
-        val jsonContent = loadResourceAsString(fileName)
-            ?: error("No se encontró el archivo de configuración: $fileName")
-
-        return try {
-            json.decodeFromString<AppConfigImpl>(jsonContent)
-        } catch (e: Exception) {
-            error("Error al parsear configuración $fileName: ${e.message}")
-        }
+    fun load(environment: Environment): AppConfig = when (environment) {
+        Environment.DEV -> GeneratedConfigs.DEV
+        Environment.DEV_LAN -> GeneratedConfigs.DEV_LAN
+        Environment.STAGING -> GeneratedConfigs.STAGING
+        Environment.PROD -> GeneratedConfigs.PROD
     }
 
     /**
@@ -49,12 +46,3 @@ object ConfigLoader {
         return json.decodeFromString<AppConfigImpl>(jsonString)
     }
 }
-
-/**
- * Función expect para cargar recursos como string.
- * Cada plataforma implementa su versión específica.
- *
- * @param path Ruta relativa del recurso en resources/
- * @return Contenido del archivo como string, o null si no existe
- */
-internal expect fun loadResourceAsString(path: String): String?
