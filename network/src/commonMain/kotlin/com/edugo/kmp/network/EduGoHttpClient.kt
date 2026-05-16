@@ -571,10 +571,11 @@ public class EduGoHttpClient(
             }
         } catch (e: Throwable) {
             val networkException = ExceptionMapper.map(e)
+            val mappedCode = networkException.errorCode
             Result.Failure(
                 networkException.toAppError().toString(),
-                isRetryable = true,
-                errorCode = networkException.errorCode,
+                isRetryable = mappedCode.isRetryable(),
+                errorCode = mappedCode,
             )
         }
     }
@@ -631,10 +632,11 @@ public class EduGoHttpClient(
         } catch (e: Throwable) {
             interceptorChain.notifyError(requestBuilder, e)
             val networkException = ExceptionMapper.map(e)
+            val mappedCode = networkException.errorCode
             Result.Failure(
                 networkException.toAppError().toString(),
-                isRetryable = true,
-                errorCode = networkException.errorCode,
+                isRetryable = mappedCode.isRetryable(),
+                errorCode = mappedCode,
             )
         }
     }
@@ -688,10 +690,11 @@ public class EduGoHttpClient(
         } catch (e: Throwable) {
             interceptorChain.notifyError(requestBuilder, e)
             val networkException = ExceptionMapper.map(e)
+            val mappedCode = networkException.errorCode
             Result.Failure(
                 networkException.toAppError().toString(),
-                isRetryable = true,
-                errorCode = networkException.errorCode,
+                isRetryable = mappedCode.isRetryable(),
+                errorCode = mappedCode,
             )
         }
     }
@@ -745,10 +748,11 @@ public class EduGoHttpClient(
         } catch (e: Throwable) {
             interceptorChain.notifyError(requestBuilder, e)
             val networkException = ExceptionMapper.map(e)
+            val mappedCode = networkException.errorCode
             Result.Failure(
                 networkException.toAppError().toString(),
-                isRetryable = true,
-                errorCode = networkException.errorCode,
+                isRetryable = mappedCode.isRetryable(),
+                errorCode = mappedCode,
             )
         }
     }
@@ -802,10 +806,11 @@ public class EduGoHttpClient(
         } catch (e: Throwable) {
             interceptorChain.notifyError(requestBuilder, e)
             val networkException = ExceptionMapper.map(e)
+            val mappedCode = networkException.errorCode
             Result.Failure(
                 networkException.toAppError().toString(),
-                isRetryable = true,
-                errorCode = networkException.errorCode,
+                isRetryable = mappedCode.isRetryable(),
+                errorCode = mappedCode,
             )
         }
     }
@@ -853,10 +858,11 @@ public class EduGoHttpClient(
         } catch (e: Throwable) {
             interceptorChain.notifyError(requestBuilder, e)
             val networkException = ExceptionMapper.map(e)
+            val mappedCode = networkException.errorCode
             Result.Failure(
                 networkException.toAppError().toString(),
-                isRetryable = true,
-                errorCode = networkException.errorCode,
+                isRetryable = mappedCode.isRetryable(),
+                errorCode = mappedCode,
             )
         }
     }

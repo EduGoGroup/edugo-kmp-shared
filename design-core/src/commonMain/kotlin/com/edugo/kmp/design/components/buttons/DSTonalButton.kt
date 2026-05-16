@@ -3,12 +3,15 @@ package com.edugo.kmp.design.components.buttons
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.edugo.kmp.design.DSTheme
 import com.edugo.kmp.design.Sizes
@@ -23,11 +26,18 @@ fun DSTonalButton(
     enabled: Boolean = true,
     leadingIcon: ImageVector? = null,
     trailingIcon: ImageVector? = null,
+    containerColor: Color = Color.Unspecified,
+    contentColor: Color = Color.Unspecified,
 ) {
+    val defaults = ButtonDefaults.filledTonalButtonColors()
     FilledTonalButton(
         onClick = onClick,
         modifier = modifier,
         enabled = enabled,
+        colors = ButtonDefaults.filledTonalButtonColors(
+            containerColor = if (containerColor.isSpecified) containerColor else defaults.containerColor,
+            contentColor = if (contentColor.isSpecified) contentColor else defaults.contentColor,
+        ),
     ) {
         leadingIcon?.let { icon ->
             Icon(

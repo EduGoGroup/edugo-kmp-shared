@@ -404,6 +404,29 @@ enum class ErrorCode(
      */
     fun isRetryable(): Boolean = retryable
 
+    /**
+     * True when this code represents *we couldn't reach the server* (transport-level
+     * failure: no route, DNS, timeout, reset). Distinct from "reached the server and
+     * got an error response" (HTTP 4xx/5xx → 2000+, business/system codes).
+     *
+     * Why this exists: caches and offline queues should fall back / enqueue only on
+     * connectivity failures. A 401 or 500 is not a connectivity failure — surfacing it
+     * is correct UX. Treating both as "offline" hides real problems.
+     *
+     * Excludes:
+     * - NETWORK_SERVER_ERROR (1002): server replied with 5xx, transport was fine.
+     * - NETWORK_SSL_ERROR (1004): handshake failure is not transient; serving stale
+     *   data masks a real certificate problem.
+     * - NETWORK_REQUEST_CANCELLED (1006): user-initiated, no fallback warranted.
+     */
+    fun isConnectivityError(): Boolean = when (this) {
+        NETWORK_TIMEOUT,
+        NETWORK_NO_CONNECTION,
+        NETWORK_DNS_FAILURE,
+        NETWORK_CONNECTION_RESET -> true
+        else -> false
+    }
+
     companion object {
         /**
          * Maps error codes to their corresponding HTTP status codes.

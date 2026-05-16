@@ -7,10 +7,12 @@ import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.edugo.kmp.design.DSTheme
 import com.edugo.kmp.design.Sizes
@@ -26,12 +28,14 @@ fun DSIconButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     variant: DSIconButtonVariant = DSIconButtonVariant.STANDARD,
+    tint: Color = Color.Unspecified,
 ) {
     val iconContent: @Composable () -> Unit = {
         Icon(
             imageVector = icon,
             contentDescription = contentDescription,
             modifier = Modifier.size(Sizes.iconLarge),
+            tint = if (tint == Color.Unspecified) LocalContentColor.current else tint,
         )
     }
 

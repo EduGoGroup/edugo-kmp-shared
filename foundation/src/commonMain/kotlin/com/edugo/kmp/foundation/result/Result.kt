@@ -68,6 +68,19 @@ sealed class Result<out T> {
          * @return The error message
          */
         fun getSafeMessage(): String = error
+
+        /**
+         * True when the failure is a transport-level "we couldn't reach the server"
+         * (timeout, no route, DNS, reset). Caches and offline queues should consult
+         * this — NOT [isRetryable] — when deciding whether to fall back to stale or
+         * enqueue a mutation. A 5xx is retryable but is not a connectivity failure;
+         * serving stale data instead of surfacing it would hide a real outage.
+         *
+         * Derived from [errorCode]; returns false when the failure was synthesized
+         * without a structured code (manual `Result.Failure("...")` calls).
+         */
+        val isConnectivityFailure: Boolean
+            get() = errorCode?.isConnectivityError() == true
     }
 
     /**
