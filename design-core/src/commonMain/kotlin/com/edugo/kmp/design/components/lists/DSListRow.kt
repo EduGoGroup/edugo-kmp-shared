@@ -28,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
@@ -59,7 +60,7 @@ fun DSListRow(
     onClick: (() -> Unit)? = null,
     contentDescription: String? = null,
 ) {
-    val baseModifier = modifier
+    val baseModifier = Modifier.testTag(DSListRowDefaults.tag).then(modifier)
         .fillMaxWidth()
         .let { if (onClick != null) it.clickable(onClick = onClick) else it }
         .let { m ->
@@ -153,6 +154,8 @@ fun DSListRow(
  * magic numbers.
  */
 object DSListRowDefaults {
+    const val tag: String = "dsListRow"
+
     val containerColor: Color
         @Composable get() = MaterialTheme.colorScheme.surfaceVariant
 
@@ -169,7 +172,7 @@ object DSListRowDefaults {
     fun chevron(): @Composable () -> Unit = {
         Icon(
             imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-            contentDescription = null,
+            contentDescription = "chevron-default",
             tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
             modifier = Modifier.size(24.dp),
         )
