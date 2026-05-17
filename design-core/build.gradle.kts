@@ -14,4 +14,14 @@ kotlin {
             namespace = "com.edugo.kmp.design"
         }
     }
+
+    sourceSets {
+        val desktopTest by getting {
+            dependencies {
+                // Runtime nativo de Skiko resuelto por el OS del build —
+                // requerido por runComposeUiTest en desktop. Agnóstico a CI/macOS/Linux/Windows.
+                runtimeOnly(compose.desktop.currentOs)
+            }
+        }
+    }
 }
