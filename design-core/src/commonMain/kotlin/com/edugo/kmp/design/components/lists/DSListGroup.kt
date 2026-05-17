@@ -46,11 +46,11 @@ fun DSListGroupPreviewLight() {
     DSTheme {
         Surface {
             DSListGroup(header = "Grupo") {
-                DSListItem(
+                DSListRow(
                     headlineText = "Elemento 1",
                     supportingText = "Detalle 1",
                 )
-                DSListItem(
+                DSListRow(
                     headlineText = "Elemento 2",
                     supportingText = "Detalle 2",
                 )
@@ -65,11 +65,11 @@ private fun DSListGroupPreviewDark() {
     DSTheme(colorScheme = darkColorScheme()) {
         Surface {
             DSListGroup(header = "Grupo") {
-                DSListItem(
+                DSListRow(
                     headlineText = "Elemento 1",
                     supportingText = "Detalle 1",
                 )
-                DSListItem(
+                DSListRow(
                     headlineText = "Elemento 2",
                     supportingText = "Detalle 2",
                 )

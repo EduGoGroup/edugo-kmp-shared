@@ -5,14 +5,12 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.darkColorScheme
@@ -26,8 +24,14 @@ import com.edugo.kmp.design.tokens.AnimationDuration
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 /**
- * ListItem expandible con animacion de chevron y contenido colapsable.
- * Envuelve DSListItem con un trailing icon animado que rota 180 grados al expandir.
+ * Fila expandible del design system EduGo.
+ *
+ * Envuelve [DSListRow] (la fila canónica del DS: `Card` con `surfaceVariant`,
+ * slots de leading/headline/supporting/trailing) y reemplaza su slot `trailing`
+ * por un chevron animado que rota 180 grados al alternar `expanded`.
+ *
+ * El click sobre toda la fila dispara [onToggle]; el contenido revelado se
+ * renderiza debajo dentro de un `AnimatedVisibility`.
  */
 @Composable
 fun DSExpandableListItem(
@@ -46,18 +50,18 @@ fun DSExpandableListItem(
     )
 
     Column(modifier = modifier) {
-        ListItem(
-            headlineContent = { Text(headlineContent) },
-            modifier = Modifier.clickable(onClick = onToggle),
-            supportingContent = supportingContent?.let { { Text(it) } },
-            leadingContent = leadingContent,
-            trailingContent = {
+        DSListRow(
+            headlineText = headlineContent,
+            supportingText = supportingContent,
+            leading = leadingContent,
+            trailing = {
                 Icon(
                     imageVector = Icons.Default.KeyboardArrowDown,
                     contentDescription = if (expanded) "Colapsar" else "Expandir",
                     modifier = Modifier.rotate(rotationAngle),
                 )
             },
+            onClick = onToggle,
         )
 
         AnimatedVisibility(
@@ -117,17 +121,17 @@ private fun DSExpandableListItemExpandedPreview() {
                 },
             ) {
                 Column(modifier = Modifier.padding(start = Spacing.spacing14)) {
-                    DSListItem(
+                    DSListRow(
                         headlineText = "Push",
-                        trailingContent = { Text("Activado") },
+                        trailing = { Text("Activado") },
                     )
-                    DSListItem(
+                    DSListRow(
                         headlineText = "Email",
-                        trailingContent = { Text("Desactivado") },
+                        trailing = { Text("Desactivado") },
                     )
-                    DSListItem(
+                    DSListRow(
                         headlineText = "Sonido",
-                        trailingContent = { Text("Activado") },
+                        trailing = { Text("Activado") },
                     )
                 }
             }
@@ -147,8 +151,8 @@ private fun DSExpandableListItemDarkPreview() {
                     onToggle = {},
                 ) {
                     Column(modifier = Modifier.padding(start = Spacing.spacing14)) {
-                        DSListItem(headlineText = "Tema: Oscuro")
-                        DSListItem(headlineText = "Tamano de texto: Normal")
+                        DSListRow(headlineText = "Tema: Oscuro")
+                        DSListRow(headlineText = "Tamano de texto: Normal")
                     }
                 }
                 DSExpandableListItem(
