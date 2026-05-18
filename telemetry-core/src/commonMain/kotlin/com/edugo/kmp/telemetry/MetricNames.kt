@@ -28,6 +28,7 @@ public object MetricNames {
     public const val CACHE_HITS_TOTAL: String = "cache_hits_total"
     public const val CACHE_MISSES_TOTAL: String = "cache_misses_total"
     public const val CACHE_ERRORS_TOTAL: String = "cache_errors_total"
+    public const val CACHE_OUTCOME_TOTAL: String = "edugo.cache.outcome.total"
 
     // ==================== Assessment ====================
     public const val ASSESSMENT_ATTEMPTS_TOTAL: String = "assessment_attempts_total"
