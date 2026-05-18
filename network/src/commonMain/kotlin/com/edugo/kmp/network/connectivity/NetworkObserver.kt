@@ -33,6 +33,15 @@ public interface NetworkObserver {
 
     /** Stop observing network changes and release resources. */
     public fun stop()
+
+    /**
+     * Re-evaluar el estado real de la red contra el sistema, ignorando
+     * cualquier callback que pueda haber quedado desincronizado.
+     *
+     * Pensado para cuando la plataforma entrega un `onLost` sin el
+     * `onAvailable` correspondiente (ocurre bajo presión severa del SO).
+     */
+    public fun refresh() {}
 }
 
 /**
