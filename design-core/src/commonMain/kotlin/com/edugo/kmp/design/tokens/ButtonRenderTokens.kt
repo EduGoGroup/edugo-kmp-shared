@@ -1,9 +1,13 @@
 package com.edugo.kmp.design.tokens
 
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
+
 /**
  * Tabla declarativa `style -> RenderToken` para los botones que el SDUI
  * declara en `slot.style`. El backend declara el estilo semantico
- * (`filled`, `outlined`, `text`, `icon`, `destructive`); el cliente
+ * (`filled`, `outlined`, `text`, `icon`, `tonal`, `destructive`); el cliente
  * decide como materializarlo via [ButtonStyleCatalog.lookup].
  *
  * Esta tabla vive en `design-core` (lo paga el design system, no el
@@ -13,6 +17,7 @@ enum class ButtonVariant {
     ICON,
     FILLED,
     OUTLINED,
+    TONAL,
     TEXT,
     DESTRUCTIVE_OUTLINED,
 }
@@ -22,11 +27,8 @@ enum class ButtonVariant {
  * activo en tiempo de render (los Color de Material3 son `@Composable`,
  * por eso no los podemos materializar en estos data classes).
  *
- * Mirror reducido de [ColorRole]; ambos enums conviven (ActionStyleTokens
- * sigue funcionando para styles del SDUI viejo y los styles primary /
- * secondary / tonal / success), mientras [ButtonStyleCatalog] resuelve
- * los styles SDUI nuevos del backend (`filled` / `outlined` / `text` /
- * `icon` / `destructive`).
+ * Incluye los roles M3 estandar usados por el renderer y los semanticos
+ * extendidos (success) materializados via [LocalExtendedColorScheme].
  */
 enum class ColorRoleHint {
     PRIMARY,
@@ -34,6 +36,9 @@ enum class ColorRoleHint {
     ERROR,
     ON_ERROR,
     OUTLINE,
+    SUCCESS,
+    ON_SUCCESS,
+    ON_SURFACE_VARIANT,
 }
 
 enum class ShapeRole {
@@ -59,8 +64,12 @@ data class RenderToken(
 
 /**
  * Tabla declarativa de styles SDUI -> RenderToken. La unica fuente de
- * decision visual para los styles `filled` / `outlined` / `text` /
- * `icon` / `destructive` que el backend declara desde la Fase 3a.
+ * decision visual para los styles que el backend declara desde la Fase 3a.
+ *
+ * Vocabulario nuevo: `filled` / `outlined` / `text` / `icon` / `tonal` /
+ * `destructive`. Backward-compat con el vocabulario legacy del seed:
+ * `primary` / `secondary` / `success` / `icon-only` (tonal y destructive
+ * coinciden en ambos vocabularios).
  *
  * Styles desconocidos caen al fallback "text" (boton neutro, sin
  * container, sin tinte custom). Esto evita crashes si el seed introduce
@@ -69,14 +78,24 @@ data class RenderToken(
  */
 object ButtonStyleCatalog {
     private val table: Map<String, RenderToken> = mapOf(
+        // Vocabulario nuevo (Fase 3a+)
         "filled" to RenderToken(ButtonVariant.FILLED),
         "outlined" to RenderToken(ButtonVariant.OUTLINED),
         "text" to RenderToken(ButtonVariant.TEXT),
         "icon" to RenderToken(ButtonVariant.ICON),
+        "tonal" to RenderToken(ButtonVariant.TONAL),
+        // `destructive` rinde siempre como outlined rojo, independiente del controlType del slot.
+        // Es cambio deliberado respecto al esquema legacy (que daba FILLED rojo solido para
+        // controlType=FILLED_BUTTON): alineado con la guia M3 moderna sobre acciones destructivas.
         "destructive" to RenderToken(
             variant = ButtonVariant.DESTRUCTIVE_OUTLINED,
             tint = ColorRoleHint.ERROR,
         ),
+        // Backward-compat: vocabulario legacy del seed
+        "primary" to RenderToken(ButtonVariant.FILLED),
+        "secondary" to RenderToken(ButtonVariant.OUTLINED),
+        "success" to RenderToken(ButtonVariant.FILLED, tint = ColorRoleHint.ON_SUCCESS),
+        "icon-only" to RenderToken(ButtonVariant.ICON, tint = ColorRoleHint.ON_SURFACE_VARIANT),
     )
 
     /**
@@ -89,3 +108,26 @@ object ButtonStyleCatalog {
     /** Lista de styles soportados; util para tests de contrato. */
     val supportedStyles: Set<String> by lazy { table.keys }
 }
+
+/**
+ * Resuelve el rol de color a un [Color] real del ColorScheme. `null` ->
+ * [Color.Unspecified] (cae al default de Material3 para esa variante).
+ *
+ * Esta funcion vive aqui (no en `RenderedButton.kt`) para que cualquier
+ * consumidor del design-core que tenga un [ColorRoleHint] pueda
+ * materializarlo sin replicar el `when`. SDUI engine y SlotRenderer en
+ * `kmp-screens` la consumen igual.
+ */
+@Composable
+fun ColorRoleHint?.resolve(): Color =
+    when (this) {
+        null -> Color.Unspecified
+        ColorRoleHint.PRIMARY -> MaterialTheme.colorScheme.primary
+        ColorRoleHint.ON_PRIMARY -> MaterialTheme.colorScheme.onPrimary
+        ColorRoleHint.ERROR -> MaterialTheme.colorScheme.error
+        ColorRoleHint.ON_ERROR -> MaterialTheme.colorScheme.onError
+        ColorRoleHint.OUTLINE -> MaterialTheme.colorScheme.outline
+        ColorRoleHint.SUCCESS -> LocalExtendedColorScheme.current.success
+        ColorRoleHint.ON_SUCCESS -> LocalExtendedColorScheme.current.onSuccess
+        ColorRoleHint.ON_SURFACE_VARIANT -> MaterialTheme.colorScheme.onSurfaceVariant
+    }

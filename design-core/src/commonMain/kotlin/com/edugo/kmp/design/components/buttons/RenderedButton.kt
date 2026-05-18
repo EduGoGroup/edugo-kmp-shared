@@ -11,8 +11,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.edugo.kmp.design.Sizes
 import com.edugo.kmp.design.tokens.ButtonVariant
-import com.edugo.kmp.design.tokens.ColorRoleHint
 import com.edugo.kmp.design.tokens.RenderToken
+import com.edugo.kmp.design.tokens.resolve
 
 /**
  * Renderiza un boton SDUI segun el [RenderToken] resuelto por
@@ -23,6 +23,7 @@ import com.edugo.kmp.design.tokens.RenderToken
  * - [RenderToken.variant] == ICON -> [IconButton] con [icon].
  * - FILLED -> [DSFilledButton] con icono opcional + label.
  * - OUTLINED -> [DSOutlinedButton] con icono opcional + label.
+ * - TONAL -> [DSTonalButton] con icono opcional + label.
  * - TEXT -> [DSTextButton] con icono opcional + label.
  * - DESTRUCTIVE_OUTLINED -> [DSOutlinedButton] con tint error + icono
  *   opcional + label.
@@ -86,6 +87,16 @@ fun RenderedButton(
                 contentColor = tint,
             )
         }
+        ButtonVariant.TONAL -> {
+            DSTonalButton(
+                text = label.orEmpty(),
+                onClick = onClick,
+                modifier = modifier,
+                enabled = enabled,
+                leadingIcon = icon,
+                contentColor = tint,
+            )
+        }
         ButtonVariant.TEXT -> {
             DSTextButton(
                 text = label.orEmpty(),
@@ -108,19 +119,3 @@ fun RenderedButton(
         }
     }
 }
-
-/**
- * Resuelve el rol de color a un [Color] real del ColorScheme. `null` ->
- * [Color.Unspecified] (cae al default de Material3 para esa variante).
- */
-@Composable
-private fun ColorRoleHint?.resolve(): Color =
-    when (this) {
-        null -> Color.Unspecified
-        ColorRoleHint.PRIMARY -> MaterialTheme.colorScheme.primary
-        ColorRoleHint.ON_PRIMARY -> MaterialTheme.colorScheme.onPrimary
-        ColorRoleHint.ERROR -> MaterialTheme.colorScheme.error
-        ColorRoleHint.ON_ERROR -> MaterialTheme.colorScheme.onError
-        ColorRoleHint.OUTLINE -> MaterialTheme.colorScheme.outline
-    }
-
