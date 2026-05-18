@@ -30,6 +30,16 @@ public object MetricNames {
     public const val CACHE_ERRORS_TOTAL: String = "cache_errors_total"
     public const val CACHE_OUTCOME_TOTAL: String = "edugo.cache.outcome.total"
 
+    // ==================== SWR ====================
+    /** Background revalidation fetch was dispatched (fire-and-forget). */
+    public const val SWR_REVALIDATION_DISPATCHED: String = "edugo.cache.swr.revalidation.dispatched"
+    /** Background revalidation fetch completed (result: success | stale | http_error). */
+    public const val SWR_REVALIDATION_RESULT: String = "edugo.cache.swr.revalidation.result"
+    /** Background revalidation was skipped (reason: throttle | in_flight). */
+    public const val SWR_REVALIDATION_SKIPPED: String = "edugo.cache.swr.revalidation.skipped"
+    /** StaleDataBanner became visible (has_timestamp: true | false). */
+    public const val SWR_STALE_BANNER_SHOWN: String = "edugo.ui.stale_banner.shown"
+
     // ==================== Assessment ====================
     public const val ASSESSMENT_ATTEMPTS_TOTAL: String = "assessment_attempts_total"
     public const val ASSESSMENT_DURATION_MS: String = "assessment_duration_ms"
