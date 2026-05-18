@@ -7,7 +7,6 @@ import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 
 /**
  * Android implementation using [ConnectivityManager.registerDefaultNetworkCallback].
@@ -17,7 +16,7 @@ internal class AndroidNetworkObserver(
 ) : NetworkObserver {
 
     private val _status = MutableStateFlow(NetworkStatus.UNAVAILABLE)
-    override val status: StateFlow<NetworkStatus> = _status.asStateFlow()
+    override val status: StateFlow<NetworkStatus> = _status
 
     private var callback: ConnectivityManager.NetworkCallback? = null
 
@@ -27,14 +26,14 @@ internal class AndroidNetworkObserver(
     override fun start() {
         if (callback != null) return
 
-        // Check initial state
         val activeNetwork = connectivityManager.activeNetwork
         val capabilities = activeNetwork?.let { connectivityManager.getNetworkCapabilities(it) }
-        _status.value = if (capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true) {
-            NetworkStatus.AVAILABLE
-        } else {
-            NetworkStatus.UNAVAILABLE
-        }
+        _status.value =
+            if (capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true) {
+                NetworkStatus.AVAILABLE
+            } else {
+                NetworkStatus.UNAVAILABLE
+            }
 
         val networkCallback = object : ConnectivityManager.NetworkCallback() {
             override fun onAvailable(network: Network) {
