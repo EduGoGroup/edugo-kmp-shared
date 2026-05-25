@@ -42,6 +42,12 @@ public object HttpClientFactory {
      * - `ignoreUnknownKeys = true` - Tolerates extra fields in responses
      * - `isLenient = true` - Accepts relaxed JSON syntax
      * - `prettyPrint = false` - Compact output for production
+     * - `coerceInputValues = true` - Coerces explicit `null` on non-nullable
+     *   properties that declare a default to that default. El backend puede
+     *   enviar `null` en campos que el modelo trata como lista vacía (ej.
+     *   `grants.allow`/`grants.deny` para un usuario sin contexto); con esta
+     *   opción ese `null` se interpreta como el default (`emptyList()`) en lugar
+     *   de fallar la deserialización.
      *
      * This is internal to maintain encapsulation of serialization details.
      */
@@ -49,6 +55,7 @@ public object HttpClientFactory {
         ignoreUnknownKeys = true
         isLenient = true
         prettyPrint = false
+        coerceInputValues = true
     }
 
     /**

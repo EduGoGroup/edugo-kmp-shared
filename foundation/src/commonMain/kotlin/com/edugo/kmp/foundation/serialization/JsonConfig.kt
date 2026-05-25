@@ -53,6 +53,11 @@ object JsonConfig {
      * - `isLenient = false`: Requiere JSON válido (seguridad)
      * - `prettyPrint = false`: Compacto para producción (eficiencia)
      * - `encodeDefaults = true`: Incluye valores por defecto (completitud)
+     * - `coerceInputValues = true`: Interpreta un `null` explícito sobre una
+     *   propiedad no-nullable con default como ese default. El backend puede
+     *   enviar `null` en campos que el modelo trata como lista vacía (ej.
+     *   `grants.allow`/`grants.deny` para un usuario sin contexto); así no falla
+     *   la deserialización y el valor efectivo queda en `emptyList()`.
      *
      * ## Ejemplo
      *
@@ -70,6 +75,7 @@ object JsonConfig {
             isLenient = false
             prettyPrint = false
             encodeDefaults = true
+            coerceInputValues = true
         }
     }
 
