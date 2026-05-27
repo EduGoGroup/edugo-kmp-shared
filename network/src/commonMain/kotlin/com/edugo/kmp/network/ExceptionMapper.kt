@@ -49,8 +49,14 @@ public object ExceptionMapper {
                 NetworkException.Timeout(exception.message ?: "Timeout", exception)
 
             // Connection reset/closed
-            message.contains("connection") &&
-            (message.contains("refused") || message.contains("reset") || message.contains("closed")) ->
+            // Incluye conexiones keep-alive muertas reusadas tras reinicio del backend:
+            // OkHttp lanza IOException("unexpected end of stream on http://...") y Darwin/iOS
+            // reporta "connection was lost". Deben clasificarse como connectivity (retryable + stale fallback).
+            (message.contains("connection") &&
+                (message.contains("refused") || message.contains("reset") || message.contains("closed"))) ||
+            message.contains("unexpected end of stream") || message.contains("end of stream") ||
+            message.contains("broken pipe") || message.contains("stream was reset") ||
+            message.contains("connection was lost") ->
                 NetworkException.ConnectionReset(exception.message ?: "Connection reset", exception)
 
             // No connection / network unreachable

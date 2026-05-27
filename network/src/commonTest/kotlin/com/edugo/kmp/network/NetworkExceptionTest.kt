@@ -301,6 +301,36 @@ class ExceptionMapperTest {
         assertTrue(mapped is NetworkException.ConnectionReset)
     }
 
+    @Test
+    fun maps_unexpected_end_of_stream_to_ConnectionReset() {
+        // Bug 0013: tras reinicio del backend, OkHttp reusa una conexión keep-alive
+        // muerta y lanza IOException con este mensaje. Debe ser connectivity (retryable).
+        val exception = Exception("unexpected end of stream on http://localhost:8075/foo")
+
+        val mapped = ExceptionMapper.map(exception)
+
+        assertTrue(mapped is NetworkException.ConnectionReset)
+        assertEquals(ErrorCode.NETWORK_CONNECTION_RESET, mapped.errorCode)
+    }
+
+    @Test
+    fun maps_broken_pipe_to_ConnectionReset() {
+        val exception = Exception("Broken pipe")
+
+        val mapped = ExceptionMapper.map(exception)
+
+        assertTrue(mapped is NetworkException.ConnectionReset)
+    }
+
+    @Test
+    fun maps_connection_was_lost_to_ConnectionReset() {
+        val exception = Exception("The network connection was lost")
+
+        val mapped = ExceptionMapper.map(exception)
+
+        assertTrue(mapped is NetworkException.ConnectionReset)
+    }
+
     // ==================== NO CONNECTION DETECTION ====================
 
     @Test
