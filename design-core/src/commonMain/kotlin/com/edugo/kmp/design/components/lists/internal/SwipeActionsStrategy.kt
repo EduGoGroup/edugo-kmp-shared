@@ -35,74 +35,89 @@ internal fun SwipeActionsStrategy(
     val destructive = actions.firstOrNull { it.destructive }
     val primary = actions.firstOrNull { !it.destructive }
 
-    val dismissState = rememberSwipeToDismissBoxState(
-        confirmValueChange = { value ->
-            when (value) {
-                SwipeToDismissBoxValue.EndToStart -> {
-                    destructive?.let { onAction(it) }
-                    false
+    val dismissState =
+        rememberSwipeToDismissBoxState(
+            confirmValueChange = { value ->
+                when (value) {
+                    SwipeToDismissBoxValue.EndToStart -> {
+                        destructive?.let { onAction(it) }
+                        false
+                    }
+                    SwipeToDismissBoxValue.StartToEnd -> {
+                        primary?.let { onAction(it) }
+                        false
+                    }
+                    SwipeToDismissBoxValue.Settled -> true
                 }
-                SwipeToDismissBoxValue.StartToEnd -> {
-                    primary?.let { onAction(it) }
-                    false
-                }
-                SwipeToDismissBoxValue.Settled -> true
-            }
-        },
-    )
+            },
+        )
 
     // Lectores de pantalla descubren las acciones disponibles vía customActions
     // (no requieren gestos físicos de swipe); stateDescription anuncia la acción
     // inminente cuando el swipe está en curso.
-    val a11yActions = listOfNotNull(
-        primary?.let { action ->
-            CustomAccessibilityAction(label = action.label, action = { onAction(action); true })
-        },
-        destructive?.let { action ->
-            CustomAccessibilityAction(label = action.label, action = { onAction(action); true })
-        },
-    )
-    val swipeStateDescription = when (dismissState.targetValue) {
-        SwipeToDismissBoxValue.EndToStart -> destructive?.label.orEmpty()
-        SwipeToDismissBoxValue.StartToEnd -> primary?.label.orEmpty()
-        SwipeToDismissBoxValue.Settled -> ""
-    }
+    val a11yActions =
+        listOfNotNull(
+            primary?.let { action ->
+                CustomAccessibilityAction(label = action.label, action = {
+                    onAction(action)
+                    true
+                })
+            },
+            destructive?.let { action ->
+                CustomAccessibilityAction(label = action.label, action = {
+                    onAction(action)
+                    true
+                })
+            },
+        )
+    val swipeStateDescription =
+        when (dismissState.targetValue) {
+            SwipeToDismissBoxValue.EndToStart -> destructive?.label.orEmpty()
+            SwipeToDismissBoxValue.StartToEnd -> primary?.label.orEmpty()
+            SwipeToDismissBoxValue.Settled -> ""
+        }
 
     SwipeToDismissBox(
         state = dismissState,
-        modifier = modifier.semantics {
-            customActions = a11yActions
-            if (swipeStateDescription.isNotEmpty()) {
-                stateDescription = swipeStateDescription
-            }
-        },
+        modifier =
+            modifier.semantics {
+                customActions = a11yActions
+                if (swipeStateDescription.isNotEmpty()) {
+                    stateDescription = swipeStateDescription
+                }
+            },
         backgroundContent = {
             val direction = dismissState.dismissDirection
-            val (bgColor, icon, iconDescription, alignment) = when (direction) {
-                SwipeToDismissBoxValue.EndToStart -> SwipeBackground(
-                    color = MaterialTheme.colorScheme.errorContainer,
-                    icon = Icons.Filled.Delete,
-                    description = destructive?.label ?: "",
-                    alignment = Alignment.CenterEnd,
-                )
-                SwipeToDismissBoxValue.StartToEnd -> SwipeBackground(
-                    color = MaterialTheme.colorScheme.secondaryContainer,
-                    icon = primary?.icon ?: Icons.Filled.Delete,
-                    description = primary?.label ?: "",
-                    alignment = Alignment.CenterStart,
-                )
-                SwipeToDismissBoxValue.Settled -> SwipeBackground(
-                    color = MaterialTheme.colorScheme.surface,
-                    icon = Icons.Filled.Delete,
-                    description = "",
-                    alignment = Alignment.CenterEnd,
-                )
-            }
+            val (bgColor, icon, iconDescription, alignment) =
+                when (direction) {
+                    SwipeToDismissBoxValue.EndToStart ->
+                        SwipeBackground(
+                            color = MaterialTheme.colorScheme.errorContainer,
+                            icon = Icons.Filled.Delete,
+                            description = destructive?.label ?: "",
+                            alignment = Alignment.CenterEnd,
+                        )
+                    SwipeToDismissBoxValue.StartToEnd ->
+                        SwipeBackground(
+                            color = MaterialTheme.colorScheme.secondaryContainer,
+                            icon = primary?.icon ?: Icons.Filled.Delete,
+                            description = primary?.label ?: "",
+                            alignment = Alignment.CenterStart,
+                        )
+                    SwipeToDismissBoxValue.Settled ->
+                        SwipeBackground(
+                            color = MaterialTheme.colorScheme.surface,
+                            icon = Icons.Filled.Delete,
+                            description = "",
+                            alignment = Alignment.CenterEnd,
+                        )
+                }
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(bgColor)
-                    .padding(horizontal = Spacing.spacing4),
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .background(bgColor)
+                        .padding(horizontal = Spacing.spacing4),
                 contentAlignment = alignment,
             ) {
                 Row(
@@ -112,11 +127,12 @@ internal fun SwipeActionsStrategy(
                     Icon(
                         imageVector = icon,
                         contentDescription = iconDescription,
-                        tint = when (direction) {
-                            SwipeToDismissBoxValue.EndToStart -> MaterialTheme.colorScheme.onErrorContainer
-                            SwipeToDismissBoxValue.StartToEnd -> MaterialTheme.colorScheme.onSecondaryContainer
-                            SwipeToDismissBoxValue.Settled -> MaterialTheme.colorScheme.onSurface
-                        },
+                        tint =
+                            when (direction) {
+                                SwipeToDismissBoxValue.EndToStart -> MaterialTheme.colorScheme.onErrorContainer
+                                SwipeToDismissBoxValue.StartToEnd -> MaterialTheme.colorScheme.onSecondaryContainer
+                                SwipeToDismissBoxValue.Settled -> MaterialTheme.colorScheme.onSurface
+                            },
                     )
                 }
             }

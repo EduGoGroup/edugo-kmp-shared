@@ -22,7 +22,10 @@ package com.edugo.kmp.auth.authorization
  * `enum.PathPermissionRegex` (BE).
  */
 object PermissionMatcher {
-    fun matches(pattern: String, request: String): Boolean {
+    fun matches(
+        pattern: String,
+        request: String,
+    ): Boolean {
         if (pattern == "*") return true
         if (pattern == request) return true
         // prefix.*  (subárbol). Debe evaluarse antes que prefix.*.suffix
@@ -40,8 +43,8 @@ object PermissionMatcher {
         // prefix.*.suffix → request startsWith `prefix.` + algo + `.suffix`
         val i = pattern.indexOf(".*.")
         if (i > 0) {
-            val head = pattern.substring(0, i + 1)        // `prefix.`
-            val tail = pattern.substring(i + 2)           // `.suffix`
+            val head = pattern.substring(0, i + 1) // `prefix.`
+            val tail = pattern.substring(i + 2) // `.suffix`
             // Los patterns soportados son los listados arriba; ya descartamos
             // `prefix.*`. Cualquier otro `*` invalida el match.
             if (head.contains('*') || tail.contains('*')) return false

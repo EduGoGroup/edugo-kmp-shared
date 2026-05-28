@@ -46,50 +46,59 @@ internal fun ContextMenuStrategy(
     val isTouch = platform == PlatformType.ANDROID || platform == PlatformType.IOS
     val isPointer = !isTouch
 
-    val gestureModifier = when {
-        // Long-press cooperativo: `awaitLongPressOrCancellation` NO consume el
-        // down inicial, así el `SwipeToDismissBox` padre puede arrancar el drag
-        // horizontal sin pelearse por el gesto. Si el usuario mueve el dedo
-        // antes del timeout, la espera se cancela y el swipe procede normal.
-        isTouch -> Modifier.pointerInput(Unit) {
-            awaitEachGesture {
-                val down = awaitFirstDown(requireUnconsumed = false)
-                val longPress = awaitLongPressOrCancellation(down.id)
-                if (longPress != null) {
-                    anchorOffset = longPress.position
-                    menuOpen = true
-                }
-            }
-        }
-        else -> Modifier.pointerInput(Unit) {
-            awaitPointerEventScope {
-                while (true) {
-                    val event = awaitPointerEvent()
-                    if (event.type == PointerEventType.Press && event.buttons.isSecondaryPressed) {
-                        anchorOffset = event.changes.firstOrNull()?.position ?: Offset.Zero
-                        menuOpen = true
+    val gestureModifier =
+        when {
+            // Long-press cooperativo: `awaitLongPressOrCancellation` NO consume el
+            // down inicial, así el `SwipeToDismissBox` padre puede arrancar el drag
+            // horizontal sin pelearse por el gesto. Si el usuario mueve el dedo
+            // antes del timeout, la espera se cancela y el swipe procede normal.
+            isTouch ->
+                Modifier.pointerInput(Unit) {
+                    awaitEachGesture {
+                        val down = awaitFirstDown(requireUnconsumed = false)
+                        val longPress = awaitLongPressOrCancellation(down.id)
+                        if (longPress != null) {
+                            anchorOffset = longPress.position
+                            menuOpen = true
+                        }
                     }
                 }
-            }
+            else ->
+                Modifier.pointerInput(Unit) {
+                    awaitPointerEventScope {
+                        while (true) {
+                            val event = awaitPointerEvent()
+                            if (event.type == PointerEventType.Press && event.buttons.isSecondaryPressed) {
+                                anchorOffset = event.changes.firstOrNull()?.position ?: Offset.Zero
+                                menuOpen = true
+                            }
+                        }
+                    }
+                }
         }
-    }
 
     // En desktop/web sin mouse, Shift+F10 o la tecla Menu abren el menú
     // contextual (no hay long-press y el right-click no es accesible).
-    val keyboardModifier = if (isPointer) {
-        Modifier
-            .focusable()
-            .onPreviewKeyEvent { event ->
-                if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
-                val triggers = event.key == Key.Menu ||
-                    (event.isShiftPressed && event.key == Key.F10)
-                if (triggers) {
-                    anchorOffset = Offset.Zero
-                    menuOpen = true
-                    true
-                } else false
-            }
-    } else Modifier
+    val keyboardModifier =
+        if (isPointer) {
+            Modifier
+                .focusable()
+                .onPreviewKeyEvent { event ->
+                    if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+                    val triggers =
+                        event.key == Key.Menu ||
+                            (event.isShiftPressed && event.key == Key.F10)
+                    if (triggers) {
+                        anchorOffset = Offset.Zero
+                        menuOpen = true
+                        true
+                    } else {
+                        false
+                    }
+                }
+        } else {
+            Modifier
+        }
 
     val (normal, destructive) = actions.partition { !it.destructive }
 
@@ -98,12 +107,13 @@ internal fun ContextMenuStrategy(
         DropdownMenu(
             expanded = menuOpen,
             onDismissRequest = { menuOpen = false },
-            offset = with(density) {
-                DpOffset(
-                    x = anchorOffset.x.toDp(),
-                    y = anchorOffset.y.toDp(),
-                )
-            },
+            offset =
+                with(density) {
+                    DpOffset(
+                        x = anchorOffset.x.toDp(),
+                        y = anchorOffset.y.toDp(),
+                    )
+                },
         ) {
             normal.forEach { action ->
                 DropdownMenuItem(

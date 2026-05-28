@@ -37,19 +37,20 @@ internal fun HoverActionsStrategy(
     var focusWithin by remember { mutableStateOf(false) }
 
     Box(
-        modifier = modifier
-            .onFocusChanged { focusWithin = it.hasFocus }
-            .pointerInput(Unit) {
-                awaitPointerEventScope {
-                    while (true) {
-                        val event = awaitPointerEvent()
-                        when (event.type) {
-                            PointerEventType.Enter -> hovered = true
-                            PointerEventType.Exit -> hovered = false
+        modifier =
+            modifier
+                .onFocusChanged { focusWithin = it.hasFocus }
+                .pointerInput(Unit) {
+                    awaitPointerEventScope {
+                        while (true) {
+                            val event = awaitPointerEvent()
+                            when (event.type) {
+                                PointerEventType.Enter -> hovered = true
+                                PointerEventType.Exit -> hovered = false
+                            }
                         }
                     }
-                }
-            },
+                },
     ) {
         content(Modifier.fillMaxWidth())
 
@@ -57,9 +58,10 @@ internal fun HoverActionsStrategy(
         // solo-teclado (sin mouse) no disparan hover y quedarían sin acceso.
         AnimatedVisibility(
             visible = hovered || focusWithin,
-            modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .padding(end = Spacing.spacing3),
+            modifier =
+                Modifier
+                    .align(Alignment.CenterEnd)
+                    .padding(end = Spacing.spacing3),
             enter = fadeIn(animationSpec = tween(durationMillis = 120, easing = EaseInOut)),
             exit = fadeOut(animationSpec = tween(durationMillis = 120, easing = EaseInOut)),
         ) {

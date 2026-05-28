@@ -25,7 +25,10 @@ class FakeRefreshTokenSource(
     var lastReason: RefreshReason? = null
         private set
 
-    override suspend fun refresh(refreshToken: String, reason: RefreshReason): Result<TokenPair> {
+    override suspend fun refresh(
+        refreshToken: String,
+        reason: RefreshReason,
+    ): Result<TokenPair> {
         callCount++
         lastRefreshToken = refreshToken
         lastReason = reason

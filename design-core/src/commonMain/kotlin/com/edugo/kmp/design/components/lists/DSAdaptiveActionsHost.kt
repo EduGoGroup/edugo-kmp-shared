@@ -46,20 +46,22 @@ fun DSAdaptiveActionsHost(
     }
 
     when (PlatformDetector.current) {
-        PlatformType.ANDROID, PlatformType.IOS -> SwipeActionsStrategy(
-            actions = actions,
-            onAction = onIntercepted,
-            modifier = modifier,
-        ) { swipeModifier ->
-            withContextMenu(swipeModifier)
-        }
-        PlatformType.DESKTOP, PlatformType.WEB -> HoverActionsStrategy(
-            actions = actions,
-            onAction = onIntercepted,
-            modifier = modifier,
-        ) { hoverModifier ->
-            withContextMenu(hoverModifier)
-        }
+        PlatformType.ANDROID, PlatformType.IOS ->
+            SwipeActionsStrategy(
+                actions = actions,
+                onAction = onIntercepted,
+                modifier = modifier,
+            ) { swipeModifier ->
+                withContextMenu(swipeModifier)
+            }
+        PlatformType.DESKTOP, PlatformType.WEB ->
+            HoverActionsStrategy(
+                actions = actions,
+                onAction = onIntercepted,
+                modifier = modifier,
+            ) { hoverModifier ->
+                withContextMenu(hoverModifier)
+            }
     }
 
     ConfirmDialog(state = confirmDialog)

@@ -15,23 +15,23 @@ import kotlin.test.fail
  * No bloquea el build de la app; CI lo corre como gate de seed-vs-cliente.
  */
 class IconCatalogContractTest {
-
-    private val seedIconNames: Set<String> = setOf(
-        "save",
-        "trash",
-        "plus",
-        "pencil",
-        "list",
-        "help_outline",
-        "check_circle",
-        "archive",
-        "more_vert",
-        // Aliases comunes para test cross-naming
-        "delete",
-        "edit",
-        "add",
-        "group_add",
-    )
+    private val seedIconNames: Set<String> =
+        setOf(
+            "save",
+            "trash",
+            "plus",
+            "pencil",
+            "list",
+            "help_outline",
+            "check_circle",
+            "archive",
+            "more_vert",
+            // Aliases comunes para test cross-naming
+            "delete",
+            "edit",
+            "add",
+            "group_add",
+        )
 
     @Test
     fun allSeedIconsResolveToImageVector() {

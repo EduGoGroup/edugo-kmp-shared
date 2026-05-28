@@ -32,11 +32,14 @@ enum class SemanticTone {
             val normalized = raw.trim().lowercase()
             return when (normalized) {
                 "true", "active", "activo", "enabled", "ok", "success",
-                "finalized", "finalizada", "published", "approved", "ready" -> Success
+                "finalized", "finalizada", "published", "approved", "ready",
+                -> Success
                 "warning", "pending", "pendiente", "draft", "borrador",
-                "processing", "in_progress" -> Warning
+                "processing", "in_progress",
+                -> Warning
                 "false", "inactive", "inactivo", "disabled",
-                "error", "failed", "critical", "danger", "rejected" -> Danger
+                "error", "failed", "critical", "danger", "rejected",
+                -> Danger
                 "info", "notice" -> Info
                 else -> Neutral
             }

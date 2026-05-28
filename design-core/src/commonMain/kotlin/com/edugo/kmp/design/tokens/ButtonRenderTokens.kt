@@ -77,33 +77,34 @@ data class RenderToken(
  * TextButton hasta que se registre.
  */
 object ButtonStyleCatalog {
-    private val table: Map<String, RenderToken> = mapOf(
-        // Vocabulario nuevo (Fase 3a+)
-        "filled" to RenderToken(ButtonVariant.FILLED),
-        "outlined" to RenderToken(ButtonVariant.OUTLINED),
-        "text" to RenderToken(ButtonVariant.TEXT),
-        "icon" to RenderToken(ButtonVariant.ICON),
-        "tonal" to RenderToken(ButtonVariant.TONAL),
-        // `destructive` rinde siempre como outlined rojo, independiente del controlType del slot.
-        // Es cambio deliberado respecto al esquema legacy (que daba FILLED rojo solido para
-        // controlType=FILLED_BUTTON): alineado con la guia M3 moderna sobre acciones destructivas.
-        "destructive" to RenderToken(
-            variant = ButtonVariant.DESTRUCTIVE_OUTLINED,
-            tint = ColorRoleHint.ERROR,
-        ),
-        // Backward-compat: vocabulario legacy del seed
-        "primary" to RenderToken(ButtonVariant.FILLED),
-        "secondary" to RenderToken(ButtonVariant.OUTLINED),
-        "success" to RenderToken(ButtonVariant.FILLED, tint = ColorRoleHint.ON_SUCCESS),
-        "icon-only" to RenderToken(ButtonVariant.ICON, tint = ColorRoleHint.ON_SURFACE_VARIANT),
-    )
+    private val table: Map<String, RenderToken> =
+        mapOf(
+            // Vocabulario nuevo (Fase 3a+)
+            "filled" to RenderToken(ButtonVariant.FILLED),
+            "outlined" to RenderToken(ButtonVariant.OUTLINED),
+            "text" to RenderToken(ButtonVariant.TEXT),
+            "icon" to RenderToken(ButtonVariant.ICON),
+            "tonal" to RenderToken(ButtonVariant.TONAL),
+            // `destructive` rinde siempre como outlined rojo, independiente del controlType del slot.
+            // Es cambio deliberado respecto al esquema legacy (que daba FILLED rojo solido para
+            // controlType=FILLED_BUTTON): alineado con la guia M3 moderna sobre acciones destructivas.
+            "destructive" to
+                RenderToken(
+                    variant = ButtonVariant.DESTRUCTIVE_OUTLINED,
+                    tint = ColorRoleHint.ERROR,
+                ),
+            // Backward-compat: vocabulario legacy del seed
+            "primary" to RenderToken(ButtonVariant.FILLED),
+            "secondary" to RenderToken(ButtonVariant.OUTLINED),
+            "success" to RenderToken(ButtonVariant.FILLED, tint = ColorRoleHint.ON_SUCCESS),
+            "icon-only" to RenderToken(ButtonVariant.ICON, tint = ColorRoleHint.ON_SURFACE_VARIANT),
+        )
 
     /**
      * Resuelve un style SDUI a su [RenderToken]. Case-insensitive.
      * Si [style] es null o no esta registrado, retorna el token "text".
      */
-    fun lookup(style: String?): RenderToken =
-        table[style?.lowercase()] ?: table.getValue("text")
+    fun lookup(style: String?): RenderToken = table[style?.lowercase()] ?: table.getValue("text")
 
     /** Lista de styles soportados; util para tests de contrato. */
     val supportedStyles: Set<String> by lazy { table.keys }

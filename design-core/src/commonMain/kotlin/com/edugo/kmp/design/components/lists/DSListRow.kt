@@ -60,16 +60,19 @@ fun DSListRow(
     onClick: (() -> Unit)? = null,
     contentDescription: String? = null,
 ) {
-    val baseModifier = Modifier.testTag(DSListRowDefaults.tag).then(modifier)
-        .fillMaxWidth()
-        .let { if (onClick != null) it.clickable(onClick = onClick) else it }
-        .let { m ->
-            if (contentDescription != null) {
-                m.semantics { this.contentDescription = contentDescription }
-            } else {
-                m
+    val baseModifier =
+        Modifier
+            .testTag(DSListRowDefaults.tag)
+            .then(modifier)
+            .fillMaxWidth()
+            .let { if (onClick != null) it.clickable(onClick = onClick) else it }
+            .let { m ->
+                if (contentDescription != null) {
+                    m.semantics { this.contentDescription = contentDescription }
+                } else {
+                    m
+                }
             }
-        }
 
     Card(
         modifier = baseModifier,
@@ -77,9 +80,10 @@ fun DSListRow(
         shape = Shapes.medium,
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(DSListRowDefaults.padding),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(DSListRowDefaults.padding),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(Spacing.spacing2),
         ) {
@@ -129,16 +133,17 @@ fun DSListRow(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     },
-    supporting = supportingText?.let {
-        {
-            Text(
-                text = it,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-            )
-        }
-    },
+    supporting =
+        supportingText?.let {
+            {
+                Text(
+                    text = it,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                )
+            }
+        },
     leading = leading,
     trailing = trailing,
     onClick = onClick,
@@ -169,14 +174,15 @@ object DSListRowDefaults {
      * Default trailing slot: a chevron-right icon at 24dp with
      * `onSurfaceVariant` tint at 50% opacity.
      */
-    fun chevron(): @Composable () -> Unit = {
-        Icon(
-            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-            contentDescription = "chevron-default",
-            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-            modifier = Modifier.size(24.dp),
-        )
-    }
+    fun chevron(): @Composable () -> Unit =
+        {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                contentDescription = "chevron-default",
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                modifier = Modifier.size(24.dp),
+            )
+        }
 }
 
 // --- Previews ---
@@ -248,13 +254,13 @@ private fun DSListRowWithLeadingIconPreview() {
                         imageVector = Icons.Filled.School,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier
-                            .size(40.dp)
-                            .background(
-                                color = MaterialTheme.colorScheme.primaryContainer,
-                                shape = CircleShape,
-                            )
-                            .padding(8.dp),
+                        modifier =
+                            Modifier
+                                .size(40.dp)
+                                .background(
+                                    color = MaterialTheme.colorScheme.primaryContainer,
+                                    shape = CircleShape,
+                                ).padding(8.dp),
                     )
                 },
             )
@@ -274,10 +280,11 @@ private fun DSListRowWithTrailingChipPreview() {
                     AssistChip(
                         onClick = {},
                         label = { Text("Pendiente") },
-                        colors = AssistChipDefaults.assistChipColors(
-                            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                            labelColor = MaterialTheme.colorScheme.onTertiaryContainer,
-                        ),
+                        colors =
+                            AssistChipDefaults.assistChipColors(
+                                containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                                labelColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                            ),
                     )
                 },
             )

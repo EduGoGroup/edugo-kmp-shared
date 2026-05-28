@@ -37,7 +37,10 @@ class TokenRefreshManagerSingleFlightTest {
         val callCount: Int get() = delegate.callCount
         val lastReason: RefreshReason? get() = delegate.lastReason
 
-        override suspend fun refresh(refreshToken: String, reason: RefreshReason): Result<TokenPair> {
+        override suspend fun refresh(
+            refreshToken: String,
+            reason: RefreshReason,
+        ): Result<TokenPair> {
             if (responseDelayMs > 0) delay(responseDelayMs)
             return delegate.refresh(refreshToken, reason)
         }

@@ -17,25 +17,25 @@ import kotlin.test.assertEquals
 
 @OptIn(ExperimentalTestApi::class)
 class DSAdaptiveActionsHostTest {
-
     /**
      * F4-REQ-1.2: Con actions vacía, el host es transparente y el content se renderiza directamente.
      */
     @Test
-    fun skipsWrapper_whenNoActions() = runComposeUiTest {
-        setContent {
-            DSTheme {
-                DSAdaptiveActionsHost(actions = emptyList()) { rowModifier ->
-                    DSListRow(headlineText = "Test", modifier = rowModifier)
+    fun skipsWrapper_whenNoActions() =
+        runComposeUiTest {
+            setContent {
+                DSTheme {
+                    DSAdaptiveActionsHost(actions = emptyList()) { rowModifier ->
+                        DSListRow(headlineText = "Test", modifier = rowModifier)
+                    }
                 }
             }
-        }
 
-        // DSListRow siempre aplica DSListRowDefaults.tag; si el host es transparente,
-        // el row existe y es visible sin ningún wrapper adicional.
-        onNodeWithTag(DSListRowDefaults.tag).assertIsDisplayed()
-        onNodeWithText("Test").assertIsDisplayed()
-    }
+            // DSListRow siempre aplica DSListRowDefaults.tag; si el host es transparente,
+            // el row existe y es visible sin ningún wrapper adicional.
+            onNodeWithTag(DSListRowDefaults.tag).assertIsDisplayed()
+            onNodeWithText("Test").assertIsDisplayed()
+        }
 
     /**
      * F4-REQ-1.4: En DESKTOP, el host envuelve el content con HoverActionsStrategy.
@@ -49,33 +49,35 @@ class DSAdaptiveActionsHostTest {
      * La transicion visible tras hover queda cubierta por test manual.
      */
     @Test
-    fun showsHoverButtons_onPointerEnter_inDesktop() = runComposeUiTest {
-        TestPlatformDetector.withPlatform(PlatformType.DESKTOP) {
-            setContent {
-                DSTheme {
-                    DSAdaptiveActionsHost(
-                        actions = listOf(
-                            RowAction(
-                                id = "edit",
-                                label = "Editar",
-                                icon = Icons.Filled.Edit,
-                                onInvoke = {},
-                            ),
-                        ),
-                    ) { rowModifier ->
-                        DSListRow(headlineText = "Test", modifier = rowModifier)
+    fun showsHoverButtons_onPointerEnter_inDesktop() =
+        runComposeUiTest {
+            TestPlatformDetector.withPlatform(PlatformType.DESKTOP) {
+                setContent {
+                    DSTheme {
+                        DSAdaptiveActionsHost(
+                            actions =
+                                listOf(
+                                    RowAction(
+                                        id = "edit",
+                                        label = "Editar",
+                                        icon = Icons.Filled.Edit,
+                                        onInvoke = {},
+                                    ),
+                                ),
+                        ) { rowModifier ->
+                            DSListRow(headlineText = "Test", modifier = rowModifier)
+                        }
                     }
                 }
+
+                // El wrapper existe: el host agrega su Box y el row sigue siendo encontrable.
+                onNodeWithTag(DSListRowDefaults.tag).assertIsDisplayed()
+
+                // Sin hover activo, el boton de accion no debe estar en el arbol de semantica
+                // (AnimatedVisibility con visible=false excluye los nodos del arbol).
+                onNodeWithContentDescription("Editar", useUnmergedTree = true).assertDoesNotExist()
             }
-
-            // El wrapper existe: el host agrega su Box y el row sigue siendo encontrable.
-            onNodeWithTag(DSListRowDefaults.tag).assertIsDisplayed()
-
-            // Sin hover activo, el boton de accion no debe estar en el arbol de semantica
-            // (AnimatedVisibility con visible=false excluye los nodos del arbol).
-            onNodeWithContentDescription("Editar", useUnmergedTree = true).assertDoesNotExist()
         }
-    }
 
     /**
      * F4-REQ-1.5: En DESKTOP, el ContextMenuStrategy renderiza correctamente con
@@ -89,40 +91,42 @@ class DSAdaptiveActionsHostTest {
      * El "menu visible tras right-click" queda para test manual.
      */
     @Test
-    fun opensContextMenu_onRightClick_inDesktop() = runComposeUiTest {
-        TestPlatformDetector.withPlatform(PlatformType.DESKTOP) {
-            setContent {
-                DSTheme {
-                    DSAdaptiveActionsHost(
-                        actions = listOf(
-                            RowAction(
-                                id = "edit",
-                                label = "Editar",
-                                icon = Icons.Filled.Edit,
-                                onInvoke = {},
-                            ),
-                            RowAction(
-                                id = "delete",
-                                label = "Eliminar",
-                                icon = Icons.Filled.Delete,
-                                destructive = true,
-                                onInvoke = {},
-                            ),
-                        ),
-                    ) { rowModifier ->
-                        DSListRow(headlineText = "Test", modifier = rowModifier)
+    fun opensContextMenu_onRightClick_inDesktop() =
+        runComposeUiTest {
+            TestPlatformDetector.withPlatform(PlatformType.DESKTOP) {
+                setContent {
+                    DSTheme {
+                        DSAdaptiveActionsHost(
+                            actions =
+                                listOf(
+                                    RowAction(
+                                        id = "edit",
+                                        label = "Editar",
+                                        icon = Icons.Filled.Edit,
+                                        onInvoke = {},
+                                    ),
+                                    RowAction(
+                                        id = "delete",
+                                        label = "Eliminar",
+                                        icon = Icons.Filled.Delete,
+                                        destructive = true,
+                                        onInvoke = {},
+                                    ),
+                                ),
+                        ) { rowModifier ->
+                            DSListRow(headlineText = "Test", modifier = rowModifier)
+                        }
                     }
                 }
+
+                // El host renderiza sin error con acciones normales + destructive.
+                onNodeWithTag(DSListRowDefaults.tag).assertIsDisplayed()
+
+                // El DropdownMenu esta inicialmente cerrado: los items no son visibles.
+                onNodeWithText("Editar").assertDoesNotExist()
+                onNodeWithText("Eliminar").assertDoesNotExist()
             }
-
-            // El host renderiza sin error con acciones normales + destructive.
-            onNodeWithTag(DSListRowDefaults.tag).assertIsDisplayed()
-
-            // El DropdownMenu esta inicialmente cerrado: los items no son visibles.
-            onNodeWithText("Editar").assertDoesNotExist()
-            onNodeWithText("Eliminar").assertDoesNotExist()
         }
-    }
 
     /**
      * F4-REQ-1.6 — smoke test: el host renderiza con una RowAction destructive
@@ -130,33 +134,35 @@ class DSAdaptiveActionsHostTest {
      * no es simulable en headless con CMP 1.10.3; queda para test manual.
      */
     @Test
-    fun compositeRenders_withDestructiveAction_smokeTest() = runComposeUiTest {
-        TestPlatformDetector.withPlatform(PlatformType.DESKTOP) {
-            var count = 0
-            val destructiveAction = RowAction(
-                id = "delete",
-                label = "Eliminar",
-                icon = Icons.Filled.Delete,
-                destructive = true,
-                onInvoke = { count++ },
-            )
+    fun compositeRenders_withDestructiveAction_smokeTest() =
+        runComposeUiTest {
+            TestPlatformDetector.withPlatform(PlatformType.DESKTOP) {
+                var count = 0
+                val destructiveAction =
+                    RowAction(
+                        id = "delete",
+                        label = "Eliminar",
+                        icon = Icons.Filled.Delete,
+                        destructive = true,
+                        onInvoke = { count++ },
+                    )
 
-            setContent {
-                DSTheme {
-                    DSAdaptiveActionsHost(
-                        actions = listOf(destructiveAction),
-                        onAction = { it.onInvoke() },
-                    ) { rowModifier ->
-                        DSListRow(headlineText = "Test", modifier = rowModifier)
+                setContent {
+                    DSTheme {
+                        DSAdaptiveActionsHost(
+                            actions = listOf(destructiveAction),
+                            onAction = { it.onInvoke() },
+                        ) { rowModifier ->
+                            DSListRow(headlineText = "Test", modifier = rowModifier)
+                        }
                     }
                 }
-            }
 
-            onNodeWithTag(DSListRowDefaults.tag).assertIsDisplayed()
-            onNodeWithContentDescription("Eliminar", useUnmergedTree = true).assertDoesNotExist()
-            assertEquals(0, count)
+                onNodeWithTag(DSListRowDefaults.tag).assertIsDisplayed()
+                onNodeWithContentDescription("Eliminar", useUnmergedTree = true).assertDoesNotExist()
+                assertEquals(0, count)
+            }
         }
-    }
 
     /**
      * F4-REQ-1.6 — smoke test: el host renderiza con una RowAction no-destructive
@@ -164,31 +170,33 @@ class DSAdaptiveActionsHostTest {
      * (sin confirm) no es simulable en headless con CMP 1.10.3; queda para test manual.
      */
     @Test
-    fun compositeRenders_withNormalAction_smokeTest() = runComposeUiTest {
-        TestPlatformDetector.withPlatform(PlatformType.DESKTOP) {
-            var count = 0
-            val normalAction = RowAction(
-                id = "edit",
-                label = "Editar",
-                icon = Icons.Filled.Edit,
-                destructive = false,
-                onInvoke = { count++ },
-            )
+    fun compositeRenders_withNormalAction_smokeTest() =
+        runComposeUiTest {
+            TestPlatformDetector.withPlatform(PlatformType.DESKTOP) {
+                var count = 0
+                val normalAction =
+                    RowAction(
+                        id = "edit",
+                        label = "Editar",
+                        icon = Icons.Filled.Edit,
+                        destructive = false,
+                        onInvoke = { count++ },
+                    )
 
-            setContent {
-                DSTheme {
-                    DSAdaptiveActionsHost(
-                        actions = listOf(normalAction),
-                        onAction = { it.onInvoke() },
-                    ) { rowModifier ->
-                        DSListRow(headlineText = "Test", modifier = rowModifier)
+                setContent {
+                    DSTheme {
+                        DSAdaptiveActionsHost(
+                            actions = listOf(normalAction),
+                            onAction = { it.onInvoke() },
+                        ) { rowModifier ->
+                            DSListRow(headlineText = "Test", modifier = rowModifier)
+                        }
                     }
                 }
-            }
 
-            onNodeWithTag(DSListRowDefaults.tag).assertIsDisplayed()
-            onNodeWithContentDescription("Editar", useUnmergedTree = true).assertDoesNotExist()
-            assertEquals(0, count)
+                onNodeWithTag(DSListRowDefaults.tag).assertIsDisplayed()
+                onNodeWithContentDescription("Editar", useUnmergedTree = true).assertDoesNotExist()
+                assertEquals(0, count)
+            }
         }
-    }
 }

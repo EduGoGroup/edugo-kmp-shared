@@ -12,7 +12,9 @@ package com.edugo.kmp.auth.token
  *   coincidir con las constantes server-side `refreshtelemetry.Reason*` para
  *   que el normalizador no lo degrade a `unknown`.
  */
-enum class RefreshReason(val wireValue: String) {
+enum class RefreshReason(
+    val wireValue: String,
+) {
     /**
      * El refresh viene del path de `restoreSession` al arrancar la app: el
      * cliente encontró un access token expirado en storage y está intentando

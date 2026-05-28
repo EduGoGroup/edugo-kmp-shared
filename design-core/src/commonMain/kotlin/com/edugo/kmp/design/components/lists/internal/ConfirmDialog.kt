@@ -16,7 +16,10 @@ internal class ConfirmDialogState {
     val isVisible: Boolean get() = pendingAction != null
     val action: RowAction? get() = pendingAction
 
-    fun request(action: RowAction, onConfirm: () -> Unit) {
+    fun request(
+        action: RowAction,
+        onConfirm: () -> Unit,
+    ) {
         pendingAction = action
         pendingConfirm = onConfirm
     }
@@ -33,8 +36,7 @@ internal class ConfirmDialogState {
 }
 
 @Composable
-internal fun rememberConfirmDialogState(): ConfirmDialogState =
-    remember { ConfirmDialogState() }
+internal fun rememberConfirmDialogState(): ConfirmDialogState = remember { ConfirmDialogState() }
 
 @Composable
 internal fun ConfirmDialog(state: ConfirmDialogState) {

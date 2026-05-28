@@ -18,8 +18,8 @@ import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Book
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Description
@@ -112,194 +112,197 @@ import androidx.compose.ui.graphics.vector.ImageVector
  *   resolver loguea warning en runtime y aplica el fallback.
  */
 object IconCatalog {
+    private data class Entry(
+        val filled: ImageVector,
+        val outlined: ImageVector,
+    )
 
-    private data class Entry(val filled: ImageVector, val outlined: ImageVector)
+    private val table: Map<String, Entry> =
+        buildMap {
+            // --- Navigation & layout -------------------------------------------------
+            register("home", Icons.Filled.Home, Icons.Outlined.Home)
+            register("dashboard", Icons.Filled.Dashboard, Icons.Outlined.Dashboard)
+            register("menu", Icons.Filled.Menu)
+            register("settings", "gear", filled = Icons.Filled.Settings, outlined = Icons.Outlined.Settings)
 
-    private val table: Map<String, Entry> = buildMap {
-        // --- Navigation & layout -------------------------------------------------
-        register("home", Icons.Filled.Home, Icons.Outlined.Home)
-        register("dashboard", Icons.Filled.Dashboard, Icons.Outlined.Dashboard)
-        register("menu", Icons.Filled.Menu)
-        register("settings", "gear", filled = Icons.Filled.Settings, outlined = Icons.Outlined.Settings)
+            // --- Content & files -----------------------------------------------------
+            register("folder", "materials", filled = Icons.Filled.Folder, outlined = Icons.Outlined.FolderOpen)
+            register("book", "book-open", "book_open", filled = Icons.Filled.Book, outlined = Icons.Outlined.Book)
+            register(
+                "file-text",
+                "file_text",
+                filled = Icons.Filled.Description,
+                outlined = Icons.Outlined.Description,
+            )
+            register(
+                "clipboard",
+                "assessment",
+                filled = Icons.Filled.Assessment,
+                outlined = Icons.Outlined.Assessment,
+            )
+            register("layers", Icons.Filled.Layers, Icons.Outlined.Layers)
+            register("list", filled = Icons.AutoMirrored.Filled.FormatListBulleted)
 
-        // --- Content & files -----------------------------------------------------
-        register("folder", "materials", filled = Icons.Filled.Folder, outlined = Icons.Outlined.FolderOpen)
-        register("book", "book-open", "book_open", filled = Icons.Filled.Book, outlined = Icons.Outlined.Book)
-        register(
-            "file-text",
-            "file_text",
-            filled = Icons.Filled.Description,
-            outlined = Icons.Outlined.Description,
-        )
-        register(
-            "clipboard",
-            "assessment",
-            filled = Icons.Filled.Assessment,
-            outlined = Icons.Outlined.Assessment,
-        )
-        register("layers", Icons.Filled.Layers, Icons.Outlined.Layers)
-        register("list", filled = Icons.AutoMirrored.Filled.FormatListBulleted)
+            // --- People & users ------------------------------------------------------
+            register(
+                "person",
+                "profile",
+                "user",
+                filled = Icons.Filled.Person,
+                outlined = Icons.Outlined.Person,
+            )
+            register(
+                "users",
+                "people",
+                filled = Icons.Filled.People,
+                outlined = Icons.Outlined.People,
+            )
+            register("group", Icons.Filled.Group, Icons.Outlined.Group)
+            register(
+                "user-plus",
+                "user_plus",
+                filled = Icons.Filled.PersonAdd,
+                outlined = Icons.Outlined.PersonAdd,
+            )
+            register("group_add", Icons.Filled.GroupAdd, Icons.Outlined.GroupAdd)
+            register("school", Icons.Filled.School, Icons.Outlined.School)
+            register(
+                "graduation-cap",
+                "graduation_cap",
+                filled = Icons.Filled.School,
+                outlined = Icons.Outlined.School,
+            )
 
-        // --- People & users ------------------------------------------------------
-        register(
-            "person",
-            "profile",
-            "user",
-            filled = Icons.Filled.Person,
-            outlined = Icons.Outlined.Person,
-        )
-        register(
-            "users",
-            "people",
-            filled = Icons.Filled.People,
-            outlined = Icons.Outlined.People,
-        )
-        register("group", Icons.Filled.Group, Icons.Outlined.Group)
-        register(
-            "user-plus",
-            "user_plus",
-            filled = Icons.Filled.PersonAdd,
-            outlined = Icons.Outlined.PersonAdd,
-        )
-        register("group_add", Icons.Filled.GroupAdd, Icons.Outlined.GroupAdd)
-        register("school", Icons.Filled.School, Icons.Outlined.School)
-        register(
-            "graduation-cap",
-            "graduation_cap",
-            filled = Icons.Filled.School,
-            outlined = Icons.Outlined.School,
-        )
+            // --- Actions -------------------------------------------------------------
+            register("add", "plus", "create", filled = Icons.Filled.Add)
+            register("edit", "pencil", filled = Icons.Filled.Edit)
+            register("delete", "trash", "trash-2", "trash_2", "remove", filled = Icons.Filled.Delete)
+            register("minus", filled = Icons.Filled.Remove)
+            register("revoke", filled = Icons.Filled.PersonRemove)
+            register("save", filled = Icons.Filled.Save)
+            register("search", filled = Icons.Filled.Search)
+            register("refresh", "reload", filled = Icons.Filled.Refresh)
+            register("share", filled = Icons.Filled.Share)
+            register("check", "done", filled = Icons.Filled.Check)
+            register("close", "cancel", "x", filled = Icons.Filled.Close)
+            register("block", filled = Icons.Filled.Block)
+            register(
+                "filter",
+                "filter-list",
+                "filter_list",
+                filled = Icons.Filled.FilterList,
+            )
+            register("more", "more-vert", "more_vert", filled = Icons.Filled.MoreVert)
+            register("link", filled = Icons.Filled.Link)
+            register("upload", filled = Icons.Filled.Upload)
+            register("cloud_upload", "cloud-upload", filled = Icons.Filled.CloudUpload)
+            register("download", filled = Icons.Filled.Download)
+            register(
+                "archive",
+                filled = Icons.Filled.Archive,
+                outlined = Icons.Outlined.Archive,
+            )
+            register(
+                "assign",
+                filled = Icons.Filled.Assignment,
+                outlined = Icons.Outlined.Assignment,
+            )
 
-        // --- Actions -------------------------------------------------------------
-        register("add", "plus", "create", filled = Icons.Filled.Add)
-        register("edit", "pencil", filled = Icons.Filled.Edit)
-        register("delete", "trash", "trash-2", "trash_2", "remove", filled = Icons.Filled.Delete)
-        register("minus", filled = Icons.Filled.Remove)
-        register("revoke", filled = Icons.Filled.PersonRemove)
-        register("save", filled = Icons.Filled.Save)
-        register("search", filled = Icons.Filled.Search)
-        register("refresh", "reload", filled = Icons.Filled.Refresh)
-        register("share", filled = Icons.Filled.Share)
-        register("check", "done", filled = Icons.Filled.Check)
-        register("close", "cancel", "x", filled = Icons.Filled.Close)
-        register("block", filled = Icons.Filled.Block)
-        register(
-            "filter",
-            "filter-list",
-            "filter_list",
-            filled = Icons.Filled.FilterList,
-        )
-        register("more", "more-vert", "more_vert", filled = Icons.Filled.MoreVert)
-        register("link", filled = Icons.Filled.Link)
-        register("upload", filled = Icons.Filled.Upload)
-        register("cloud_upload", "cloud-upload", filled = Icons.Filled.CloudUpload)
-        register("download", filled = Icons.Filled.Download)
-        register(
-            "archive",
-            filled = Icons.Filled.Archive,
-            outlined = Icons.Outlined.Archive,
-        )
-        register(
-            "assign",
-            filled = Icons.Filled.Assignment,
-            outlined = Icons.Outlined.Assignment,
-        )
+            // --- Favorites & ratings -------------------------------------------------
+            register("favorite", "heart", filled = Icons.Filled.Favorite)
+            register(
+                "favorite-border",
+                "favorite_border",
+                "heart-outline",
+                "heart_outline",
+                filled = Icons.Filled.FavoriteBorder,
+            )
+            register("star", filled = Icons.Filled.Star)
 
-        // --- Favorites & ratings -------------------------------------------------
-        register("favorite", "heart", filled = Icons.Filled.Favorite)
-        register(
-            "favorite-border",
-            "favorite_border",
-            "heart-outline",
-            "heart_outline",
-            filled = Icons.Filled.FavoriteBorder,
-        )
-        register("star", filled = Icons.Filled.Star)
+            // --- Communication -------------------------------------------------------
+            register("email", "mail", filled = Icons.Filled.Email)
+            register("phone", "call", filled = Icons.Filled.Phone)
+            register("notifications", "bell", filled = Icons.Filled.Notifications)
 
-        // --- Communication -------------------------------------------------------
-        register("email", "mail", filled = Icons.Filled.Email)
-        register("phone", "call", filled = Icons.Filled.Phone)
-        register("notifications", "bell", filled = Icons.Filled.Notifications)
+            // --- Security & access ---------------------------------------------------
+            register("shield", Icons.Filled.Shield, Icons.Outlined.Shield)
+            register("key", Icons.Filled.Key, Icons.Outlined.Key)
+            register("lock", filled = Icons.Filled.Lock)
+            register("visibility", "eye", "show", filled = Icons.Filled.Visibility)
+            register(
+                "visibility-off",
+                "visibility_off",
+                "eye-off",
+                "eye_off",
+                "hide",
+                filled = Icons.Filled.VisibilityOff,
+            )
 
-        // --- Security & access ---------------------------------------------------
-        register("shield", Icons.Filled.Shield, Icons.Outlined.Shield)
-        register("key", Icons.Filled.Key, Icons.Outlined.Key)
-        register("lock", filled = Icons.Filled.Lock)
-        register("visibility", "eye", "show", filled = Icons.Filled.Visibility)
-        register(
-            "visibility-off",
-            "visibility_off",
-            "eye-off",
-            "eye_off",
-            "hide",
-            filled = Icons.Filled.VisibilityOff,
-        )
+            // --- Charts & analytics --------------------------------------------------
+            register(
+                "bar-chart",
+                "bar_chart",
+                filled = Icons.Filled.BarChart,
+                outlined = Icons.Outlined.BarChart,
+            )
+            register(
+                "trending-up",
+                "trending_up",
+                filled = Icons.AutoMirrored.Filled.TrendingUp,
+                outlined = Icons.AutoMirrored.Outlined.TrendingUp,
+            )
+            register(
+                "pie-chart",
+                "pie_chart",
+                filled = Icons.Filled.PieChart,
+                outlined = Icons.Outlined.PieChart,
+            )
 
-        // --- Charts & analytics --------------------------------------------------
-        register(
-            "bar-chart",
-            "bar_chart",
-            filled = Icons.Filled.BarChart,
-            outlined = Icons.Outlined.BarChart,
-        )
-        register(
-            "trending-up",
-            "trending_up",
-            filled = Icons.AutoMirrored.Filled.TrendingUp,
-            outlined = Icons.AutoMirrored.Outlined.TrendingUp,
-        )
-        register(
-            "pie-chart",
-            "pie_chart",
-            filled = Icons.Filled.PieChart,
-            outlined = Icons.Outlined.PieChart,
-        )
+            // --- System & device -----------------------------------------------------
+            register(
+                "settings_applications",
+                filled = Icons.Filled.DisplaySettings,
+                outlined = Icons.Outlined.DisplaySettings,
+            )
+            register("devices", Icons.Filled.Devices, Icons.Outlined.Devices)
+            register(
+                "file-search",
+                "file_search",
+                "audit",
+                "history",
+                filled = Icons.AutoMirrored.Filled.ManageSearch,
+                outlined = Icons.AutoMirrored.Outlined.ManageSearch,
+            )
 
-        // --- System & device -----------------------------------------------------
-        register(
-            "settings_applications",
-            filled = Icons.Filled.DisplaySettings,
-            outlined = Icons.Outlined.DisplaySettings,
-        )
-        register("devices", Icons.Filled.Devices, Icons.Outlined.Devices)
-        register(
-            "file-search",
-            "file_search",
-            "audit",
-            "history",
-            filled = Icons.AutoMirrored.Filled.ManageSearch,
-            outlined = Icons.AutoMirrored.Outlined.ManageSearch,
-        )
+            // --- Status & info -------------------------------------------------------
+            register("info", Icons.Filled.Info, Icons.Outlined.Info)
+            register("warning", "alert", filled = Icons.Filled.Warning)
+            register(
+                "check_circle",
+                "check-circle",
+                filled = Icons.Filled.CheckCircle,
+                outlined = Icons.Outlined.CheckCircle,
+            )
+            register("help_outline", "help-outline", "help", filled = Icons.Filled.HelpOutline)
 
-        // --- Status & info -------------------------------------------------------
-        register("info", Icons.Filled.Info, Icons.Outlined.Info)
-        register("warning", "alert", filled = Icons.Filled.Warning)
-        register(
-            "check_circle",
-            "check-circle",
-            filled = Icons.Filled.CheckCircle,
-            outlined = Icons.Outlined.CheckCircle,
-        )
-        register("help_outline", "help-outline", "help", filled = Icons.Filled.HelpOutline)
+            // --- Arrows & navigation -------------------------------------------------
+            register("arrow-back", "arrow_back", "back", filled = Icons.AutoMirrored.Filled.ArrowBack)
+            register(
+                "arrow-forward",
+                "arrow_forward",
+                "forward",
+                filled = Icons.AutoMirrored.Filled.ArrowForward,
+            )
 
-        // --- Arrows & navigation -------------------------------------------------
-        register("arrow-back", "arrow_back", "back", filled = Icons.AutoMirrored.Filled.ArrowBack)
-        register(
-            "arrow-forward",
-            "arrow_forward",
-            "forward",
-            filled = Icons.AutoMirrored.Filled.ArrowForward,
-        )
-
-        // --- Domain specific -----------------------------------------------------
-        // `zap` aparece en seed para "Quiz"; mapeamos al icono Bolt (rayo)
-        // que es la traducción visual habitual de Material para zap.
-        register("zap", filled = Icons.Filled.Bolt)
-        register("quiz", filled = Icons.Filled.Quiz)
-        // `google` no tiene icono propio en material-icons-extended; usamos
-        // Language como placeholder neutro hasta que el DS aporte una marca.
-        register("google", filled = Icons.Filled.Language)
-    }
+            // --- Domain specific -----------------------------------------------------
+            // `zap` aparece en seed para "Quiz"; mapeamos al icono Bolt (rayo)
+            // que es la traducción visual habitual de Material para zap.
+            register("zap", filled = Icons.Filled.Bolt)
+            register("quiz", filled = Icons.Filled.Quiz)
+            // `google` no tiene icono propio en material-icons-extended; usamos
+            // Language como placeholder neutro hasta que el DS aporte una marca.
+            register("google", filled = Icons.Filled.Language)
+        }
 
     /**
      * Lista canónica de aliases registrados (en lowercase). Útil para
@@ -316,7 +319,10 @@ object IconCatalog {
      *   outlined. Si la entrada no declara outlined explícito, retorna
      *   el filled.
      */
-    fun lookup(iconName: String?, filled: Boolean = true): ImageVector? {
+    fun lookup(
+        iconName: String?,
+        filled: Boolean = true,
+    ): ImageVector? {
         if (iconName == null) return null
         val entry = table[normalize(iconName)] ?: return null
         return if (filled) entry.filled else entry.outlined

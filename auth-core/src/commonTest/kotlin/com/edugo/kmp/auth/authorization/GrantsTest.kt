@@ -69,10 +69,11 @@ class GrantsTest {
 
     @Test
     fun `round-trip JSON preserves allow and deny`() {
-        val original = Grants(
-            allow = listOf("users.*", "materials.read"),
-            deny = listOf("users.write"),
-        )
+        val original =
+            Grants(
+                allow = listOf("users.*", "materials.read"),
+                deny = listOf("users.write"),
+            )
         val encoded = json.encodeToString(Grants.serializer(), original)
         val decoded = json.decodeFromString(Grants.serializer(), encoded)
         assertEquals(original, decoded)

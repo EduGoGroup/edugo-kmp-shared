@@ -11,15 +11,14 @@ actual object PlatformThemeExtensions {
     @Composable
     actual fun applyPlatformColors(
         colorScheme: ColorScheme,
-        darkTheme: Boolean
-    ): ColorScheme {
-        return if (supportsDynamicColor) {
+        darkTheme: Boolean,
+    ): ColorScheme =
+        if (supportsDynamicColor) {
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         } else {
             colorScheme
         }
-    }
 
     actual val supportsDynamicColor: Boolean
         get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S

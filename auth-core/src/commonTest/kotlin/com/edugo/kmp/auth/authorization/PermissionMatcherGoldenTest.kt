@@ -18,7 +18,6 @@ import kotlin.test.assertTrue
  * `EduBack/edugo-shared/auth/testdata/permission_matcher_golden.json`.
  */
 class PermissionMatcherGoldenTest {
-
     @Serializable
     private data class GoldenFile(
         val version: String,
