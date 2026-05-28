@@ -1,9 +1,9 @@
-name: Publish KMP Shared to GitHub Packages
+name: Publish KMP Module to GitHub Packages
 
 on:
   push:
     tags:
-      - 'v*'
+      - '*/v*'
 
 permissions:
   contents: write
@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   publish:
-    name: Publish KMP Shared to GitHub Packages
+    name: Publish KMP Module to GitHub Packages
     runs-on: ubuntu-latest
 
     steps:
@@ -29,29 +29,46 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Extract version from tag
-        id: version
+      - name: Extract module and version from tag
+        id: meta
         run: |
-          TAG_NAME="${GITHUB_REF#refs/tags/}"
-          VERSION="${TAG_NAME#v}"
-          echo "tag=$TAG_NAME" >> "$GITHUB_OUTPUT"
+          TAG="${GITHUB_REF#refs/tags/}"
+          MODULE="${TAG%%/v*}"
+          VERSION="${TAG#*/v}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "module=$MODULE" >> "$GITHUB_OUTPUT"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "Publishing version: $VERSION (from tag $TAG_NAME)"
+          echo "Publicando módulo '$MODULE' versión '$VERSION' (tag $TAG)"
 
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      - name: Publish to GitHub Packages
+      - name: Publish module to GitHub Packages
         env:
           GITHUB_ACTOR: ${{ github.actor }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew publishAllPublicationsToGitHubPackagesRepository -Pversion=${{ steps.version.outputs.version }} --no-daemon --stacktrace
+        run: |
+          ./gradlew :${{ steps.meta.outputs.module }}:publishAllPublicationsToGitHubPackagesRepository \
+            -Pversion=${{ steps.meta.outputs.version }} \
+            --no-daemon --stacktrace
+
+      - name: Update versions.properties and push to dev
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          MODULE="${{ steps.meta.outputs.module }}"
+          VERSION="${{ steps.meta.outputs.version }}"
+          sed -i "s/^$MODULE=.*/$MODULE=$VERSION/" versions.properties
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add versions.properties
+          git commit -m "chore(versions): $MODULE → $VERSION"
+          git push origin HEAD:refs/heads/dev
 
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create "${{ steps.version.outputs.tag }}" \
-            --title "Release ${{ steps.version.outputs.version }}" \
-            --notes "Publicación de artefactos KMP \`com.edugo.kmp:*:${{ steps.version.outputs.version }}\` en GitHub Packages." \
-            --verify-tag
+          gh release create "${{ steps.meta.outputs.tag }}" \
+            --title "${{ steps.meta.outputs.module }} v${{ steps.meta.outputs.version }}" \
+            --notes "Publicación de \`com.edugo.kmp:${{ steps.meta.outputs.module }}:${{ steps.meta.outputs.version }}\` en GitHub Packages."
