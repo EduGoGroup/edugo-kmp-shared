@@ -1,9 +1,7 @@
 plugins {
     id("kmp.logic.core")
-    // P43/P44: sin maven-publish en Fases 0-6.
+    id("kmp.publish")
 }
-
-version = "0.1.0-DEV"
 
 kotlin {
     sourceSets {

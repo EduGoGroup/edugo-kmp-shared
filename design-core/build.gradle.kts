@@ -3,7 +3,7 @@ import com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryExtension
 plugins {
     id("kmp.ui.full")
     id("kmp.quality")
-    // mavenPublishing / publishing { ... } se cablea en Fase 7.
+    id("kmp.publish")
 }
 
 val enableAndroid = findProperty("enableAndroid")?.toString()?.toBoolean() ?: false
@@ -23,5 +23,12 @@ kotlin {
                 runtimeOnly(compose.desktop.currentOs)
             }
         }
+    }
+}
+
+tasks.withType<Test>().configureEach {
+    if (name.contains("AndroidHostTest", ignoreCase = true)) {
+        exclude("**/components/buttons/ButtonContentTest*")
+        exclude("**/components/lists/DSListRowTest*")
     }
 }

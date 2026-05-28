@@ -1,7 +1,6 @@
 plugins {
     id("kmp.android")
-    // P43/P44: NO se aplica `maven-publish` en Fases 0-6 (composite-build local).
-    // Fase 7 añade `maven-publish` + `publishing { ... }` cuando el módulo se libere.
+    id("kmp.publish")
 }
 
 val enableAndroid = findProperty("enableAndroid")?.toString()?.toBoolean() ?: false

@@ -3,7 +3,7 @@ import com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryExtension
 plugins {
     id("kmp.ui.full")
     id("kmp.quality")
-    // mavenPublishing se cablea en Fase 7.
+    id("kmp.publish")
 }
 
 val enableAndroid = findProperty("enableAndroid")?.toString()?.toBoolean() ?: false

@@ -1,6 +1,6 @@
 plugins {
     id("kmp.android")
-    // P43/P44: NO se aplica `maven-publish` en Fases 0-6 (composite-build local).
+    id("kmp.publish")
     // IMPORTANTE: NO se aplica `app.cash.sqldelight` aquí. database-core
     // no contiene archivos .sq; sólo expone facilities + runtime + drivers.
     // El plugin SQLDelight vive en database-edugo.

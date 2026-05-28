@@ -1,7 +1,6 @@
 plugins {
     id("kmp.android")
-    // SIN app.cash.sqldelight: el outbox vive en telemetry-android-edugo (DA-16).
-    // SIN maven-publish durante Fases 0-6 — DA-23/P43.
+    id("kmp.publish")
 }
 
 val enableAndroid = findProperty("enableAndroid")?.toString()?.toBoolean() ?: false
