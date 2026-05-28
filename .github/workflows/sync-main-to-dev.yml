@@ -1,0 +1,52 @@
+name: Sync main to dev
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    name: Sync main to dev
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Sync main into dev (fast-forward, fallback to merge)
+        run: |
+          set -euo pipefail
+
+          git fetch origin main dev
+
+          # Crea dev local apuntando al remoto si existe; si no, lo crea desde main y sale.
+          if git show-ref --verify --quiet refs/remotes/origin/dev; then
+            git checkout -B dev origin/dev
+          else
+            echo "La rama 'dev' no existe en el remoto; creándola desde main."
+            git checkout -B dev origin/main
+            git push origin dev
+            exit 0
+          fi
+
+          # Intenta fast-forward; si no es posible, hace merge no-ff.
+          if git merge --ff-only origin/main; then
+            echo "Fast-forward exitoso."
+          else
+            echo "Fast-forward no posible; ejecutando merge."
+            git merge --no-ff origin/main -m "chore(sync): merge main into dev"
+          fi
+
+          git push origin dev
