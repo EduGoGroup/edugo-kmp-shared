@@ -9,10 +9,10 @@
     "mockMode": false
   },
   "api": {
-    "identityBaseUrl": "https://edugo-api-iam-platform.wittyhill-f6d656fb.eastus.azurecontainerapps.io",
-    "academicBaseUrl": "https://edugo-api-academic.wittyhill-f6d656fb.eastus.azurecontainerapps.io",
-    "learningBaseUrl": "https://edugo-api-learning.wittyhill-f6d656fb.eastus.azurecontainerapps.io",
-    "platformBaseUrl": "https://edugo-api-platform.wittyhill-f6d656fb.eastus.azurecontainerapps.io"
+    "identityBaseUrl": "https://edugo-api-identity-eckbvbu3pa-ue.a.run.app",
+    "academicBaseUrl": "https://edugo-api-academic-eckbvbu3pa-ue.a.run.app",
+    "learningBaseUrl": "https://edugo-api-learning-eckbvbu3pa-ue.a.run.app",
+    "platformBaseUrl": "https://edugo-api-platform-eckbvbu3pa-ue.a.run.app"
   },
   "telemetry": {
     "otelEndpoint": ""
