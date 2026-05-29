@@ -6,7 +6,8 @@
     "debugMode": true
   },
   "behavior": {
-    "mockMode": false
+    "mockMode": false,
+    "testUserSelectorEnabled": true
   },
   "api": {
     "identityBaseUrl": "http://192.168.100.20:8070",

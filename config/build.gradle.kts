@@ -96,6 +96,7 @@ val generateAppConfigs by tasks.registering {
                 ?: throw GradleException("Falta 'network.debugMode' (Boolean) en ${jsonFile.name}.")
 
             val mockMode = behavior["mockMode"] as? Boolean ?: false
+            val testUserSelectorEnabled = behavior["testUserSelectorEnabled"] as? Boolean ?: false
 
             val identityBaseUrl = api["identityBaseUrl"]?.toString()
                 ?: throw GradleException("Falta 'api.identityBaseUrl' en ${jsonFile.name}.")
@@ -118,6 +119,7 @@ val generateAppConfigs by tasks.registering {
                 append("        ),\n")
                 append("        behavior = BehaviorConfigImpl(\n")
                 append("            mockMode = ").append(mockMode).append(",\n")
+                append("            testUserSelectorEnabled = ").append(testUserSelectorEnabled).append(",\n")
                 append("        ),\n")
                 append("        api = ApiConfigImpl(\n")
                 append("            identityBaseUrl = ").append(kotlinStringLiteral(identityBaseUrl)).append(",\n")

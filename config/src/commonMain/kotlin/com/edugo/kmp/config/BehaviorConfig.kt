@@ -16,6 +16,16 @@ interface BehaviorConfig {
      * Siempre es false en PROD por seguridad.
      */
     val mockMode: Boolean
+
+    /**
+     * Habilita el selector de usuarios de prueba en la pantalla de login.
+     *
+     * Herramienta SOLO para pruebas alpha/beta: cuando es true, sobre el campo
+     * de email aparece un combo que lista usuarios de prueba traídos del backend
+     * y autocompleta el email al seleccionar uno (el password lo escribe el tester).
+     * Debe estar en false en PROD; el combo no existe ahí.
+     */
+    val testUserSelectorEnabled: Boolean
 }
 
 /**
@@ -23,5 +33,6 @@ interface BehaviorConfig {
  */
 @Serializable
 data class BehaviorConfigImpl(
-    override val mockMode: Boolean = false
+    override val mockMode: Boolean = false,
+    override val testUserSelectorEnabled: Boolean = false
 ) : BehaviorConfig

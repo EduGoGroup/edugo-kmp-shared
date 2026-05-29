@@ -6,7 +6,8 @@
     "debugMode": false
   },
   "behavior": {
-    "mockMode": false
+    "mockMode": false,
+    "testUserSelectorEnabled": false
   },
   "api": {
     "identityBaseUrl": "https://api.edugo.com/iam",
