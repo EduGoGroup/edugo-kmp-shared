@@ -26,6 +26,7 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
@@ -34,19 +35,35 @@ import com.edugo.kmp.design.Spacing
 import com.edugo.kmp.design.tokens.AnimationDuration
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
+/**
+ * Sección del drawer expandible.
+ *
+ * @param enabled `false` atenúa la sección y desactiva su click; el resolver de
+ *   la app lo usa para bloquear destinos que necesitan un contexto
+ *   (colegio/unidad) aún no activo. Una sección con hijos siempre puede
+ *   expandirse/colapsarse aunque sus hijos estén bloqueados.
+ */
 data class DSDrawerSection(
     val key: String,
     val label: String,
     val icon: ImageVector,
     val selectedIcon: ImageVector? = null,
     val children: List<DSDrawerChild> = emptyList(),
+    val enabled: Boolean = true,
 )
 
+/**
+ * Hijo de una sección del drawer.
+ *
+ * @param enabled `false` atenúa el hijo y desactiva su click (destino bloqueado
+ *   por falta de contexto).
+ */
 data class DSDrawerChild(
     val key: String,
     val label: String,
     val icon: ImageVector? = null,
     val selectedIcon: ImageVector? = null,
+    val enabled: Boolean = true,
 )
 
 @Composable
@@ -79,23 +96,30 @@ fun DSExpandableDrawerContent(
             ) {
                 sections.forEach { section ->
                     if (section.children.isEmpty()) {
-                        // Leaf section - no children, direct click
+                        // Leaf section - no children, direct click.
+                        // Bloqueado = atenuado + candado, pero SIGUE clickable: el
+                        // consumidor intercepta el tap para abrir el selector de
+                        // contexto faltante en vez de navegar.
                         NavigationDrawerItem(
                             label = { Text(section.label) },
                             selected = selectedKey == section.key,
                             onClick = { onSectionClick(section) },
                             icon = {
-                                Icon(
-                                    imageVector =
-                                        if (selectedKey == section.key) {
-                                            section.selectedIcon ?: section.icon
-                                        } else {
-                                            section.icon
-                                        },
-                                    contentDescription = section.label,
-                                )
+                                DSLockedNavIcon(locked = !section.enabled) {
+                                    Icon(
+                                        imageVector =
+                                            if (selectedKey == section.key) {
+                                                section.selectedIcon ?: section.icon
+                                            } else {
+                                                section.icon
+                                            },
+                                        contentDescription = section.label,
+                                    )
+                                }
                             },
-                            modifier = Modifier.padding(horizontal = Spacing.spacing3),
+                            modifier = Modifier
+                                .padding(horizontal = Spacing.spacing3)
+                                .alpha(if (section.enabled) 1f else DisabledNavItemAlpha),
                         )
                     } else {
                         // Parent section with children - expandable
@@ -146,24 +170,28 @@ fun DSExpandableDrawerContent(
                                         icon =
                                             if (child.icon != null) {
                                                 {
-                                                    Icon(
-                                                        imageVector =
-                                                            if (selectedKey == child.key) {
-                                                                child.selectedIcon ?: child.icon
-                                                            } else {
-                                                                child.icon
-                                                            },
-                                                        contentDescription = child.label,
-                                                    )
+                                                    DSLockedNavIcon(locked = !child.enabled) {
+                                                        Icon(
+                                                            imageVector =
+                                                                if (selectedKey == child.key) {
+                                                                    child.selectedIcon ?: child.icon
+                                                                } else {
+                                                                    child.icon
+                                                                },
+                                                            contentDescription = child.label,
+                                                        )
+                                                    }
                                                 }
                                             } else {
                                                 null
                                             },
                                         modifier =
-                                            Modifier.padding(
-                                                start = Spacing.spacing14,
-                                                end = Spacing.spacing3,
-                                            ),
+                                            Modifier
+                                                .padding(
+                                                    start = Spacing.spacing14,
+                                                    end = Spacing.spacing3,
+                                                )
+                                                .alpha(if (child.enabled) 1f else DisabledNavItemAlpha),
                                     )
                                 }
                             }
