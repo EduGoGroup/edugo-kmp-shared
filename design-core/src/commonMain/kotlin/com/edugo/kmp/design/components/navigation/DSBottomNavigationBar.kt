@@ -12,15 +12,25 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.edugo.kmp.design.DSTheme
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
+/**
+ * Item de la barra de navegación inferior.
+ *
+ * @param enabled `false` atenúa el item y lo deja sin click; el resolver de la
+ *   app lo usa para bloquear pantallas que necesitan un contexto (colegio/unidad)
+ *   que todavía no está activo. Cuando está bloqueado se superpone el indicador de
+ *   candado vía [DSLockedNavIcon].
+ */
 data class DSNavigationBarItem(
     val label: String,
     val icon: ImageVector,
     val selectedIcon: ImageVector? = null,
     val badge: String? = null,
+    val enabled: Boolean = true,
 )
 
 @Composable
@@ -32,14 +42,20 @@ fun DSBottomNavigationBar(
 ) {
     NavigationBar(modifier = modifier) {
         items.forEachIndexed { index, item ->
+            // Bloqueado = atenuado + candado, pero SIGUE clickable: el consumidor
+            // intercepta el tap para abrir el selector de contexto faltante en vez
+            // de navegar. No usamos `enabled=false` de M3 (tragaría el click).
             NavigationBarItem(
+                modifier = Modifier.alpha(if (item.enabled) 1f else DisabledNavItemAlpha),
                 selected = selectedIndex == index,
                 onClick = { onItemSelected(index) },
                 icon = {
-                    Icon(
-                        imageVector = if (selectedIndex == index) (item.selectedIcon ?: item.icon) else item.icon,
-                        contentDescription = item.label,
-                    )
+                    DSLockedNavIcon(locked = !item.enabled) {
+                        Icon(
+                            imageVector = if (selectedIndex == index) (item.selectedIcon ?: item.icon) else item.icon,
+                            contentDescription = item.label,
+                        )
+                    }
                 },
                 label = { Text(item.label) },
             )
