@@ -16,36 +16,30 @@ publishing {
     }
 }
 
-// Las versiones de cada módulo se leen desde versions.properties (raíz del repo),
-// que mantiene la última versión publicada en GitHub Packages por módulo.
-// El workflow publish.yml actualiza ese archivo en cada release puntual.
-val publishedVersions = java.util.Properties().apply {
-    rootProject.file("versions.properties").inputStream().use { load(it) }
-}
-
-fun published(module: String): String =
-    publishedVersions.getProperty(module)
-        ?: error("Falta la versión de '$module' en versions.properties")
-
+// Versión unificada: todos los constraints apuntan a la versión del build
+// (`project.version` = -Pversion), de modo que cada corte atómico pinea los 13
+// módulos a la MISMA versión y el grafo del BOM cierra por construcción.
+// (Antes se leía versions.properties por-módulo, lo que producía referencias
+// fantasma como foundation:0.1.3 cuando un módulo se publicaba solo.)
 dependencies {
     constraints {
-        // Heredados de Fase 2 (3 artefactos)
-        api("com.edugo.kmp:foundation:${published("foundation")}")
-        api("com.edugo.kmp:core:${published("core")}")
-        api("com.edugo.kmp:validation:${published("validation")}")
-        // Nuevos en Fase 3 (5 artefactos)
-        api("com.edugo.kmp:logger:${published("logger")}")
-        api("com.edugo.kmp:config:${published("config")}")
-        api("com.edugo.kmp:storage:${published("storage")}")
-        api("com.edugo.kmp:settings:${published("settings")}")
-        api("com.edugo.kmp:telemetry-core:${published("telemetry-core")}")
-        // Nuevos en Fase 4 (2 artefactos)
-        api("com.edugo.kmp:network:${published("network")}")
-        api("com.edugo.kmp:database-core:${published("database-core")}")
-        // Nuevo en Fase 5 (1 artefacto) — DA-12
-        api("com.edugo.kmp:auth-core:${published("auth-core")}")
-        // Nuevos en Fase 6 (2 artefactos)
-        api("com.edugo.kmp:design-core:${published("design-core")}")
-        api("com.edugo.kmp:resources-core:${published("resources-core")}")
+        // Foundation (Fase 2)
+        api("com.edugo.kmp:foundation:${project.version}")
+        api("com.edugo.kmp:core:${project.version}")
+        api("com.edugo.kmp:validation:${project.version}")
+        // Infraestructura (Fase 3)
+        api("com.edugo.kmp:logger:${project.version}")
+        api("com.edugo.kmp:config:${project.version}")
+        api("com.edugo.kmp:storage:${project.version}")
+        api("com.edugo.kmp:settings:${project.version}")
+        api("com.edugo.kmp:telemetry-core:${project.version}")
+        // Datos & red (Fase 4)
+        api("com.edugo.kmp:network:${project.version}")
+        api("com.edugo.kmp:database-core:${project.version}")
+        // Auth (Fase 5) — DA-12
+        api("com.edugo.kmp:auth-core:${project.version}")
+        // UI (Fase 6)
+        api("com.edugo.kmp:design-core:${project.version}")
+        api("com.edugo.kmp:resources-core:${project.version}")
     }
 }
