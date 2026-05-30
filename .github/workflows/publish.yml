@@ -1,9 +1,13 @@
-name: Publish KMP Module to GitHub Packages
+name: Release (unified atomic publish)
 
+# Release unificado: un único tag `vX.Y.Z` corta TODOS los módulos + BOM a la
+# MISMA versión en una sola corrida atómica. Así el grafo de artefactos cierra
+# por construcción: el BOM 0.2.0 solo puede pinear módulos 0.2.0 que se
+# publican en la misma corrida (no más versiones fantasma tipo foundation:0.1.3).
 on:
   push:
     tags:
-      - '*/v*'
+      - 'v*'
 
 permissions:
   contents: write
@@ -11,14 +15,38 @@ permissions:
 
 jobs:
   publish:
-    name: Publish KMP Module to GitHub Packages
-    runs-on: ubuntu-latest
+    name: Publish all modules + BOM (atomic)
+    # macOS es obligatorio: los targets iOS (Kotlin/Native) NO compilan en Linux.
+    # macos-latest compila los 4 targets (jvm, android, wasm-js, ios).
+    runs-on: macos-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Guard — el commit del tag debe estar en main
+        run: |
+          set -euo pipefail
+          git fetch origin main --quiet
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "::error::El commit del tag ($GITHUB_SHA) no es ancestro de origin/main. Solo se publica desde main."
+            exit 1
+          fi
+          echo "OK: el commit del tag está en main."
+
+      - name: Derivar versión desde el tag
+        id: meta
+        run: |
+          set -euo pipefail
+          VERSION="${GITHUB_REF_NAME#v}"
+          if [ -z "$VERSION" ] || [ "$VERSION" = "$GITHUB_REF_NAME" ]; then
+            echo "::error::El tag '$GITHUB_REF_NAME' no tiene el formato esperado vX.Y.Z."
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Versión a publicar: $VERSION"
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -29,53 +57,150 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Extract module and version from tag
-        id: meta
-        run: |
-          TAG="${GITHUB_REF#refs/tags/}"
-          MODULE="${TAG%%/v*}"
-          VERSION="${TAG#*/v}"
-          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
-          echo "module=$MODULE" >> "$GITHUB_OUTPUT"
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "Publicando módulo '$MODULE' versión '$VERSION' (tag $TAG)"
-
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      - name: Publish module to GitHub Packages
+      - name: Publish atómico (todos los módulos + BOM, los 4 targets)
         env:
           GITHUB_ACTOR: ${{ github.actor }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          ./gradlew :${{ steps.meta.outputs.module }}:publishAllPublicationsToGitHubPackagesRepository \
+          ./gradlew publishAllPublicationsToGitHubPackagesRepository \
             -Pversion=${{ steps.meta.outputs.version }} \
+            -PenableAndroid=true -PenableWeb=true -PenableIos=true \
             --no-daemon --stacktrace
-
-      - name: Update versions.properties and push to dev
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          MODULE="${{ steps.meta.outputs.module }}"
-          VERSION="${{ steps.meta.outputs.version }}"
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          # Actualizar versions.properties con retry para manejar conflictos de push en paralelo
-          for attempt in 1 2 3 4 5; do
-            git fetch origin dev
-            git checkout -B dev-update FETCH_HEAD
-            sed -i "s/^$MODULE=.*/$MODULE=$VERSION/" versions.properties
-            git add versions.properties
-            git commit -m "chore(versions): $MODULE → $VERSION" || true
-            git push origin HEAD:refs/heads/dev && break
-            echo "Push rechazado, reintentando (intento $attempt)..."
-            sleep $((attempt * 2))
-          done
 
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create "${{ steps.meta.outputs.tag }}" \
-            --title "${{ steps.meta.outputs.module }} v${{ steps.meta.outputs.version }}" \
-            --notes "Publicación de \`com.edugo.kmp:${{ steps.meta.outputs.module }}:${{ steps.meta.outputs.version }}\` en GitHub Packages."
+          gh release create "$GITHUB_REF_NAME" \
+            --title "edugo-kmp-shared $GITHUB_REF_NAME" \
+            --target "$GITHUB_SHA" \
+            --notes "Release unificado ${{ steps.meta.outputs.version }}: los 13 módulos \`com.edugo.kmp:*\` + el BOM \`edugo-kmp-bom\` publicados de forma atómica a la misma versión en GitHub Packages."
+
+  # Gate post-publicación: en runner LIMPIO (sin caché de com.edugo) resolvemos
+  # un proyecto sonda que SOLO declara el BOM + módulos hoja. Si el grafo dejó
+  # cualquier artefacto fantasma, la resolución falla con 404 de POM/.klib.
+  # Este es el gate que habría atrapado el foundation:0.1.3 fantasma.
+  smoke-resolve:
+    name: Smoke resolve (clean runner, BOM-only graph, 4 targets)
+    needs: publish
+    # macOS: la sonda declara iOS, que solo resuelve/compila en macOS.
+    runs-on: macos-latest
+    permissions:
+      contents: read
+      packages: read
+
+    steps:
+      - name: Derivar versión desde el tag
+        id: meta
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Construir proyecto sonda
+        env:
+          VERSION: ${{ steps.meta.outputs.version }}
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          PROBE="${RUNNER_TEMP}/edugo-bom-probe"
+          mkdir -p "$PROBE"
+          cd "$PROBE"
+
+          cat > settings.gradle.kts <<'EOF'
+          pluginManagement {
+              repositories {
+                  google()
+                  mavenCentral()
+                  gradlePluginPortal()
+              }
+          }
+          dependencyResolutionManagement {
+              repositories {
+                  google()
+                  mavenCentral()
+                  maven {
+                      name = "GitHubPackages"
+                      url = uri("https://maven.pkg.github.com/EduGoGroup/edugo-kmp-shared")
+                      credentials {
+                          username = System.getenv("GITHUB_ACTOR")
+                          password = System.getenv("GITHUB_TOKEN")
+                      }
+                  }
+              }
+          }
+          rootProject.name = "edugo-bom-probe"
+          EOF
+
+          cat > gradle.properties <<'EOF'
+          org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
+          # El consumidor NO linkea el shared local: resuelve SOLO desde Packages.
+          includeSharedLocally=false
+          EOF
+
+          cat > build.gradle.kts <<EOF
+          import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
+
+          plugins {
+              kotlin("multiplatform") version "2.3.20"
+          }
+
+          group = "com.edugo.probe"
+          version = "0.0.0"
+
+          kotlin {
+              jvm()
+              @OptIn(ExperimentalWasmDsl::class)
+              wasmJs { browser() }
+              iosArm64()
+              sourceSets {
+                  val commonMain by getting {
+                      dependencies {
+                          implementation(project.dependencies.platform("com.edugo.kmp:edugo-kmp-bom:${VERSION}"))
+                          // Reproducimos lo que edugo-ui-kmp pone en commonMain:
+                          // los 13 módulos SIN versión (la fija el BOM). En
+                          // commonMain, CADA módulo debe tener variante para CADA
+                          // target habilitado (jvm/wasmJs/iosArm64); si falta una
+                          // (p.ej. config-wasm-js o telemetry-core-iosarm64) o el
+                          // BOM arrastra un fantasma, la resolución revienta con
+                          // 404 de POM/.klib en el target afectado.
+                          implementation("com.edugo.kmp:foundation")
+                          implementation("com.edugo.kmp:core")
+                          implementation("com.edugo.kmp:validation")
+                          implementation("com.edugo.kmp:logger")
+                          implementation("com.edugo.kmp:config")
+                          implementation("com.edugo.kmp:storage")
+                          implementation("com.edugo.kmp:settings")
+                          implementation("com.edugo.kmp:telemetry-core")
+                          implementation("com.edugo.kmp:network")
+                          implementation("com.edugo.kmp:database-core")
+                          implementation("com.edugo.kmp:auth-core")
+                          implementation("com.edugo.kmp:design-core")
+                          implementation("com.edugo.kmp:resources-core")
+                      }
+                  }
+              }
+          }
+          EOF
+
+          # Resolvemos las tres classpaths: un faltante de variante wasm/ios
+          # dispara "Could not find ...-wasm-js / ...-iosarm64".
+          gradle \
+            dependencies --configuration jvmCompileClasspath \
+            --no-daemon --refresh-dependencies
+          gradle \
+            dependencies --configuration wasmJsCompileClasspath \
+            --no-daemon
+          gradle \
+            dependencies --configuration iosArm64CompileKlibraries \
+            --no-daemon
