@@ -35,7 +35,43 @@ val generateAppConfigs by tasks.registering {
     val inputDirFile = configResourcesDir.asFile
     val outputDirProvider = generatedConfigsDir
 
+    // Modo mixto del frontend: `-PlocalApis=<csv>` (p.ej. "academic,learning")
+    // reescribe SOLO las baseURLs de esas APIs a `http://localhost:<puerto>` en el
+    // entorno activo (`-Penv`), dejando el resto como el entorno base (STAGING/GCP).
+    // La regla y el mapeo nombre→puerto son los mismos que
+    // `com.edugo.kmp.config.LocalApiOverride` (fuente de verdad en commonMain); el
+    // test `LocalApiOverridePortMapTest` guarda que ambos no divergan. Capturamos
+    // las props en la fase de configuración para no romper la configuration cache.
+    val localApisRaw = (findProperty("localApis")?.toString()).orEmpty()
+    val activeEnvRaw = (findProperty("env")?.toString()).orEmpty()
+    // Mapeo nombre-de-API → puerto local (= LocalApiOverride.ports).
+    val localApiPorts = mapOf(
+        "identity" to 8070,
+        "academic" to 8060,
+        "learning" to 8065,
+        "platform" to 8075,
+    )
+    inputs.property("localApis", localApisRaw)
+    inputs.property("activeEnv", activeEnvRaw)
+
     doLast {
+        // Parseo + validación del CSV `localApis` (fail-loud ante nombres
+        // desconocidos, igual que el contrato de config).
+        val requestedApis = localApisRaw.split(',')
+            .map { it.trim().lowercase() }
+            .filter { it.isNotEmpty() }
+        val unknownApis = requestedApis.filterNot { localApiPorts.containsKey(it) }
+        if (unknownApis.isNotEmpty()) {
+            throw GradleException(
+                "-PlocalApis contiene APIs desconocidas: ${unknownApis.joinToString(", ")}. " +
+                    "Valores aceptados: ${localApiPorts.keys.sorted().joinToString(", ")}.",
+            )
+        }
+        val localApis = requestedApis.toSet()
+        // Enum constant del entorno activo (DEV, DEV_LAN, STAGING, PROD) que recibe
+        // el override; si no se pasó `-Penv`, no se aplica a ningún entorno.
+        val activeEnvConst = activeEnvRaw.trim().uppercase().replace('-', '_')
+
         val outDir = outputDirProvider.get().asFile.resolve("com/edugo/kmp/config")
         outDir.mkdirs()
         val outFile = outDir.resolve("GeneratedConfigs.kt")
@@ -98,14 +134,27 @@ val generateAppConfigs by tasks.registering {
             val mockMode = behavior["mockMode"] as? Boolean ?: false
             val testUserSelectorEnabled = behavior["testUserSelectorEnabled"] as? Boolean ?: false
 
-            val identityBaseUrl = api["identityBaseUrl"]?.toString()
+            val identityBaseUrlRaw = api["identityBaseUrl"]?.toString()
                 ?: throw GradleException("Falta 'api.identityBaseUrl' en ${jsonFile.name}.")
-            val academicBaseUrl = api["academicBaseUrl"]?.toString()
+            val academicBaseUrlRaw = api["academicBaseUrl"]?.toString()
                 ?: throw GradleException("Falta 'api.academicBaseUrl' en ${jsonFile.name}.")
-            val learningBaseUrl = api["learningBaseUrl"]?.toString()
+            val learningBaseUrlRaw = api["learningBaseUrl"]?.toString()
                 ?: throw GradleException("Falta 'api.learningBaseUrl' en ${jsonFile.name}.")
-            val platformBaseUrl = api["platformBaseUrl"]?.toString()
+            val platformBaseUrlRaw = api["platformBaseUrl"]?.toString()
                 ?: throw GradleException("Falta 'api.platformBaseUrl' en ${jsonFile.name}.")
+
+            // Override del modo mixto: solo en el entorno activo (`-Penv`) y solo
+            // para las APIs listadas en `-PlocalApis`. El resto queda intacto.
+            val overrideThisEnv = localApis.isNotEmpty() && constName == activeEnvConst
+            fun localUrlFor(apiName: String): String =
+                "http://localhost:${localApiPorts.getValue(apiName)}"
+            fun mixedUrl(apiName: String, baseUrl: String): String =
+                if (overrideThisEnv && apiName in localApis) localUrlFor(apiName) else baseUrl
+
+            val identityBaseUrl = mixedUrl("identity", identityBaseUrlRaw)
+            val academicBaseUrl = mixedUrl("academic", academicBaseUrlRaw)
+            val learningBaseUrl = mixedUrl("learning", learningBaseUrlRaw)
+            val platformBaseUrl = mixedUrl("platform", platformBaseUrlRaw)
 
             val otelEndpoint = telemetry["otelEndpoint"]?.toString() ?: ""
 

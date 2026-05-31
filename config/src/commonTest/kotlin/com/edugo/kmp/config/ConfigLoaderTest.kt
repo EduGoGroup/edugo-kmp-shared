@@ -32,14 +32,29 @@ class ConfigLoaderTest {
 
         assertNotNull(config)
         assertEquals(Environment.STAGING, config.environment)
-        assertTrue(config.api.academicBaseUrl.isNotBlank())
-        assertTrue(config.api.learningBaseUrl.isNotBlank())
-        assertTrue(config.api.identityBaseUrl.isNotBlank())
-        assertTrue(config.api.platformBaseUrl.isNotBlank())
+        assertEquals(
+            "https://edugo-api-identity-eckbvbu3pa-ue.a.run.app",
+            config.api.identityBaseUrl,
+        )
+        assertEquals(
+            "https://edugo-api-academic-eckbvbu3pa-ue.a.run.app",
+            config.api.academicBaseUrl,
+        )
+        assertEquals(
+            "https://edugo-api-learning-eckbvbu3pa-ue.a.run.app",
+            config.api.learningBaseUrl,
+        )
+        assertEquals(
+            "https://edugo-api-platform-eckbvbu3pa-ue.a.run.app",
+            config.api.platformBaseUrl,
+        )
         assertEquals(8080, config.network.webPort)
         assertEquals(60000L, config.network.timeout)
         assertTrue(config.network.debugMode)
-        assertEquals("", config.telemetry.otelEndpoint)
+        assertEquals(
+            "https://edugo-otel-collector-public-eckbvbu3pa-ue.a.run.app",
+            config.telemetry.otelEndpoint,
+        )
     }
 
     @Test
@@ -54,7 +69,10 @@ class ConfigLoaderTest {
         assertEquals(80, config.network.webPort)
         assertEquals(60000L, config.network.timeout)
         assertFalse(config.network.debugMode)
-        assertEquals("", config.telemetry.otelEndpoint)
+        assertEquals(
+            "https://edugo-otel-collector-public-eckbvbu3pa-ue.a.run.app",
+            config.telemetry.otelEndpoint,
+        )
     }
 
     @Test
