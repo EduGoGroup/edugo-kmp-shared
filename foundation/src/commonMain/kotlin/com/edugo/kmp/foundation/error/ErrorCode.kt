@@ -252,6 +252,14 @@ enum class ErrorCode(
      */
     BUSINESS_OPERATION_EXPIRED(4006, "Operation has expired", retryable = false),
 
+    /**
+     * Precondition required (HTTP 428).
+     * The request cannot proceed until a required precondition is satisfied
+     * (e.g. an active scope/selection must be established first). Neutral,
+     * brand-agnostic counterpart to backend "precondition_required" responses.
+     */
+    BUSINESS_PRECONDITION_REQUIRED(4007, "Precondition required", retryable = false),
+
     // ============================================================================
     // SYSTEM ERRORS (5000-5999)
     // System-level, infrastructure, and unexpected errors
@@ -468,6 +476,7 @@ enum class ErrorCode(
             BUSINESS_RATE_LIMIT_EXCEEDED to 429,
             BUSINESS_FEATURE_NOT_AVAILABLE to 501,
             BUSINESS_OPERATION_EXPIRED to 410,
+            BUSINESS_PRECONDITION_REQUIRED to 428,
 
             // System errors -> 500/502/503
             SYSTEM_UNKNOWN_ERROR to 500,
@@ -516,6 +525,7 @@ enum class ErrorCode(
                 409 -> BUSINESS_RESOURCE_CONFLICT
                 410 -> BUSINESS_OPERATION_EXPIRED
                 423 -> AUTH_ACCOUNT_LOCKED
+                428 -> BUSINESS_PRECONDITION_REQUIRED
                 429 -> BUSINESS_RATE_LIMIT_EXCEEDED
                 500 -> SYSTEM_INTERNAL_ERROR
                 502 -> NETWORK_SERVER_ERROR

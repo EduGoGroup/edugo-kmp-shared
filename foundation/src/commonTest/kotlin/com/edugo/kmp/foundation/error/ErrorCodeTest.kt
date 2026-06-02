@@ -222,6 +222,7 @@ class ErrorCodeTest {
             ErrorCode.BUSINESS_RATE_LIMIT_EXCEEDED to 429,
             ErrorCode.BUSINESS_FEATURE_NOT_AVAILABLE to 501,
             ErrorCode.BUSINESS_OPERATION_EXPIRED to 410,
+            ErrorCode.BUSINESS_PRECONDITION_REQUIRED to 428,
 
             // System errors -> 500/502/503
             ErrorCode.SYSTEM_UNKNOWN_ERROR to 500,
@@ -257,7 +258,7 @@ class ErrorCodeTest {
     @Test
     fun httpStatusCode_usesStandardCodesWherePossible() {
         val standardCodes = setOf(
-            400, 401, 402, 403, 404, 408, 409, 410, 422, 423, 429,
+            400, 401, 402, 403, 404, 408, 409, 410, 422, 423, 428, 429,
             500, 501, 502, 503
         )
 
@@ -421,6 +422,7 @@ class ErrorCodeTest {
         assertEquals(ErrorCode.BUSINESS_RESOURCE_NOT_FOUND, ErrorCode.fromHttpStatus(404))
         assertEquals(ErrorCode.NETWORK_TIMEOUT, ErrorCode.fromHttpStatus(408))
         assertEquals(ErrorCode.BUSINESS_RESOURCE_CONFLICT, ErrorCode.fromHttpStatus(409))
+        assertEquals(ErrorCode.BUSINESS_PRECONDITION_REQUIRED, ErrorCode.fromHttpStatus(428))
         assertEquals(ErrorCode.BUSINESS_RATE_LIMIT_EXCEEDED, ErrorCode.fromHttpStatus(429))
         assertEquals(ErrorCode.SYSTEM_INTERNAL_ERROR, ErrorCode.fromHttpStatus(500))
         assertEquals(ErrorCode.NETWORK_SERVER_ERROR, ErrorCode.fromHttpStatus(502))
