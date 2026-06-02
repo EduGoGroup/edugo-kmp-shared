@@ -207,6 +207,79 @@ val generateAppConfigs by tasks.registering {
     }
 }
 
+// =============================================================================
+// Code-gen de AppBuildInfo (versión + build de la app)
+// =============================================================================
+// Emite a commonMain un `object AppBuildInfo { VERSION; BUILD }` consumible por
+// TODOS los targets (Android/iOS/Desktop/Web) sin actuals por plataforma.
+//
+//   VERSION ← property `-PappVersion` (fallback "1.0.0").
+//   BUILD   ← `git rev-parse --short HEAD` (fallback "dev").
+//
+// Config-cache SAFE:
+//   - `appVersion` se captura como `inputs.property` en la fase de configuración.
+//   - El SHA de git se obtiene vía `providers.exec(...)` (un Provider perezoso),
+//     NO ejecutando git en configuration time. El provider se resuelve dentro de
+//     la acción de la task. Si git falla (no es repo, no hay git), el fallback es
+//     "dev".
+//
+// Nota: el directorio de trabajo de git es el de ESTE repo (`edugo-kmp-shared`),
+// que es el que se compila vía composite-build. Para releases la fuente de verdad
+// del número humano es `-PappVersion`; BUILD es trazabilidad best-effort.
+// =============================================================================
+val appBuildVersionRaw = (project.findProperty("appVersion")?.toString()?.takeIf { it.isNotBlank() }) ?: "1.0.0"
+
+// Provider perezoso del SHA corto. `isIgnoreExitValue = true` evita que un repo
+// ausente rompa el build; el parseo del resultado decide el fallback.
+val gitShortShaProvider: Provider<String> = providers.exec {
+    workingDir = rootDir
+    commandLine("git", "rev-parse", "--short", "HEAD")
+    isIgnoreExitValue = true
+}.standardOutput.asText.map { it.trim() }
+
+val generatedBuildInfoDir = layout.buildDirectory.dir("generated/source/buildinfo/commonMain/kotlin")
+
+val generateAppBuildInfo by tasks.registering {
+    group = "build"
+    description = "Genera AppBuildInfo.kt (VERSION desde -PappVersion, BUILD desde git short SHA)."
+
+    val versionValue = appBuildVersionRaw
+    inputs.property("appVersion", versionValue)
+    // El SHA entra como input vía Provider: la configuration cache lo serializa
+    // como valor calculado en ejecución, no como llamada a git en config time.
+    inputs.property("gitShortSha", gitShortShaProvider)
+    outputs.dir(generatedBuildInfoDir).withPropertyName("generatedBuildInfoDir")
+
+    val outputDirProvider = generatedBuildInfoDir
+    val shaProvider = gitShortShaProvider
+
+    doLast {
+        val build = shaProvider.orNull?.takeIf { it.isNotBlank() } ?: "dev"
+        val outDir = outputDirProvider.get().asFile.resolve("com/edugo/kmp/config")
+        outDir.mkdirs()
+        outDir.resolve("AppBuildInfo.kt").writeText(
+            """
+            // AUTOGENERADO por la task `generateAppBuildInfo` (config/build.gradle.kts).
+            // NO EDITAR A MANO.
+            package com.edugo.kmp.config
+
+            /**
+             * Versión y build de la app, horneados en build-time.
+             *
+             * - [VERSION] proviene de la property Gradle `-PappVersion` (fallback "1.0.0").
+             * - [BUILD] es el SHA corto de git al compilar (fallback "dev").
+             *
+             * Sin I/O en runtime: la misma constante se sirve en Android, iOS, Desktop y Web.
+             */
+            object AppBuildInfo {
+                const val VERSION: String = "$versionValue"
+                const val BUILD: String = "$build"
+            }
+            """.trimIndent() + "\n"
+        )
+    }
+}
+
 kotlin {
     // Fase 4 — `expect class EnvVarSource` (beta en Kotlin 2.x). El flag
     // está estabilizado en cuanto a contrato de uso; suprimimos el warning
@@ -224,6 +297,7 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             kotlin.srcDir(generateAppConfigs.map { it.outputs.files })
+            kotlin.srcDir(generateAppBuildInfo.map { it.outputs.files })
             dependencies {
                 api(project(":foundation"))
                 implementation(project(":core"))
