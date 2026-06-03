@@ -16,11 +16,15 @@ import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Book
+import androidx.compose.material.icons.filled.Campaign
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.CheckBox
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.CloudUpload
+import androidx.compose.material.icons.filled.ConfirmationNumber
 import androidx.compose.material.icons.filled.Dashboard
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Devices
@@ -28,6 +32,7 @@ import androidx.compose.material.icons.filled.DisplaySettings
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.FilterList
@@ -51,6 +56,7 @@ import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.PersonRemove
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.PieChart
+import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.Quiz
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Remove
@@ -61,6 +67,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -302,6 +309,15 @@ object IconCatalog {
             // `google` no tiene icono propio en material-icons-extended; usamos
             // Language como placeholder neutro hasta que el DS aporte una marca.
             register("google", filled = Icons.Filled.Language)
+
+            // --- Iconos del seed SDUI que antes caían a fallback ---------------------
+            register("tag", filled = Icons.Filled.Tag)
+            register("bullhorn", filled = Icons.Filled.Campaign)
+            register("calendar-range", "calendar_range", filled = Icons.Filled.DateRange)
+            register("award", filled = Icons.Filled.EmojiEvents)
+            register("check-square", "check_square", filled = Icons.Filled.CheckBox)
+            register("ticket", filled = Icons.Filled.ConfirmationNumber)
+            register("play-circle", "play_circle", filled = Icons.Filled.PlayCircle)
         }
 
     /**
