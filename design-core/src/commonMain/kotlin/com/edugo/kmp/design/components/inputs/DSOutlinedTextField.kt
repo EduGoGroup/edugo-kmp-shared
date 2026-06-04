@@ -14,6 +14,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import com.edugo.kmp.design.DSTheme
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -35,9 +37,21 @@ fun DSOutlinedTextField(
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
 ) {
+    // iOS (Compose Multiplatform 1.11) colapsa la selección a TextRange(0) cuando el valor se
+    // hoistea como String y vuelve por recomposición, haciendo saltar el cursor al inicio en cada
+    // tecla. Mantenemos un TextFieldValue recordado que preserva la selección/cursor y solo lo
+    // reconciliamos con el valor externo cuando el TEXTO difiere (no en cada recomposición igual).
+    var tfv by remember { mutableStateOf(TextFieldValue(value, TextRange(value.length))) }
+    if (tfv.text != value) {
+        tfv = tfv.copy(text = value, selection = TextRange(value.length))
+    }
+
     OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
+        value = tfv,
+        onValueChange = { newValue ->
+            tfv = newValue
+            if (newValue.text != value) onValueChange(newValue.text)
+        },
         modifier = modifier,
         label = label?.let { { Text(it) } },
         placeholder = placeholder?.let { { Text(it) } },
