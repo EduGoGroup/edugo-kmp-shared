@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.Book
 import androidx.compose.material.icons.filled.Campaign
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckBox
+import androidx.compose.material.icons.filled.Checklist
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.CloudUpload
@@ -316,6 +317,7 @@ object IconCatalog {
             register("calendar-range", "calendar_range", filled = Icons.Filled.DateRange)
             register("award", filled = Icons.Filled.EmojiEvents)
             register("check-square", "check_square", filled = Icons.Filled.CheckBox)
+            register("checklist", filled = Icons.Filled.Checklist)
             register("ticket", filled = Icons.Filled.ConfirmationNumber)
             register("play-circle", "play_circle", filled = Icons.Filled.PlayCircle)
         }
