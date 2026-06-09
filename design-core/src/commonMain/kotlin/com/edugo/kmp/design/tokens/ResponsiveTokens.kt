@@ -9,7 +9,8 @@ import androidx.compose.ui.unit.dp
  * Based on Material Design 3 window size classes:
  * - [COMPACT]: phones in portrait (~0-599dp)
  * - [MEDIUM]: tablets, phones in landscape (~600-839dp)
- * - [EXPANDED]: desktop, large tablets (~840dp+)
+ * - [EXPANDED]: desktop, large tablets (~840-1199dp)
+ * - [LARGE]: ultra-wide desktop, large monitors (~1200dp+)
  */
 enum class Breakpoint(
     val minWidthDp: Int,
@@ -17,6 +18,7 @@ enum class Breakpoint(
     COMPACT(0),
     MEDIUM(600),
     EXPANDED(840),
+    LARGE(1200),
 }
 
 /**
@@ -24,6 +26,7 @@ enum class Breakpoint(
  */
 fun breakpointFromWidth(widthDp: Int): Breakpoint =
     when {
+        widthDp >= Breakpoint.LARGE.minWidthDp -> Breakpoint.LARGE
         widthDp >= Breakpoint.EXPANDED.minWidthDp -> Breakpoint.EXPANDED
         widthDp >= Breakpoint.MEDIUM.minWidthDp -> Breakpoint.MEDIUM
         else -> Breakpoint.COMPACT
@@ -39,6 +42,7 @@ object ResponsiveSpacing {
             Breakpoint.COMPACT -> 16.dp
             Breakpoint.MEDIUM -> 24.dp
             Breakpoint.EXPANDED -> 32.dp
+            Breakpoint.LARGE -> 40.dp
         }
 
     /** Gap between grid items per breakpoint. */
@@ -47,6 +51,7 @@ object ResponsiveSpacing {
             Breakpoint.COMPACT -> 8.dp
             Breakpoint.MEDIUM -> 16.dp
             Breakpoint.EXPANDED -> 24.dp
+            Breakpoint.LARGE -> 32.dp
         }
 
     /** Recommended grid column count per breakpoint. */
@@ -55,5 +60,6 @@ object ResponsiveSpacing {
             Breakpoint.COMPACT -> 1
             Breakpoint.MEDIUM -> 2
             Breakpoint.EXPANDED -> 3
+            Breakpoint.LARGE -> 4
         }
 }
