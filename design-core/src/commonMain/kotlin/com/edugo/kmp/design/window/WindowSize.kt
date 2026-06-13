@@ -42,9 +42,10 @@ data class WindowSize(
  * No tiene default: hay que envolver el árbol con [ProvideWindowSize]. Acceder sin proveedor es
  * un error de programación (raíz de composición mal cableada), por eso falla ruidosamente.
  */
-val LocalWindowSize = staticCompositionLocalOf<WindowSize> {
-    error("WindowSize no provisto. Envuelve con ProvideWindowSize.")
-}
+val LocalWindowSize =
+    staticCompositionLocalOf<WindowSize> {
+        error("WindowSize no provisto. Envuelve con ProvideWindowSize.")
+    }
 
 /**
  * Mide la ventana disponible con [BoxWithConstraints] y publica el [WindowSize] resultante en
@@ -58,11 +59,12 @@ fun ProvideWindowSize(content: @Composable () -> Unit) {
     BoxWithConstraints {
         val orientation =
             if (maxWidth >= maxHeight) Orientation.LANDSCAPE else Orientation.PORTRAIT
-        val windowSize = WindowSize(
-            widthDp = maxWidth.value.toInt(),
-            heightDp = maxHeight.value.toInt(),
-            orientation = orientation,
-        )
+        val windowSize =
+            WindowSize(
+                widthDp = maxWidth.value.toInt(),
+                heightDp = maxHeight.value.toInt(),
+                orientation = orientation,
+            )
         CompositionLocalProvider(LocalWindowSize provides windowSize) {
             content()
         }

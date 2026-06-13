@@ -117,9 +117,10 @@ fun DSExpandableDrawerContent(
                                     )
                                 }
                             },
-                            modifier = Modifier
-                                .padding(horizontal = Spacing.spacing3)
-                                .alpha(if (section.enabled) 1f else DisabledNavItemAlpha),
+                            modifier =
+                                Modifier
+                                    .padding(horizontal = Spacing.spacing3)
+                                    .alpha(if (section.enabled) 1f else DisabledNavItemAlpha),
                         )
                     } else {
                         // Parent section with children - expandable
@@ -190,8 +191,7 @@ fun DSExpandableDrawerContent(
                                                 .padding(
                                                     start = Spacing.spacing14,
                                                     end = Spacing.spacing3,
-                                                )
-                                                .alpha(if (child.enabled) 1f else DisabledNavItemAlpha),
+                                                ).alpha(if (child.enabled) 1f else DisabledNavItemAlpha),
                                     )
                                 }
                             }

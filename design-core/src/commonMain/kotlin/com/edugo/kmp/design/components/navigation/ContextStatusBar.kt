@@ -2,7 +2,6 @@ package com.edugo.kmp.design.components.navigation
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -76,15 +75,16 @@ fun ContextStatusBar(
     val unitIcon = IconCatalog.lookup("layers", filled = false)
     val roleIcon = IconCatalog.lookup("person", filled = false)
 
-    val rootModifier = modifier
-        .fillMaxWidth()
-        .let { base ->
-            if (contentDescription != null) {
-                base.clearAndSetSemantics { this.contentDescription = contentDescription }
-            } else {
-                base
+    val rootModifier =
+        modifier
+            .fillMaxWidth()
+            .let { base ->
+                if (contentDescription != null) {
+                    base.clearAndSetSemantics { this.contentDescription = contentDescription }
+                } else {
+                    base
+                }
             }
-        }
 
     Surface(
         modifier = rootModifier,
@@ -92,10 +92,11 @@ fun ContextStatusBar(
         contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = Sizes.TouchTarget.minimum)
-                .padding(horizontal = Spacing.spacing4),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = Sizes.TouchTarget.minimum)
+                    .padding(horizontal = Spacing.spacing4),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(Spacing.spacing2),
         ) {
@@ -152,24 +153,26 @@ private fun ContextSegment(
     accessibilityLabel: String?,
     modifier: Modifier = Modifier,
 ) {
-    val interactiveModifier = if (onClick != null) {
-        modifier
-            .clickable(onClick = onClick)
-            .let { base ->
-                if (accessibilityLabel != null) {
-                    base.clearAndSetSemantics { contentDescription = accessibilityLabel }
-                } else {
-                    base
+    val interactiveModifier =
+        if (onClick != null) {
+            modifier
+                .clickable(onClick = onClick)
+                .let { base ->
+                    if (accessibilityLabel != null) {
+                        base.clearAndSetSemantics { contentDescription = accessibilityLabel }
+                    } else {
+                        base
+                    }
                 }
-            }
-    } else {
-        modifier
-    }
+        } else {
+            modifier
+        }
 
     Row(
-        modifier = interactiveModifier
-            .heightIn(min = Sizes.TouchTarget.minimum)
-            .padding(vertical = Spacing.spacing1),
+        modifier =
+            interactiveModifier
+                .heightIn(min = Sizes.TouchTarget.minimum)
+                .padding(vertical = Spacing.spacing1),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Spacing.spacing1),
     ) {
@@ -183,11 +186,12 @@ private fun ContextSegment(
         Text(
             text = text,
             style = MaterialTheme.typography.labelMedium,
-            color = if (emphasized) {
-                MaterialTheme.colorScheme.onSurfaceVariant
-            } else {
-                MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-            },
+            color =
+                if (emphasized) {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                },
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )

@@ -7,7 +7,7 @@ actual object PlatformThemeExtensions {
     @Composable
     actual fun applyPlatformColors(
         colorScheme: ColorScheme,
-        darkTheme: Boolean
+        darkTheme: Boolean,
     ): ColorScheme = colorScheme
 
     actual val supportsDynamicColor: Boolean = false

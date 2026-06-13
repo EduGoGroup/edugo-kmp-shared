@@ -102,8 +102,7 @@ object ResponsiveLayout {
      * Whether the layout should use two side-by-side panes (e.g. list+detail) at this breakpoint
      * (D4). Enabled from EXPANDED upward.
      */
-    fun useTwoPane(breakpoint: Breakpoint): Boolean =
-        breakpoint == Breakpoint.EXPANDED || breakpoint == Breakpoint.LARGE
+    fun useTwoPane(breakpoint: Breakpoint): Boolean = breakpoint == Breakpoint.EXPANDED || breakpoint == Breakpoint.LARGE
 
     /**
      * Number of content columns for a given [breakpoint] and [kind] (design.md §3).
