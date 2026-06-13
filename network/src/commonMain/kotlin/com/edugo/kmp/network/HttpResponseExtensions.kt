@@ -82,6 +82,63 @@ public suspend fun HttpResponse.tryReadErrorBody(): String? {
 }
 
 /**
+ * Extrae el `code` de producto del cuerpo de error estándar de las APIs EduGo
+ * (campo `"code"`, ej. "CONTEXT_UNIT_REQUIRED", "AUTH_INVALID_CREDENTIALS").
+ *
+ * A diferencia de [extractUserMessage] (que devuelve texto humano), este `code`
+ * es la fuente de verdad para que la capa de pantalla ramifique el flujo (contrato
+ * de códigos de error backend↔KMP). Devuelve null si el body no es JSON o no trae
+ * `code`. Helper neutral: no asume ningún valor concreto de `code`.
+ */
+public fun extractErrorCode(body: String?): String? {
+    if (body.isNullOrBlank()) return null
+    return try {
+        Json.parseToJsonElement(body).jsonObject["code"]
+            ?.jsonPrimitive?.content
+            ?.takeIf { it.isNotBlank() }
+    } catch (_: Exception) {
+        null
+    }
+}
+
+/**
+ * Convierte HttpResponse a Result<T> preservando el `code` de producto del backend.
+ *
+ * Idéntico a [toResult] en el camino feliz (2xx → deserializa T). En error (no-2xx)
+ * pone el `code` del cuerpo (vía [extractErrorCode]) en [Result.Failure.error] para
+ * que el consumidor pueda ramificar por código (`failure.error == "<CODE>"` o
+ * `XxxError.fromErrorResponse(failure.error, ...)`); si el body no trae `code`, cae
+ * al mensaje humano. No reemplaza [toResult]: es una variante opt-in para endpoints
+ * cuyo flujo depende de distinguir un `code` concreto (p. ej. el 409
+ * CONTEXT_UNIT_REQUIRED del switch-context).
+ */
+public suspend inline fun <reified T> HttpResponse.toResultPreservingErrorCode(): Result<T> {
+    return when {
+        status.isSuccess() -> {
+            try {
+                Result.Success(body<T>())
+            } catch (e: Exception) {
+                Result.Failure(
+                    error = "Failed to deserialize response: ${e.message}",
+                    isRetryable = false,
+                )
+            }
+        }
+        else -> {
+            val errorCode = ErrorCode.fromHttpStatus(status.value)
+            val errorBody = tryReadErrorBody()
+            val backendCode = extractErrorCode(errorBody)
+            val userMessage = extractUserMessage(errorBody) ?: status.description
+            Result.Failure(
+                error = backendCode ?: userMessage,
+                isRetryable = errorCode.retryable,
+                errorCode = errorCode,
+            )
+        }
+    }
+}
+
+/**
  * Extracts a human-readable message from a JSON error body.
  * Tries common API error fields: "message", "error", "detail".
  * Returns null if the body is not JSON or none of the fields are found.

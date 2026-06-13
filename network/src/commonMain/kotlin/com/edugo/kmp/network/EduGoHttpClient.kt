@@ -700,6 +700,64 @@ public class EduGoHttpClient(
     }
 
     /**
+     * POST seguro que preserva el `code` de producto del backend en el error.
+     *
+     * Variante opt-in de [postSafe]: en el camino feliz (2xx) deserializa R igual
+     * que [postSafe]; en error (no-2xx) pone el `code` del cuerpo (ej.
+     * "CONTEXT_UNIT_REQUIRED") en [Result.Failure.error] en vez del mensaje humano,
+     * para que el consumidor ramifique por código (contrato de códigos de error
+     * backend↔KMP). Úsalo cuando el flujo dependa de distinguir un `code` concreto
+     * del backend (p. ej. el 409 del switch-context que pide elegir unidad).
+     *
+     * @param T Tipo del objeto a enviar en el body (debe ser @Serializable)
+     * @param R Tipo del objeto a deserializer de la respuesta (debe ser @Serializable)
+     * @param url URL del endpoint
+     * @param body Objeto a serializar como JSON en el body
+     * @param config Configuración opcional de headers y query params
+     * @return Result.Success con datos, o Result.Failure cuyo `error` es el `code`
+     *   del backend (o el mensaje humano si el body no trae `code`).
+     */
+    public suspend inline fun <reified T, reified R> postSafePreservingErrorCode(
+        url: String,
+        body: T,
+        config: HttpRequestConfig = HttpRequestConfig.Default
+    ): Result<R> {
+        val requestBuilder = HttpRequestBuilder().apply {
+            method = HttpMethod.Post
+            url(url)
+            contentType(ContentType.Application.Json)
+            setBody(body)
+            config.headers.forEach { (key, value) -> header(key, value) }
+            config.queryParams.forEach { (key, value) -> parameter(key, value) }
+
+            if (config.hasTimeoutOverride()) {
+                timeout {
+                    config.connectTimeout?.let { connectTimeoutMillis = it.inWholeMilliseconds }
+                    config.requestTimeout?.let { requestTimeoutMillis = it.inWholeMilliseconds }
+                    config.socketTimeout?.let { socketTimeoutMillis = it.inWholeMilliseconds }
+                }
+            }
+        }
+
+        interceptorChain.processRequest(requestBuilder)
+
+        return try {
+            val response = client.request(requestBuilder)
+            interceptorChain.processResponse(response)
+            response.toResultPreservingErrorCode()
+        } catch (e: Throwable) {
+            interceptorChain.notifyError(requestBuilder, e)
+            val networkException = ExceptionMapper.map(e)
+            val mappedCode = networkException.errorCode
+            Result.Failure(
+                networkException.toAppError().toString(),
+                isRetryable = mappedCode.isRetryable(),
+                errorCode = mappedCode,
+            )
+        }
+    }
+
+    /**
      * PUT seguro que retorna Result<R> en lugar de lanzar excepciones.
      *
      * ```kotlin

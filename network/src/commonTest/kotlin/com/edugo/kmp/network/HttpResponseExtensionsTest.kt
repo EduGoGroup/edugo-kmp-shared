@@ -162,6 +162,66 @@ class HttpResponseExtensionsTest {
         assertTrue(result is Result.Failure)
     }
 
+    // ==================== postSafePreservingErrorCode ====================
+
+    @Test
+    fun postSafePreservingErrorCode_returns_Success_for_2xx() = runTest {
+        val mockClient = createMockClient("""{ "id": 9, "name": "Ok" }""", HttpStatusCode.OK)
+        val client = EduGoHttpClient.withClient(mockClient)
+
+        val result: Result<TestData> = client.postSafePreservingErrorCode(
+            "https://api.test.com/data",
+            TestRequest("x"),
+        )
+
+        assertTrue(result is Result.Success)
+        assertEquals(9, (result as Result.Success).data.id)
+    }
+
+    @Test
+    fun postSafePreservingErrorCode_propagates_backend_code_on_409() = runTest {
+        // Forma real del 409 del switch-context: trae `code` de producto +
+        // `message` humano. El `error` del Failure debe ser el CODE, no el mensaje.
+        val body = """{"error":"conflict","message":"academic unit selection required","code":"CONTEXT_UNIT_REQUIRED"}"""
+        val mockClient = createMockClient(body, HttpStatusCode.Conflict)
+        val client = EduGoHttpClient.withClient(mockClient)
+
+        val result: Result<TestData> = client.postSafePreservingErrorCode(
+            "https://api.test.com/switch-context",
+            TestRequest("school"),
+        )
+
+        assertTrue(result is Result.Failure)
+        assertEquals("CONTEXT_UNIT_REQUIRED", (result as Result.Failure).error)
+    }
+
+    @Test
+    fun postSafePreservingErrorCode_falls_back_to_message_when_no_code() = runTest {
+        // Sin `code` en el body: se mantiene el mensaje humano (no se inventa code).
+        val body = """{"error":"bad","message":"something went wrong"}"""
+        val mockClient = createMockClient(body, HttpStatusCode.BadRequest)
+        val client = EduGoHttpClient.withClient(mockClient)
+
+        val result: Result<TestData> = client.postSafePreservingErrorCode(
+            "https://api.test.com/data",
+            TestRequest("x"),
+        )
+
+        assertTrue(result is Result.Failure)
+        assertEquals("something went wrong", (result as Result.Failure).error)
+    }
+
+    @Test
+    fun extractErrorCode_reads_code_field() {
+        assertEquals(
+            "CONTEXT_UNIT_REQUIRED",
+            extractErrorCode("""{"code":"CONTEXT_UNIT_REQUIRED","message":"x"}"""),
+        )
+        assertNull(extractErrorCode("""{"message":"no code here"}"""))
+        assertNull(extractErrorCode(null))
+        assertNull(extractErrorCode("not json"))
+    }
+
     // ==================== putSafe ====================
 
     @Test
