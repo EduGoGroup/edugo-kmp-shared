@@ -114,10 +114,9 @@ object ButtonStyleCatalog {
  * Resuelve el rol de color a un [Color] real del ColorScheme. `null` ->
  * [Color.Unspecified] (cae al default de Material3 para esa variante).
  *
- * Esta funcion vive aqui (no en `RenderedButton.kt`) para que cualquier
- * consumidor del design-core que tenga un [ColorRoleHint] pueda
- * materializarlo sin replicar el `when`. SDUI engine y SlotRenderer en
- * `kmp-screens` la consumen igual.
+ * Vive junto a los tokens para que cualquier consumidor del design-core
+ * que tenga un [ColorRoleHint] pueda materializarlo sin replicar el
+ * `when`. SDUI engine y SlotRenderer en `kmp-screens` la consumen igual.
  */
 @Composable
 fun ColorRoleHint?.resolve(): Color =
