@@ -4,6 +4,7 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 /**
@@ -76,6 +77,68 @@ internal class OtelEndpointResolverTest {
         // o 10.0.2.2:4318 (Android). Asertar shape, no exactitud.
         assertTrue(resolved.startsWith("http://"), "Default debe ser HTTP URL: $resolved")
         assertTrue(resolved.endsWith(":4318"), "Default debe apuntar al puerto 4318: $resolved")
+    }
+
+    // ==================== resolveEnabled — punto único "vacío = off" ====================
+
+    @Test
+    fun resolveEnabledFalseWhenConfigBlankAndNoOverride() {
+        // STAGING/PROD: JSON con endpoint vacío, sin build override ni nativo.
+        source.clear(AppEnvVar.OTEL_EXPORTER_OTLP_ENDPOINT)
+        val config = appConfigWithOtel("")
+
+        assertFalse(
+            OtelEndpointResolver.resolveEnabled(config, buildOverride = null),
+            "Config vacío sin override debe desactivar la telemetría (Noop).",
+        )
+    }
+
+    @Test
+    fun resolveEnabledTrueWhenConfigHasLocalhost() {
+        // DEV/DEV_LAN: JSON con endpoint local/LAN explícito → telemetría activa.
+        source.clear(AppEnvVar.OTEL_EXPORTER_OTLP_ENDPOINT)
+        val config = appConfigWithOtel("http://localhost:4318")
+
+        assertTrue(
+            OtelEndpointResolver.resolveEnabled(config, buildOverride = null),
+            "Endpoint local explícito (dev) debe activar la telemetría.",
+        )
+    }
+
+    @Test
+    fun resolveEnabledTrueWhenBuildOverridePresentEvenIfConfigBlank() {
+        // Override de build (`-PotelEndpoint=`) reactiva aunque el JSON venga vacío.
+        source.clear(AppEnvVar.OTEL_EXPORTER_OTLP_ENDPOINT)
+        val config = appConfigWithOtel("")
+
+        assertTrue(
+            OtelEndpointResolver.resolveEnabled(config, buildOverride = "http://build:4318"),
+            "Build override no vacío debe activar la telemetría aunque el config esté vacío.",
+        )
+    }
+
+    @Test
+    fun resolveEnabledTrueWhenNativeSourcePresentEvenIfConfigBlank() {
+        // Fuente nativa (env var / system property) reactiva aunque el JSON venga vacío.
+        source.set(AppEnvVar.OTEL_EXPORTER_OTLP_ENDPOINT, "http://native:4318")
+        val config = appConfigWithOtel("")
+
+        assertTrue(
+            OtelEndpointResolver.resolveEnabled(config, buildOverride = null),
+            "Fuente nativa no vacía debe activar la telemetría aunque el config esté vacío.",
+        )
+    }
+
+    @Test
+    fun resolveEnabledFalseWhenBlankBuildOverrideAndBlankEverything() {
+        // Build override "" (no null) tampoco cuenta como fuente real.
+        source.clear(AppEnvVar.OTEL_EXPORTER_OTLP_ENDPOINT)
+        val config = appConfigWithOtel("")
+
+        assertFalse(
+            OtelEndpointResolver.resolveEnabled(config, buildOverride = ""),
+            "Build override en blanco no cuenta como fuente: debe quedar desactivado.",
+        )
     }
 
     private fun appConfigWithOtel(otelEndpoint: String): AppConfig = AppConfigImpl(

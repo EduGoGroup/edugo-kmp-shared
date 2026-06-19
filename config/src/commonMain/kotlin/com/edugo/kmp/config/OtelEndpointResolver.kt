@@ -37,6 +37,36 @@ object OtelEndpointResolver {
         appConfig.telemetry.otelEndpoint.takeIf { it.isNotBlank() }?.let { return it }
         return defaultOtelEndpoint()
     }
+
+    /**
+     * Punto ÚNICO cross-platform de la regla "sin endpoint OTLP real →
+     * telemetría desactivada" (ADR 0027 — collectors cloud retirados).
+     *
+     * Devuelve `true` solo si alguna fuente **real** aporta endpoint:
+     *   · `buildOverride` no vacío (Android `BuildConfig`, Web `BUILD_OTEL_ENDPOINT`), o
+     *   · [readNativeOtelEndpoint] no vacío (env var / system property / Info.plist / meta tag), o
+     *   · `appConfig.telemetry.otelEndpoint` no vacío (JSON del entorno: DEV/DEV_LAN traen
+     *     `localhost`/LAN explícito; STAGING/PROD lo traen vacío → desactivado).
+     *
+     * NO usa [resolve]: aquel cae a [defaultOtelEndpoint] (siempre `localhost:4318`)
+     * cuando todo viene vacío, por lo que "vacío = off" debe decidirse mirando las
+     * fuentes reales, no el endpoint ya resuelto. Si esto da `false`, el callsite
+     * de cada plataforma construye su `TelemetryConfig` con `enabled = false` y el
+     * factory devuelve `Telemetry.Noop` sin inicializar el exporter OTLP. Así la
+     * regla la heredan web, Android e iOS (y Desktop) desde un solo lugar, sin
+     * guards duplicados por plataforma.
+     *
+     * @param appConfig Config del entorno actual.
+     * @param buildOverride Constante baked-by-build cuando la plataforma la expone;
+     *                      `null` en plataformas sin canal de bake (Desktop, iOS).
+     * @return `true` si la telemetría debe activarse (hay endpoint real),
+     *         `false` si debe quedar en `Telemetry.Noop`.
+     */
+    fun resolveEnabled(appConfig: AppConfig, buildOverride: String? = null): Boolean {
+        if (buildOverride?.isNotBlank() == true) return true
+        if (readNativeOtelEndpoint()?.isNotBlank() == true) return true
+        return appConfig.telemetry.otelEndpoint.isNotBlank()
+    }
 }
 
 /**
