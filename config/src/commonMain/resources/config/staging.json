@@ -16,6 +16,6 @@
     "platformBaseUrl": "https://edugo-api-platform-eckbvbu3pa-ue.a.run.app"
   },
   "telemetry": {
-    "otelEndpoint": "https://edugo-otel-collector-public-eckbvbu3pa-ue.a.run.app"
+    "otelEndpoint": ""
   }
 }
