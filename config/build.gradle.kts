@@ -213,7 +213,7 @@ val generateAppConfigs by tasks.registering {
 // Emite a commonMain un `object AppBuildInfo { VERSION; BUILD }` consumible por
 // TODOS los targets (Android/iOS/Desktop/Web) sin actuals por plataforma.
 //
-//   VERSION ← property `-PappVersion` (fallback "1.0.0").
+//   VERSION ← property `-PappVersion` (fallback "0.0.0-dev").
 //   BUILD   ← `git rev-parse --short HEAD` (fallback "dev").
 //
 // Config-cache SAFE:
@@ -227,7 +227,7 @@ val generateAppConfigs by tasks.registering {
 // que es el que se compila vía composite-build. Para releases la fuente de verdad
 // del número humano es `-PappVersion`; BUILD es trazabilidad best-effort.
 // =============================================================================
-val appBuildVersionRaw = (project.findProperty("appVersion")?.toString()?.takeIf { it.isNotBlank() }) ?: "1.0.0"
+val appBuildVersionRaw = (project.findProperty("appVersion")?.toString()?.takeIf { it.isNotBlank() }) ?: "0.0.0-dev"
 
 // Provider perezoso del SHA corto. `isIgnoreExitValue = true` evita que un repo
 // ausente rompa el build; el parseo del resultado decide el fallback.
@@ -266,7 +266,7 @@ val generateAppBuildInfo by tasks.registering {
             /**
              * Versión y build de la app, horneados en build-time.
              *
-             * - [VERSION] proviene de la property Gradle `-PappVersion` (fallback "1.0.0").
+             * - [VERSION] proviene de la property Gradle `-PappVersion` (fallback "0.0.0-dev").
              * - [BUILD] es el SHA corto de git al compilar (fallback "dev").
              *
              * Sin I/O en runtime: la misma constante se sirve en Android, iOS, Desktop y Web.
