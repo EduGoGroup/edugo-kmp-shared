@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.Checklist
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.ConfirmationNumber
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
@@ -187,6 +188,7 @@ object IconCatalog {
             register("delete", "trash", "trash-2", "trash_2", "remove", filled = Icons.Filled.Delete)
             register("minus", filled = Icons.Filled.Remove)
             register("revoke", filled = Icons.Filled.PersonRemove)
+            register("copy", "content_copy", "content-copy", filled = Icons.Filled.ContentCopy)
             register("save", filled = Icons.Filled.Save)
             register("search", filled = Icons.Filled.Search)
             register("refresh", "reload", filled = Icons.Filled.Refresh)
