@@ -13,7 +13,8 @@
     "identityBaseUrl": "https://api.edugo.com/iam",
     "academicBaseUrl": "https://api.edugo.com/academic",
     "learningBaseUrl": "https://api.edugo.com/learning",
-    "platformBaseUrl": "https://api.edugo.com/platform"
+    "platformBaseUrl": "https://api.edugo.com/platform",
+    "messagingBaseUrl": "https://api.edugo.com/messaging"
   },
   "telemetry": {
     "otelEndpoint": ""

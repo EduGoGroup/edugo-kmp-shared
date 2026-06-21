@@ -50,6 +50,7 @@ val generateAppConfigs by tasks.registering {
         "academic" to 8060,
         "learning" to 8065,
         "platform" to 8075,
+        "messaging" to 8080,
     )
     inputs.property("localApis", localApisRaw)
     inputs.property("activeEnv", activeEnvRaw)
@@ -142,6 +143,8 @@ val generateAppConfigs by tasks.registering {
                 ?: throw GradleException("Falta 'api.learningBaseUrl' en ${jsonFile.name}.")
             val platformBaseUrlRaw = api["platformBaseUrl"]?.toString()
                 ?: throw GradleException("Falta 'api.platformBaseUrl' en ${jsonFile.name}.")
+            val messagingBaseUrlRaw = api["messagingBaseUrl"]?.toString()
+                ?: throw GradleException("Falta 'api.messagingBaseUrl' en ${jsonFile.name}.")
 
             // Override del modo mixto: solo en el entorno activo (`-Penv`) y solo
             // para las APIs listadas en `-PlocalApis`. El resto queda intacto.
@@ -155,6 +158,7 @@ val generateAppConfigs by tasks.registering {
             val academicBaseUrl = mixedUrl("academic", academicBaseUrlRaw)
             val learningBaseUrl = mixedUrl("learning", learningBaseUrlRaw)
             val platformBaseUrl = mixedUrl("platform", platformBaseUrlRaw)
+            val messagingBaseUrl = mixedUrl("messaging", messagingBaseUrlRaw)
 
             val otelEndpoint = telemetry["otelEndpoint"]?.toString() ?: ""
 
@@ -175,6 +179,7 @@ val generateAppConfigs by tasks.registering {
                 append("            academicBaseUrl = ").append(kotlinStringLiteral(academicBaseUrl)).append(",\n")
                 append("            learningBaseUrl = ").append(kotlinStringLiteral(learningBaseUrl)).append(",\n")
                 append("            platformBaseUrl = ").append(kotlinStringLiteral(platformBaseUrl)).append(",\n")
+                append("            messagingBaseUrl = ").append(kotlinStringLiteral(messagingBaseUrl)).append(",\n")
                 append("        ),\n")
                 append("        telemetry = TelemetryConfigImpl(\n")
                 append("            otelEndpoint = ").append(kotlinStringLiteral(otelEndpoint)).append(",\n")
