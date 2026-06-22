@@ -60,3 +60,10 @@ include(":auth-core")
 // Fase 6 (UI Design Extraction)
 include(":design-core")
 include(":resources-core")
+
+// Cripto (mensajería): crypto_box_seal/open + keygen X25519 sobre libsodium (Ionspin)
+include(":crypto")
+
+// Secure storage (mensajería): custodia de Kd_priv + DEK en el almacén seguro del SO
+// (Android Keystore vía EncryptedSharedPreferences / iOS Keychain Services).
+include(":secure-storage")

@@ -13,7 +13,8 @@
     "identityBaseUrl": "http://192.168.100.20:8070",
     "academicBaseUrl": "http://192.168.100.20:8060",
     "learningBaseUrl": "http://192.168.100.20:8065",
-    "platformBaseUrl": "http://192.168.100.20:8075"
+    "platformBaseUrl": "http://192.168.100.20:8075",
+    "messagingBaseUrl": "http://192.168.100.20:8080"
   },
   "telemetry": {
     "otelEndpoint": "http://192.168.100.20:4318"

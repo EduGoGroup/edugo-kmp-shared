@@ -15,9 +15,11 @@ import com.edugo.kmp.design.tokens.IconCatalog
  * Opacidad aplicada a un item de navegación bloqueado. M3 usa ~0.38 para estados
  * deshabilitados; lo replicamos para que el item se vea atenuado sin perder el
  * click (el consumidor intercepta el tap para resolver el contexto faltante).
- * Compartida por las tres bandas (rail / bottom-nav / drawer).
+ * Compartida por las cuatro superficies de navegación (rail / bottom-nav /
+ * drawer / hoja de overflow): es el único token de atenuación de bloqueo, para
+ * que un item bloqueado se vea idéntico en cualquier banda.
  */
-internal const val DisabledNavItemAlpha = 0.38f
+const val DisabledNavItemAlpha = 0.38f
 
 /**
  * Envuelve el icono de un item de navegación y, cuando [locked] es `true`,

@@ -24,6 +24,7 @@ class LocalApiOverrideTest {
         academicBaseUrl = "https://edugo-api-academic-eckbvbu3pa-ue.a.run.app",
         learningBaseUrl = "https://edugo-api-learning-eckbvbu3pa-ue.a.run.app",
         platformBaseUrl = "https://edugo-api-platform-eckbvbu3pa-ue.a.run.app",
+        messagingBaseUrl = "https://edugo-api-messaging-eckbvbu3pa-ue.a.run.app",
     )
 
     // --- Mapeo nombre→puerto (fuente de verdad, alineado con APIs Go / Makefile) ---
@@ -34,7 +35,8 @@ class LocalApiOverrideTest {
         assertEquals(8060, LocalApiOverride.ports["academic"])
         assertEquals(8065, LocalApiOverride.ports["learning"])
         assertEquals(8075, LocalApiOverride.ports["platform"])
-        assertEquals(4, LocalApiOverride.ports.size)
+        assertEquals(8080, LocalApiOverride.ports["messaging"])
+        assertEquals(5, LocalApiOverride.ports.size)
     }
 
     @Test

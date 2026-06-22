@@ -30,6 +30,7 @@ object LocalApiOverride {
         "academic" to 8060,
         "learning" to 8065,
         "platform" to 8075,
+        "messaging" to 8080,
     )
 
     /**
@@ -71,6 +72,7 @@ object LocalApiOverride {
             academicBaseUrl = if ("academic" in localApis) localUrl("academic") else base.academicBaseUrl,
             learningBaseUrl = if ("learning" in localApis) localUrl("learning") else base.learningBaseUrl,
             platformBaseUrl = if ("platform" in localApis) localUrl("platform") else base.platformBaseUrl,
+            messagingBaseUrl = if ("messaging" in localApis) localUrl("messaging") else base.messagingBaseUrl,
         )
     }
 

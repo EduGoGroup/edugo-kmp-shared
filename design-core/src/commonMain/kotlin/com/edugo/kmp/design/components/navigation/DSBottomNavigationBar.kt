@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.style.TextOverflow
 import com.edugo.kmp.design.DSTheme
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -57,7 +58,16 @@ fun DSBottomNavigationBar(
                         )
                     }
                 },
-                label = { Text(item.label) },
+                // Etiqueta en UNA línea: si no cabe ("Administración") se trunca con
+                // ellipsis ("Administ…") en vez de partir la palabra en dos renglones.
+                label = {
+                    Text(
+                        item.label,
+                        maxLines = 1,
+                        softWrap = false,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                },
             )
         }
     }

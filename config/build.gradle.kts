@@ -50,6 +50,7 @@ val generateAppConfigs by tasks.registering {
         "academic" to 8060,
         "learning" to 8065,
         "platform" to 8075,
+        "messaging" to 8080,
     )
     inputs.property("localApis", localApisRaw)
     inputs.property("activeEnv", activeEnvRaw)
@@ -142,6 +143,8 @@ val generateAppConfigs by tasks.registering {
                 ?: throw GradleException("Falta 'api.learningBaseUrl' en ${jsonFile.name}.")
             val platformBaseUrlRaw = api["platformBaseUrl"]?.toString()
                 ?: throw GradleException("Falta 'api.platformBaseUrl' en ${jsonFile.name}.")
+            val messagingBaseUrlRaw = api["messagingBaseUrl"]?.toString()
+                ?: throw GradleException("Falta 'api.messagingBaseUrl' en ${jsonFile.name}.")
 
             // Override del modo mixto: solo en el entorno activo (`-Penv`) y solo
             // para las APIs listadas en `-PlocalApis`. El resto queda intacto.
@@ -155,6 +158,7 @@ val generateAppConfigs by tasks.registering {
             val academicBaseUrl = mixedUrl("academic", academicBaseUrlRaw)
             val learningBaseUrl = mixedUrl("learning", learningBaseUrlRaw)
             val platformBaseUrl = mixedUrl("platform", platformBaseUrlRaw)
+            val messagingBaseUrl = mixedUrl("messaging", messagingBaseUrlRaw)
 
             val otelEndpoint = telemetry["otelEndpoint"]?.toString() ?: ""
 
@@ -175,6 +179,7 @@ val generateAppConfigs by tasks.registering {
                 append("            academicBaseUrl = ").append(kotlinStringLiteral(academicBaseUrl)).append(",\n")
                 append("            learningBaseUrl = ").append(kotlinStringLiteral(learningBaseUrl)).append(",\n")
                 append("            platformBaseUrl = ").append(kotlinStringLiteral(platformBaseUrl)).append(",\n")
+                append("            messagingBaseUrl = ").append(kotlinStringLiteral(messagingBaseUrl)).append(",\n")
                 append("        ),\n")
                 append("        telemetry = TelemetryConfigImpl(\n")
                 append("            otelEndpoint = ").append(kotlinStringLiteral(otelEndpoint)).append(",\n")
@@ -213,7 +218,7 @@ val generateAppConfigs by tasks.registering {
 // Emite a commonMain un `object AppBuildInfo { VERSION; BUILD }` consumible por
 // TODOS los targets (Android/iOS/Desktop/Web) sin actuals por plataforma.
 //
-//   VERSION ← property `-PappVersion` (fallback "1.0.0").
+//   VERSION ← property `-PappVersion` (fallback "0.0.0-dev").
 //   BUILD   ← `git rev-parse --short HEAD` (fallback "dev").
 //
 // Config-cache SAFE:
@@ -227,7 +232,7 @@ val generateAppConfigs by tasks.registering {
 // que es el que se compila vía composite-build. Para releases la fuente de verdad
 // del número humano es `-PappVersion`; BUILD es trazabilidad best-effort.
 // =============================================================================
-val appBuildVersionRaw = (project.findProperty("appVersion")?.toString()?.takeIf { it.isNotBlank() }) ?: "1.0.0"
+val appBuildVersionRaw = (project.findProperty("appVersion")?.toString()?.takeIf { it.isNotBlank() }) ?: "0.0.0-dev"
 
 // Provider perezoso del SHA corto. `isIgnoreExitValue = true` evita que un repo
 // ausente rompa el build; el parseo del resultado decide el fallback.
@@ -266,7 +271,7 @@ val generateAppBuildInfo by tasks.registering {
             /**
              * Versión y build de la app, horneados en build-time.
              *
-             * - [VERSION] proviene de la property Gradle `-PappVersion` (fallback "1.0.0").
+             * - [VERSION] proviene de la property Gradle `-PappVersion` (fallback "0.0.0-dev").
              * - [BUILD] es el SHA corto de git al compilar (fallback "dev").
              *
              * Sin I/O en runtime: la misma constante se sirve en Android, iOS, Desktop y Web.
