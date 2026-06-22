@@ -35,6 +35,31 @@ object PlatformFlags {
         booleanFlag(project, ENABLE_COVERAGE)
 
     /**
+     * Propiedad **declarativa por módulo** que permite a un módulo renunciar al target Web (wasmJs)
+     * aun cuando el corte global pida `enableWeb=true`.
+     *
+     * Default = `true`: salvo que el módulo declare lo contrario, hereda el comportamiento del corte
+     * (si `enableWeb=true`, se añade wasmJs). Un módulo se marca con `ext["kmp.webSupported"] = false`
+     * en su `build.gradle.kts` cuando su funcionalidad **no existe en web** y por tanto declarar el
+     * target sería una mentira (no puede cumplir el contrato).
+     *
+     * Caso EduGo: la mensajería WhatsApp es **móvil-only por decisión explícita** (ADR 0029 — la web
+     * pública no es custodio de llaves). Los módulos que la soportan (`:crypto` con libsodium de Ionspin,
+     * que ni siquiera publica variante wasm; `:secure-storage` con Keystore/Keychain, sin equivalente
+     * seguro en navegador) declaran `kmp.webSupported = false`: así su set de plataformas real es
+     * android/ios/jvm, el grafo del publish atómico cierra (ya no se exige la variante wasm inexistente
+     * de libsodium) y nadie hereda un target imposible de cumplir.
+     */
+    const val MODULE_WEB_SUPPORTED = "kmp.webSupported"
+
+    fun webSupportedByModule(project: Project): Boolean {
+        val value = project.findProperty(MODULE_WEB_SUPPORTED)?.toString()?.trim()
+            ?.takeIf { it.isNotEmpty() } ?: return true
+        return value.lowercase().toBooleanStrictOrNull()
+            ?: error("[PlatformFlags] Valor inválido para '$MODULE_WEB_SUPPORTED' en '${project.path}': '$value'. Usa 'true' o 'false'.")
+    }
+
+    /**
      * IntelliJ may keep stale KMP build hooks that invoke iOS binary tasks even when iOS is disabled.
      * Register no-op compatibility tasks so desktop-only workflows don't fail after toggling enableIos=false.
      */
