@@ -31,6 +31,8 @@ kotlin {
         }
 
         // iosMain (cuando enableIos) usa platform.Security (Keychain Services) — sin dependencias externas.
-        // desktopMain y wasmJsMain caen al actual de cada plataforma definido en sus carpetas de fuentes.
+        // desktopMain cae al actual JVM. NO hay target Web: la mensajería es móvil-only (ADR 0029) y el
+        // navegador no ofrece un almacén seguro respaldado por el SO; el módulo declara
+        // `kmp.webSupported = false` en settings.gradle.kts (ya no existe wasmJsMain).
     }
 }

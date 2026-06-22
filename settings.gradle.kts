@@ -67,3 +67,17 @@ include(":crypto")
 // Secure storage (mensajería): custodia de Kd_priv + DEK en el almacén seguro del SO
 // (Android Keystore vía EncryptedSharedPreferences / iOS Keychain Services).
 include(":secure-storage")
+
+// Mensajería = móvil-only (ADR 0029): la web pública NO es custodio de llaves. Estos dos módulos
+// renuncian al target Web (wasmJs) declarando `kmp.webSupported = false`. Se fija aquí —y no en el
+// `build.gradle.kts` del módulo— porque la convención `kmp.android` añade el target wasmJs durante la
+// APLICACIÓN del plugin (bloque `plugins {}`), que corre ANTES del cuerpo del script del módulo; un
+// `ext[...]` en el script llegaría tarde. `gradle.beforeProject` inyecta la propiedad antes de evaluar
+// el build script, de modo que la convención la ve a tiempo. Efecto: su set real de plataformas es
+// android/ios/jvm; libsodium (sin variante wasm) deja de exigirse y el publish atómico cierra.
+val mobileOnlyModules = setOf(":crypto", ":secure-storage")
+gradle.beforeProject {
+    if (path in mobileOnlyModules) {
+        extensions.extraProperties.set("kmp.webSupported", "false")
+    }
+}

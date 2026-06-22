@@ -17,10 +17,15 @@ publishing {
 }
 
 // Versión unificada: todos los constraints apuntan a la versión del build
-// (`project.version` = -Pversion), de modo que cada corte atómico pinea los 13
+// (`project.version` = -Pversion), de modo que cada corte atómico pinea los 15
 // módulos a la MISMA versión y el grafo del BOM cierra por construcción.
 // (Antes se leía versions.properties por-módulo, lo que producía referencias
 // fantasma como foundation:0.1.3 cuando un módulo se publicaba solo.)
+//
+// Nota sobre :crypto y :secure-storage (mensajería, ADR 0029): son módulos móvil-only
+// (android/ios/jvm, SIN variante wasm — ver kmp.webSupported=false en settings.gradle.kts).
+// El BOM solo PINEA su versión; no fuerza variantes. Un consumidor web (wasmJs) no debe
+// referenciarlos: el smoke-resolve de wasmJs del CI no los lista por ser móvil-only.
 dependencies {
     constraints {
         // Foundation (Fase 2)
@@ -41,5 +46,8 @@ dependencies {
         // UI (Fase 6)
         api("com.edugo.kmp:design-core:${project.version}")
         api("com.edugo.kmp:resources-core:${project.version}")
+        // Mensajería (plan 025 / ADR 0029) — móvil-only (android/ios/jvm, sin wasm)
+        api("com.edugo.kmp:crypto:${project.version}")
+        api("com.edugo.kmp:secure-storage:${project.version}")
     }
 }

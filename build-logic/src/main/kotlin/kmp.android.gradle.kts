@@ -12,7 +12,10 @@ val libs: VersionCatalog = extensions.getByType<VersionCatalogsExtension>().name
 PlatformFlagsValidator.validateAndReportFlags(project)
 
 val enableAndroid = PlatformFlags.android(project)
-val enableWeb = PlatformFlags.web(project)
+// El target Web (wasmJs) requiere DOS condiciones: que el corte global lo pida (enableWeb) y que el
+// módulo declare soportar web (kmp.webSupported, default true). Un módulo móvil-only (p.ej. mensajería,
+// ADR 0029) pone kmp.webSupported=false y queda fuera de wasmJs aunque el corte sea -PenableWeb=true.
+val enableWeb = PlatformFlags.web(project) && PlatformFlags.webSupportedByModule(project)
 val enableIos = PlatformFlags.ios(project)
 PlatformFlags.registerIosCompatibilityTasks(project, enableIos)
 

@@ -19,6 +19,8 @@ kotlin {
                 // libsodium multiplataforma (Ionspin): crypto_box_seal/sealOpen + keygen X25519 en
                 // commonMain (jvm/android/iosX64/iosArm64/iosSimulatorArm64). Misma libsodium C → el
                 // sello es byte-compatible con el backend Go (nacl/box + box.SealAnonymous).
+                // NO hay target Web: libsodium 0.9.5 no publica variante wasm y la mensajería es
+                // móvil-only (ADR 0029); el módulo declara `kmp.webSupported = false` en settings.gradle.kts.
                 api(libs.ionspin.libsodium.bindings)
             }
         }
