@@ -1,6 +1,11 @@
 package com.edugo.kmp.design.components.navigation
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Search
@@ -12,9 +17,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.style.TextOverflow
 import com.edugo.kmp.design.DSTheme
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -45,25 +52,45 @@ fun DSNavigationRail(
         modifier = modifier,
         header = header,
     ) {
-        items.forEachIndexed { index, item ->
-            // Bloqueado = visualmente atenuado + candado, pero SIGUE clickable:
-            // el consumidor intercepta el tap para abrir el selector de contexto
-            // faltante en vez de navegar. Por eso no usamos `enabled=false` de M3
-            // (que tragaría el click); atenuamos con alpha en el modifier.
-            NavigationRailItem(
-                modifier = Modifier.alpha(if (item.enabled) 1f else DisabledNavItemAlpha),
-                selected = selectedIndex == index,
-                onClick = { onItemSelected(index) },
-                icon = {
-                    DSLockedNavIcon(locked = !item.enabled) {
-                        Icon(
-                            imageVector = if (selectedIndex == index) (item.selectedIcon ?: item.icon) else item.icon,
-                            contentDescription = item.label,
+        // Plan 026 (A.7): con muchos items el rail desbordaba sin affordance. Los
+        // items van en una columna scrollable vertical (overflow natural del rail,
+        // sin "Más"); el `header` queda fijo arriba (es slot propio del rail).
+        Column(
+            modifier = Modifier
+                .fillMaxHeight()
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+        ) {
+            items.forEachIndexed { index, item ->
+                // Bloqueado = visualmente atenuado + candado, pero SIGUE clickable:
+                // el consumidor intercepta el tap para abrir el selector de contexto
+                // faltante en vez de navegar. Por eso no usamos `enabled=false` de M3
+                // (que tragaría el click); atenuamos con alpha en el modifier.
+                NavigationRailItem(
+                    modifier = Modifier.alpha(if (item.enabled) 1f else DisabledNavItemAlpha),
+                    selected = selectedIndex == index,
+                    onClick = { onItemSelected(index) },
+                    icon = {
+                        DSLockedNavIcon(locked = !item.enabled) {
+                            Icon(
+                                imageVector = if (selectedIndex == index) (item.selectedIcon ?: item.icon) else item.icon,
+                                contentDescription = item.label,
+                            )
+                        }
+                    },
+                    // Etiqueta en UNA línea: si no cabe se trunca con ellipsis en vez
+                    // de partir la palabra a mitad (consistente con la barra inferior).
+                    label = {
+                        Text(
+                            item.label,
+                            maxLines = 1,
+                            softWrap = false,
+                            overflow = TextOverflow.Ellipsis,
                         )
-                    }
-                },
-                label = { Text(item.label) },
-            )
+                    },
+                )
+            }
         }
     }
 }
