@@ -53,9 +53,9 @@ Cada plataforma respeta la convención de naming de su ecosistema en el identifi
 |---|---|
 | Identificador interno preferido | `BuildConfig.BUILD_ENVIRONMENT` (constante bakeada por Gradle) |
 | Identificador alternativo | JVM system property `app.environment` o env var `APP_ENVIRONMENT` (tests instrumentados / forzar override) |
-| Cómo se pasa por CLI | `./gradlew :platforms:mobile:androidApp:installDebug -PenableAndroid=true -Penv=STAGING` |
-| Cómo se pasa por IDE | Run config versionado `.run/Android-<AMBIENTE>.run.xml` (tipo `GradleRunConfiguration`, `scriptParameters="-PenableAndroid=true -Penv=<AMBIENTE>"`, task `:platforms:mobile:androidApp:installAndStartDebug`). Una variante por ambiente: `Android-DEV`, `Android-DEV_LAN`, `Android-STAGING`, `Android-PROD`. |
-| Si falta | `IllegalStateException` durante `MainActivity.onCreate()`. Sin fallback a `BuildConfig.DEBUG`. |
+| Cómo se pasa por CLI | El ambiente lo fija el **product flavor**, no `-Penv`: `./gradlew :platforms:mobile:androidApp:installStagingDebug -PenableAndroid=true` (o `installDevDebug`). `make android ENV=STAGING` traduce `ENV`→flavor. |
+| Cómo se pasa por IDE | **Sin run config versionada por ambiente.** Se usa la run config nativa `androidApp` de Android Studio + el panel **Build Variants** para elegir `devDebug`/`stagingDebug` (selector), con debug nativo (🐞). El flavor hornea `BUILD_ENVIRONMENT` (`dev`→DEV; `staging`→STAGING) y la etiqueta del launcher ("EduGo DEV"/"EduGo STG"). Sin `applicationIdSuffix` (lo rompería el `google-services.json`, que solo declara `com.edugo.android`). Añadir `prod` = un `create("prod")` análogo. *(Excepción al patrón uniforme `-Penv`: solo Android usa flavor; Desktop/Web/iOS mantienen `-Penv`/scheme.)* |
+| Si falta | No aplica: con flavors el `dimension` es obligatorio, todo variant hornea un `BUILD_ENVIRONMENT` no vacío. `MainActivity.onCreate()` aún valida y falla accionablemente si llegara inválido. |
 
 **Bridge BuildConfig → EnvironmentDetector** (patrón estándar):
 

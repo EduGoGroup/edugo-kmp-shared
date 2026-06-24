@@ -73,6 +73,10 @@ actual class SecureKeyStore internal constructor(
             kSecClass to kSecClassGenericPassword,
             kSecAttrService to serviceName,
             kSecAttrAccount to key,
+            // kCFBooleanTrue (CFBoolean crudo): el Keychain exige específicamente un CFBoolean
+            // aquí ("add_return: value 1 is not CFBoolean" si se pasa un NSNumber). Ahora que
+            // toCFDictionary usa CFDictionaryCreate nativo (drift F6c.2), el CFBoolean crudo
+            // llega intacto a la query sin el bridging por NSDictionary que antes lo corrompía.
             kSecReturnData to kCFBooleanTrue,
             kSecMatchLimit to kSecMatchLimitOne,
         )

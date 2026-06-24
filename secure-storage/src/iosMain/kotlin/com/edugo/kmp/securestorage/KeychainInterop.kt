@@ -8,45 +8,75 @@
 package com.edugo.kmp.securestorage
 
 import kotlinx.cinterop.BetaInteropApi
+import kotlinx.cinterop.COpaquePointer
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.addressOf
+import kotlinx.cinterop.allocArrayOf
 import kotlinx.cinterop.convert
+import kotlinx.cinterop.memScoped
+import kotlinx.cinterop.ptr
 import kotlinx.cinterop.usePinned
+import platform.CoreFoundation.CFDictionaryCreate
 import platform.CoreFoundation.CFDictionaryRef
+import platform.CoreFoundation.kCFAllocatorDefault
+import platform.CoreFoundation.kCFTypeDictionaryKeyCallBacks
+import platform.CoreFoundation.kCFTypeDictionaryValueCallBacks
 import platform.Foundation.CFBridgingRetain
 import platform.Foundation.NSData
-import platform.Foundation.NSDictionary
+import platform.Foundation.NSString
 import platform.Foundation.create
-import platform.Foundation.dictionaryWithObjects
 import platform.posix.memcpy
 
 /**
  * Helpers de interop Kotlin/Native ↔ Core Foundation / Foundation para las llamadas a Keychain.
  *
- * Las funciones `SecItem*` consumen `CFDictionaryRef`. En K/N construimos un `NSDictionary` (toll-free
- * bridged con `CFDictionary`) y lo pasamos a Core Foundation con [CFBridgingRetain], que devuelve un
- * `CFTypeRef` **retenido (+1)**. Esa retención extra se libera sola cuando el `SecItem*` termina
- * (las funciones de Keychain copian/retienen lo que necesitan de la query), por lo que para un
- * diccionario efímero de una sola llamada no hace falta un `CFRelease` explícito.
+ * Las funciones `SecItem*` consumen `CFDictionaryRef`. La query se construye con [CFDictionaryCreate]
+ * nativo a partir de punteros `CFTypeRef` (ver [toCFDictionary]).
  */
 
 /**
- * Convierte un mapa Kotlin a `CFDictionaryRef` vía `NSDictionary` + toll-free bridging.
+ * Convierte un mapa Kotlin a `CFDictionaryRef` vía [CFDictionaryCreate] nativo.
  *
- * Construye el `NSDictionary` con `dictionaryWithObjects:forKeys:` (orden values/keys) para no depender
- * de varargs de pares, y lo puentea a Core Foundation. Los valores/claves deben ser tipos compatibles
- * con CF (constantes `kSec*`, `NSData`, `NSString`/`String`, `CFBoolean`).
+ * **Por qué NO `NSDictionary` + toll-free bridging (drift F6c.2):** armar la query metiendo las
+ * constantes `kSec*` (que son `CFStringRef` crudos) dentro de un `NSDictionary` (API Foundation) y
+ * puenteándolo con `CFBridgingRetain` REVIENTA en el runtime de iOS: `SecItemCopyMatching`/`SecItemAdd`
+ * devuelven `errSecParam (-50)` y `securityd` loguea "Unsupported CFType". El bug solo aparece al
+ * EJECUTAR en un binario iOS real (el test JVM nunca toca este actual), por eso pasó desapercibido
+ * hasta F6c.2. Verificado: el fallo persiste aun cambiando `kCFBooleanTrue` por `NSNumber`, así que
+ * el culpable es el round-trip por Foundation, no un valor concreto.
+ *
+ * [CFDictionaryCreate] recibe los mismos `CFTypeRef` directamente, sin el bridging que los corrompe.
+ * Cada clave/valor se normaliza a `CFTypeRef` con [toCFTypeRef] (las constantes `kSec*`/`kCFBoolean*`
+ * ya lo son; `String`→`CFString`, `NSData`→`CFData` vía `CFBridgingRetain`). Con
+ * `kCFTypeDictionary*CallBacks` el diccionario RETIENE cada elemento, así que las referencias
+ * puenteadas temporales se sueltan al salir del `memScoped` (el diccionario conserva las suyas).
  */
-@Suppress("UNCHECKED_CAST")
-internal fun Map<Any?, Any?>.toCFDictionary(): CFDictionaryRef? {
-    val nsDictionary = NSDictionary.dictionaryWithObjects(
-        objects = this.values.toList(),
-        // dictionaryWithObjects:forKeys: exige List<Any>; nuestras claves (constantes kSec*) nunca son
-        // null, así que el cast es seguro aunque el mapa declare Any? por comodidad en los call sites.
-        forKeys = this.keys.toList() as List<Any>,
+internal fun Map<Any?, Any?>.toCFDictionary(): CFDictionaryRef? = memScoped {
+    val count = size
+    val keysArray = allocArrayOf(map { it.key.toCFTypeRef() })
+    val valuesArray = allocArrayOf(map { it.value.toCFTypeRef() })
+    CFDictionaryCreate(
+        kCFAllocatorDefault,
+        keysArray,
+        valuesArray,
+        count.convert(),
+        kCFTypeDictionaryKeyCallBacks.ptr,
+        kCFTypeDictionaryValueCallBacks.ptr,
     )
-    // CFBridgingRetain devuelve CFTypeRef genérico; el NSDictionary es toll-free bridged a CFDictionary.
-    return CFBridgingRetain(nsDictionary) as CFDictionaryRef?
+}
+
+/**
+ * Normaliza un valor de la query a `CFTypeRef` (`COpaquePointer`) apto para [CFDictionaryCreate].
+ *
+ * Las constantes `kSec*`/`kCFBoolean*` ya llegan como `CPointer` (Kotlin/Native las expone así): se
+ * pasan tal cual. `String` y `NSData` se puentean a `CFString`/`CFData` con `CFBridgingRetain`. El
+ * diccionario retiene cada elemento (callbacks de tipo CF), por lo que no liberamos aquí.
+ */
+private fun Any?.toCFTypeRef(): COpaquePointer? = when (this) {
+    is String -> CFBridgingRetain(this as NSString)
+    is NSData -> CFBridgingRetain(this)
+    is COpaquePointer -> this
+    else -> CFBridgingRetain(this)
 }
 
 /**
