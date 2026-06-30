@@ -7,6 +7,7 @@ import io.ktor.client.call.*
 import io.ktor.client.plugins.*
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
 
 /**
@@ -568,6 +569,35 @@ public class EduGoHttpClient(
                 Result.Success(Unit)
             } else {
                 Result.Failure("Upload failed: ${response.status}")
+            }
+        } catch (e: Throwable) {
+            val networkException = ExceptionMapper.map(e)
+            val mappedCode = networkException.errorCode
+            Result.Failure(
+                networkException.toAppError().toString(),
+                isRetryable = mappedCode.isRetryable(),
+                errorCode = mappedCode,
+            )
+        }
+    }
+
+    /**
+     * GET raw binary data from an absolute URL (e.g. S3/R2 presigned download).
+     *
+     * Like [putBinary], this method intentionally **bypasses** the interceptor chain:
+     * the presigned URL carries its own auth in the query string, so no auth headers
+     * are appended. Useful to fetch bytes for an embedded viewer (PDF, etc.).
+     *
+     * @param absoluteUrl Full URL including query-string auth (presigned)
+     * @return Result.Success(bytes) on 2xx, Result.Failure otherwise
+     */
+    public suspend fun getBinary(absoluteUrl: String): Result<ByteArray> {
+        return try {
+            val response = client.get(absoluteUrl)
+            if (response.status.isSuccess()) {
+                Result.Success(response.readRawBytes())
+            } else {
+                Result.Failure("Download failed: ${response.status}")
             }
         } catch (e: Throwable) {
             val networkException = ExceptionMapper.map(e)
