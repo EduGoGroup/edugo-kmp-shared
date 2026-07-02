@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
@@ -95,7 +96,17 @@ fun ContextStatusBar(
             modifier =
                 Modifier
                     .fillMaxWidth()
-                    .heightIn(min = Sizes.TouchTarget.minimum)
+                    // El pie es el elemento MÁS BAJO de la pantalla: asume el
+                    // safe-area inferior (home indicator iOS / barra de gestos
+                    // Android). El fondo del Surface llega hasta el borde; solo el
+                    // CONTENIDO se eleva por encima del indicador, evitando que el
+                    // texto quede apretado contra el borde (antes "casi no cabía").
+                    // La barra de navegación de arriba deja de reservar este inset,
+                    // así se pega al pie sin el hueco muerto intermedio.
+                    .navigationBarsPadding()
+                    // Un poco más de alto que el mínimo táctil (48dp) para darle
+                    // presencia como pie informativo persistente.
+                    .heightIn(min = Spacing.spacing14)
                     .padding(horizontal = Spacing.spacing4),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(Spacing.spacing2),

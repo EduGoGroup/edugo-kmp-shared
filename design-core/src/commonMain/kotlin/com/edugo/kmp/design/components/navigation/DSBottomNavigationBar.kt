@@ -4,8 +4,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -40,8 +42,13 @@ fun DSBottomNavigationBar(
     selectedIndex: Int,
     onItemSelected: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    // Insets aplicados por la barra. Por defecto los de M3 (incluye el safe-area
+    // inferior). Cuando la barra se apila SOBRE otro pie que ya asume ese inset
+    // (p. ej. ContextStatusBar), el consumidor pasa `WindowInsets(0)` para que la
+    // nav se pegue al pie sin dejar un hueco muerto intermedio.
+    windowInsets: WindowInsets = NavigationBarDefaults.windowInsets,
 ) {
-    NavigationBar(modifier = modifier) {
+    NavigationBar(modifier = modifier, windowInsets = windowInsets) {
         items.forEachIndexed { index, item ->
             // Bloqueado = atenuado + candado, pero SIGUE clickable: el consumidor
             // intercepta el tap para abrir el selector de contexto faltante en vez
