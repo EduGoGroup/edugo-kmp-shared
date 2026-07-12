@@ -48,6 +48,9 @@ Por capas (Fase de extracción entre paréntesis):
 - **UI (F6):** `:design-core` (design system neutro: tokens, tipografía, `DSTheme` parametrizable,
   familia `DS*` sobre Material 3 — sin marca), `:resources-core` (strings genéricos vía Compose
   Resources — sin marca).
+- **Mensajería (móvil-only, ADR 0029):** `:crypto` (crypto_box_seal/open + keygen X25519 sobre
+  libsodium/Ionspin) y `:secure-storage` (custodia de Kd_priv + DEK en Android Keystore / iOS
+  Keychain). Renuncian al target Web (`kmp.webSupported = false`, fijado en `settings.gradle.kts`).
 - **BOM:** carpeta `bom/` → `project.name = "edugo-kmp-bom"` (artefacto `com.edugo.kmp:edugo-kmp-bom`).
 
 ## Convenciones (mismas que la familia EduGo KMP)
