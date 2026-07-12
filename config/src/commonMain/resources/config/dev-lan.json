@@ -2,7 +2,7 @@
   "environmentName": "DEV_LAN",
   "network": {
     "timeout": 30000,
-    "webPort": 8080,
+    "webPort": 8050,
     "debugMode": true
   },
   "behavior": {
