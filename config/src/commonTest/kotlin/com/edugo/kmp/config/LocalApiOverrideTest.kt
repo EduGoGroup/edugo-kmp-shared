@@ -35,7 +35,7 @@ class LocalApiOverrideTest {
         assertEquals(8060, LocalApiOverride.ports["academic"])
         assertEquals(8065, LocalApiOverride.ports["learning"])
         assertEquals(8075, LocalApiOverride.ports["platform"])
-        assertEquals(8080, LocalApiOverride.ports["messaging"])
+        assertEquals(8085, LocalApiOverride.ports["messaging"])
         assertEquals(5, LocalApiOverride.ports.size)
     }
 

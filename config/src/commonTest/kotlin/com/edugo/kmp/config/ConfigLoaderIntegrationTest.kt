@@ -20,7 +20,7 @@ class ConfigLoaderIntegrationTest {
         assertEquals("http://localhost:8060", config.api.academicBaseUrl)
         assertEquals("http://localhost:8065", config.api.learningBaseUrl)
         assertEquals("http://localhost:8075", config.api.platformBaseUrl)
-        assertEquals(8080, config.network.webPort)
+        assertEquals(8050, config.network.webPort)
         assertEquals(30000L, config.network.timeout)
         assertEquals(true, config.network.debugMode)
         assertEquals("http://localhost:4318", config.telemetry.otelEndpoint)
@@ -60,10 +60,8 @@ class ConfigLoaderIntegrationTest {
         )
         assertEquals(60000L, config.network.timeout)
         assertEquals(true, config.network.debugMode)
-        assertEquals(
-            "https://edugo-otel-collector-public-eckbvbu3pa-ue.a.run.app",
-            config.telemetry.otelEndpoint,
-        )
+        // Collectors cloud retirados (ADR 0027, commit d459789): endpoint vacío = telemetría remota off
+        assertEquals("", config.telemetry.otelEndpoint)
     }
 
     @Test
@@ -77,10 +75,8 @@ class ConfigLoaderIntegrationTest {
         assertEquals(80, config.network.webPort)
         assertEquals(60000L, config.network.timeout)
         assertEquals(false, config.network.debugMode)
-        assertEquals(
-            "https://edugo-otel-collector-public-eckbvbu3pa-ue.a.run.app",
-            config.telemetry.otelEndpoint,
-        )
+        // Collectors cloud retirados (ADR 0027, commit d459789): endpoint vacío = telemetría remota off
+        assertEquals("", config.telemetry.otelEndpoint)
     }
 
     @Test

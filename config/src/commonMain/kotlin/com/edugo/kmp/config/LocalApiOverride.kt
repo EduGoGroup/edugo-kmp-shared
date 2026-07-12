@@ -30,7 +30,7 @@ object LocalApiOverride {
         "academic" to 8060,
         "learning" to 8065,
         "platform" to 8075,
-        "messaging" to 8080,
+        "messaging" to 8085,
     )
 
     /**
