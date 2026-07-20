@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.School
@@ -35,7 +36,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.edugo.kmp.design.DSTheme
 import com.edugo.kmp.design.Spacing
-import com.edugo.kmp.design.tokens.Shapes
+import com.edugo.kmp.design.tokens.ComponentShapes
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 /**
@@ -77,7 +78,8 @@ fun DSListRow(
     Card(
         modifier = baseModifier,
         colors = CardDefaults.cardColors(containerColor = DSListRowDefaults.containerColor),
-        shape = Shapes.medium,
+        // Cards pasan por ComponentShapes (D-046.3): card = largeIncreased.
+        shape = RoundedCornerShape(ComponentShapes.card),
     ) {
         Row(
             modifier =

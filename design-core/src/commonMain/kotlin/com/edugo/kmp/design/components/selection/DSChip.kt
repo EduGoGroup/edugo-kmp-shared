@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -18,6 +19,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import com.edugo.kmp.design.DSTheme
 import com.edugo.kmp.design.Sizes
 import com.edugo.kmp.design.Spacing
+import com.edugo.kmp.design.tokens.ComponentShapes
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 enum class DSChipVariant { ASSIST, FILTER, INPUT, SUGGESTION }
@@ -44,6 +46,9 @@ fun DSChip(
             }
         }
 
+    // Chips pasan por ComponentShapes (D-046.11): chip = full (pill).
+    val chipShape = RoundedCornerShape(ComponentShapes.chip)
+
     when (variant) {
         DSChipVariant.ASSIST ->
             AssistChip(
@@ -52,6 +57,7 @@ fun DSChip(
                 modifier = modifier,
                 enabled = enabled,
                 leadingIcon = iconSlot,
+                shape = chipShape,
             )
         DSChipVariant.FILTER ->
             FilterChip(
@@ -61,6 +67,7 @@ fun DSChip(
                 modifier = modifier,
                 enabled = enabled,
                 leadingIcon = iconSlot,
+                shape = chipShape,
             )
         DSChipVariant.INPUT ->
             InputChip(
@@ -70,6 +77,7 @@ fun DSChip(
                 modifier = modifier,
                 enabled = enabled,
                 leadingIcon = iconSlot,
+                shape = chipShape,
             )
         DSChipVariant.SUGGESTION ->
             SuggestionChip(
@@ -78,6 +86,7 @@ fun DSChip(
                 modifier = modifier,
                 enabled = enabled,
                 icon = iconSlot,
+                shape = chipShape,
             )
     }
 }
