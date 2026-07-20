@@ -1,6 +1,7 @@
 package com.edugo.kmp.design.components.buttons
 
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExtendedFloatingActionButton
@@ -15,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.edugo.kmp.design.DSTheme
 import com.edugo.kmp.design.Sizes
+import com.edugo.kmp.design.tokens.ComponentShapes
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
@@ -27,6 +29,8 @@ fun DSFloatingActionButton(
     FloatingActionButton(
         onClick = onClick,
         modifier = modifier,
+        // FABs pasan por ComponentShapes (D-046.11): fab = full (pill).
+        shape = RoundedCornerShape(ComponentShapes.fab),
     ) {
         Icon(
             imageVector = icon,
@@ -46,6 +50,8 @@ fun DSSmallFloatingActionButton(
     SmallFloatingActionButton(
         onClick = onClick,
         modifier = modifier,
+        // FABs pasan por ComponentShapes (D-046.11): fab = full (pill).
+        shape = RoundedCornerShape(ComponentShapes.fab),
     ) {
         Icon(
             imageVector = icon,
@@ -76,6 +82,8 @@ fun DSExtendedFloatingActionButton(
         onClick = onClick,
         modifier = modifier,
         expanded = expanded,
+        // FABs pasan por ComponentShapes (D-046.11): fab = full (pill).
+        shape = RoundedCornerShape(ComponentShapes.fab),
     )
 }
 
