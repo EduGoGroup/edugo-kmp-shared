@@ -12,19 +12,20 @@ object CornerRadius {
     val small = 8.dp
     val medium = 12.dp
     val large = 16.dp
+    val largeIncreased = 20.dp
     val extraLarge = 28.dp
     val full = 50.dp
 }
 
 /**
- * Component-specific corner radius mappings per MD3 spec.
+ * Component-specific corner radius mappings per MD3 Expressive spec.
  */
 object ComponentShapes {
     val checkbox = CornerRadius.extraSmall // 4.dp
-    val chip = CornerRadius.small // 8.dp
-    val card = CornerRadius.medium // 12.dp
+    val chip = CornerRadius.full // pill
+    val card = CornerRadius.largeIncreased // 20.dp
     val button = CornerRadius.large // 16.dp (filled button with text)
-    val fab = CornerRadius.large // 16.dp
+    val fab = CornerRadius.full // pill
     val bottomSheet = CornerRadius.extraLarge // 28.dp (top corners only)
     val dialog = CornerRadius.extraLarge // 28.dp
 }
@@ -38,6 +39,7 @@ object Shapes {
     val small = RoundedCornerShape(CornerRadius.small)
     val medium = RoundedCornerShape(CornerRadius.medium)
     val large = RoundedCornerShape(CornerRadius.large)
+    val largeIncreased = RoundedCornerShape(CornerRadius.largeIncreased)
     val extraLarge = RoundedCornerShape(CornerRadius.extraLarge)
     val full = RoundedCornerShape(CornerRadius.full)
 
