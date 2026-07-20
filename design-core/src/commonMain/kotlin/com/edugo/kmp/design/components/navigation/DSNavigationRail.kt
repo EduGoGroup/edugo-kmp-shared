@@ -56,9 +56,10 @@ fun DSNavigationRail(
         // items van en una columna scrollable vertical (overflow natural del rail,
         // sin "Más"); el `header` queda fijo arriba (es slot propio del rail).
         Column(
-            modifier = Modifier
-                .fillMaxHeight()
-                .verticalScroll(rememberScrollState()),
+            modifier =
+                Modifier
+                    .fillMaxHeight()
+                    .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
