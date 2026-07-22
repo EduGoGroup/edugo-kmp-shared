@@ -77,11 +77,36 @@ object Sizes {
     /** Grosor de borde de tarjeta y divisores (spec §4/§5.1). */
     val borderThin = 1.dp
 
+    /**
+     * Ancho de la sidebar de navegación persistente en Expanded/Large (spec §2.2, D-050.1).
+     * La sidebar ancla arriba con superficie `surfaceContainerLow`, cuerpo `DSNavTree` y un
+     * divisor `borderThin` × `outlineVariant` contra el contenido.
+     */
+    val sidebarWidth = 280.dp
+
+    /**
+     * Ancho del riel colapsado (sidebar plegada) con SOLO iconos L1 (spec §2.2, D-050.2).
+     * Al hacer clic en una sección del riel se abre un flyout anclado con el subárbol.
+     */
+    val railWidth = 80.dp
+
     /** Grosor del anillo de foco (spec §5.1/§5.2/§5.3: anillo 2dp `primary`). */
     val borderFocus = 2.dp
 
     /** Alto mínimo de una fila de lista / tarjeta de dos líneas (spec §5.1). */
     val listRowMinHeight = 72.dp
+
+    /**
+     * Alto de la fila de chips de filtro de la búsqueda de pantalla (plan 050 D-050.6): fila
+     * de chips en scroll horizontal debajo del campo de búsqueda del top bar (spec §5.5).
+     */
+    val filterChipRowHeight = 32.dp
+
+    /**
+     * Distancia de revelado de las acciones de fila por swipe (plan 050 D-050.5, spec §2.1):
+     * al arrastrar la fila se descubren editar/eliminar en un carril de este ancho.
+     */
+    val swipeActionRevealWidth = 72.dp
 
     object Avatar {
         val small = 24.dp

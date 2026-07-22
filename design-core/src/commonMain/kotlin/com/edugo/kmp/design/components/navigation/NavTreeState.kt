@@ -43,6 +43,19 @@ fun toggleExpanded(expandedKeys: Set<String>, key: String): Set<String> =
     if (key in expandedKeys) expandedKeys - key else expandedKeys + key
 
 /**
+ * `true` si este nodo ES [key] o si [key] pertenece a su subárbol (a cualquier
+ * profundidad). Vacío/`null` => `false`.
+ *
+ * Base del resaltado del riel colapsado (plan 050 D-050.2): un icono L1 se marca como
+ * activo cuando el nodo activo cuelga de su sección, no solo cuando es la propia sección.
+ */
+fun NavTreeNode.containsKey(key: String?): Boolean {
+    if (key == null) return false
+    if (this.key == key) return true
+    return children.any { it.containsKey(key) }
+}
+
+/**
  * Ruta activa completa como lista ordenada de keys desde la raíz hasta [activeKey]
  * inclusive. Vacía si [activeKey] es `null` o no existe en el árbol.
  *
