@@ -82,6 +82,29 @@ class DesignTokensTest {
     }
 
     @Test
+    fun sizesBottomActionClearanceMatchesExpected() {
+        assertEquals(88.dp, Sizes.bottomActionClearance)
+    }
+
+    @Test
+    fun sizesBorderThinMatchesExpected() {
+        assertEquals(1.dp, Sizes.borderThin)
+    }
+
+    @Test
+    fun contentWidthMatchesExpected() {
+        assertEquals(600.dp, ContentWidth.form)
+        assertEquals(840.dp, ContentWidth.list)
+        assertEquals(720.dp, ContentWidth.prose)
+    }
+
+    @Test
+    fun contentWidthFormIsNarrowestAndListIsWidest() {
+        assertTrue(ContentWidth.form < ContentWidth.prose)
+        assertTrue(ContentWidth.prose < ContentWidth.list)
+    }
+
+    @Test
     fun alphaValuesAreInRange() {
         assertTrue(Alpha.disabled in 0f..1f)
         assertTrue(Alpha.muted in 0f..1f)

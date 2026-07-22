@@ -67,6 +67,16 @@ object Sizes {
 
     val buttonHeight = 48.dp
 
+    /**
+     * Clearance inferior para listas con FAB y formularios con barra de guardar fija:
+     * reserva de espacio al final del contenido scrolleable para que el último ítem no
+     * quede tapado por el elemento flotante/fijo (spec §3, G-11/M-6).
+     */
+    val bottomActionClearance = 88.dp
+
+    /** Grosor de borde de tarjeta y divisores (spec §4/§5.1). */
+    val borderThin = 1.dp
+
     object Avatar {
         val small = 24.dp
         val medium = 32.dp
@@ -80,6 +90,24 @@ object Sizes {
         val comfortable = 56.dp
         val generous = 64.dp
     }
+}
+
+/**
+ * Anchos máximos de legibilidad para contenedores de contenido.
+ *
+ * Son medidas de legibilidad (línea de lectura, ancho de formulario), no marca → viven en
+ * design-core. Regla de uso: todo contenedor de contenido aplica `widthIn(max = …)` + centrado;
+ * el espacio sobrante a los lados es margen, no se estira el contenido (spec §1).
+ */
+object ContentWidth {
+    /** Formularios (una columna de campos). */
+    val form = 600.dp
+
+    /** Listas y grids de contenido. */
+    val list = 840.dp
+
+    /** Texto corrido / lectura larga (prosa). */
+    val prose = 720.dp
 }
 
 /**
