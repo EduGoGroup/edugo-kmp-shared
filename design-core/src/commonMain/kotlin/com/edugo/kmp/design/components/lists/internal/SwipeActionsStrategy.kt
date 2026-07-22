@@ -1,11 +1,10 @@
 package com.edugo.kmp.design.components.lists.internal
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -21,7 +20,7 @@ import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
-import com.edugo.kmp.design.Spacing
+import com.edugo.kmp.design.Sizes
 import com.edugo.kmp.design.components.lists.RowAction
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -99,7 +98,9 @@ internal fun SwipeActionsStrategy(
                         )
                     SwipeToDismissBoxValue.StartToEnd ->
                         SwipeBackground(
-                            color = MaterialTheme.colorScheme.secondaryContainer,
+                            // Plan 050 D-050.5: acción de edición en `primaryContainer`
+                            // (antes `secondaryContainer`); la destructiva en `errorContainer`.
+                            color = MaterialTheme.colorScheme.primaryContainer,
                             icon = primary?.icon ?: Icons.Filled.Delete,
                             description = primary?.label ?: "",
                             alignment = Alignment.CenterStart,
@@ -116,13 +117,15 @@ internal fun SwipeActionsStrategy(
                 modifier =
                     Modifier
                         .fillMaxSize()
-                        .background(bgColor)
-                        .padding(horizontal = Spacing.spacing4),
+                        .background(bgColor),
                 contentAlignment = alignment,
             ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(Spacing.spacing2),
-                    verticalAlignment = Alignment.CenterVertically,
+                // El icono de la acción vive en un carril de [Sizes.swipeActionRevealWidth] (72dp,
+                // plan 050 D-050.5) anclado al borde del swipe: da un blanco de toque consistente y
+                // materializa el "revela acciones a 72dp" del spec §2.1.
+                Box(
+                    modifier = Modifier.width(Sizes.swipeActionRevealWidth).fillMaxHeight(),
+                    contentAlignment = Alignment.Center,
                 ) {
                     Icon(
                         imageVector = icon,
@@ -130,7 +133,7 @@ internal fun SwipeActionsStrategy(
                         tint =
                             when (direction) {
                                 SwipeToDismissBoxValue.EndToStart -> MaterialTheme.colorScheme.onErrorContainer
-                                SwipeToDismissBoxValue.StartToEnd -> MaterialTheme.colorScheme.onSecondaryContainer
+                                SwipeToDismissBoxValue.StartToEnd -> MaterialTheme.colorScheme.onPrimaryContainer
                                 SwipeToDismissBoxValue.Settled -> MaterialTheme.colorScheme.onSurface
                             },
                     )

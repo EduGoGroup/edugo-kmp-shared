@@ -96,6 +96,18 @@ object Sizes {
     /** Alto mínimo de una fila de lista / tarjeta de dos líneas (spec §5.1). */
     val listRowMinHeight = 72.dp
 
+    /**
+     * Alto de la fila de chips de filtro de la búsqueda de pantalla (plan 050 D-050.6): fila
+     * de chips en scroll horizontal debajo del campo de búsqueda del top bar (spec §5.5).
+     */
+    val filterChipRowHeight = 32.dp
+
+    /**
+     * Distancia de revelado de las acciones de fila por swipe (plan 050 D-050.5, spec §2.1):
+     * al arrastrar la fila se descubren editar/eliminar en un carril de este ancho.
+     */
+    val swipeActionRevealWidth = 72.dp
+
     object Avatar {
         val small = 24.dp
         val medium = 32.dp
