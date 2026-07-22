@@ -5,8 +5,8 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.darkColorScheme
@@ -16,10 +16,13 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import com.edugo.kmp.design.DSTheme
 import com.edugo.kmp.design.MessageType
 import com.edugo.kmp.design.SemanticColors
+import com.edugo.kmp.design.components.dialogs.DSModalScaffold
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 /**
- * Dialog de alerta con estilos consistentes según el tipo de mensaje.
+ * Dialog de alerta con estilos consistentes según el tipo de mensaje, sobre el andamiaje común
+ * [DSModalScaffold]: header sticky con icono semántico + cierre siempre visible, cuerpo scrolleable
+ * que nunca recorta y footer sticky (spec §5.6, D-048.6). API pública sin cambios.
  */
 @Composable
 fun DSAlertDialog(
@@ -48,22 +51,23 @@ fun DSAlertDialog(
             MessageType.ERROR -> SemanticColors.error()
         }
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        icon = {
+    DSModalScaffold(
+        title = title,
+        onDismiss = onDismiss,
+        modifier = modifier,
+        leadingIcon = {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
                 tint = iconColor,
             )
         },
-        title = {
-            Text(text = title)
-        },
-        text = {
-            Text(text = message)
-        },
-        confirmButton = {
+        footer = {
+            if (dismissText != null) {
+                TextButton(onClick = onDismiss) {
+                    Text(dismissText)
+                }
+            }
             TextButton(
                 onClick = {
                     onConfirm()
@@ -73,18 +77,13 @@ fun DSAlertDialog(
                 Text(confirmText)
             }
         },
-        dismissButton =
-            if (dismissText != null) {
-                {
-                    TextButton(onClick = onDismiss) {
-                        Text(dismissText)
-                    }
-                }
-            } else {
-                null
-            },
-        modifier = modifier,
-    )
+    ) {
+        Text(
+            text = message,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
 }
 
 @Preview(name = "DSAlertDialog - Light")

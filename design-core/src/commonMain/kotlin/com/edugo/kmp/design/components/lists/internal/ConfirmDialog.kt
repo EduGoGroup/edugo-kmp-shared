@@ -38,6 +38,11 @@ internal class ConfirmDialogState {
 @Composable
 internal fun rememberConfirmDialogState(): ConfirmDialogState = remember { ConfirmDialogState() }
 
+/**
+ * Confirmación de una acción de fila. Delega en [DSAlertDialog], por lo que hereda el andamiaje
+ * §5.6 (D-048.6): botón de cierre siempre visible y cuerpo que nunca recorta. Al ser un confirm
+ * de dos líneas no necesita más andamiaje que ese; el modal se renderiza compacto sin scroll.
+ */
 @Composable
 internal fun ConfirmDialog(state: ConfirmDialogState) {
     val action = state.action ?: return

@@ -1,6 +1,6 @@
 package com.edugo.kmp.design.components.dialogs
 
-import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.darkColorScheme
@@ -9,6 +9,11 @@ import androidx.compose.ui.Modifier
 import com.edugo.kmp.design.DSTheme
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
+/**
+ * Diálogo básico (título + texto + acciones) sobre el andamiaje común [DSModalScaffold]:
+ * header sticky con cierre siempre visible, cuerpo scrolleable que nunca recorta y footer sticky
+ * (spec §5.6, D-048.6). API pública sin cambios respecto a versiones previas.
+ */
 @Composable
 fun DSBasicDialog(
     title: String,
@@ -21,11 +26,20 @@ fun DSBasicDialog(
     onDismiss: (() -> Unit)? = null,
     icon: @Composable (() -> Unit)? = null,
 ) {
-    AlertDialog(
-        onDismissRequest = onDismissRequest,
-        title = { Text(title) },
-        text = { Text(text) },
-        confirmButton = {
+    DSModalScaffold(
+        title = title,
+        onDismiss = onDismissRequest,
+        modifier = modifier,
+        leadingIcon = icon,
+        footer = {
+            if (dismissText != null) {
+                TextButton(onClick = {
+                    onDismiss?.invoke()
+                    onDismissRequest()
+                }) {
+                    Text(dismissText)
+                }
+            }
             TextButton(onClick = {
                 onConfirm()
                 onDismissRequest()
@@ -33,22 +47,13 @@ fun DSBasicDialog(
                 Text(confirmText)
             }
         },
-        dismissButton =
-            if (dismissText != null) {
-                {
-                    TextButton(onClick = {
-                        onDismiss?.invoke()
-                        onDismissRequest()
-                    }) {
-                        Text(dismissText)
-                    }
-                }
-            } else {
-                null
-            },
-        icon = icon,
-        modifier = modifier,
-    )
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
 }
 
 @Preview(name = "DSBasicDialog - Light", showBackground = true)

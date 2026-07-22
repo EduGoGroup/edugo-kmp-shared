@@ -117,6 +117,30 @@ object ContentWidth {
 }
 
 /**
+ * Dimensiones del andamiaje de modales (spec §5.6, D-048.6).
+ *
+ * Regla dura: un modal en modo lectura **nunca recorta contenido**. Si no cabe, el cuerpo scrollea
+ * dentro de la altura máxima; el header (título + cierre) y el footer (acciones) quedan fijos
+ * (sticky) para estar siempre visibles. Todas las medidas salen de aquí; cero `.dp` sueltos.
+ */
+object DialogDefaults {
+    /** Ancho máximo del modal; el ancho real es `min(maxWidth, 100% − 2·windowMargin)`. */
+    val maxWidth = 560.dp
+
+    /** Margen a cada lado respecto al viewport (48dp en total: 24 por lado → alto máx = viewport − 48). */
+    val windowMargin = 24.dp
+
+    /** Alto del header sticky (título `titleLarge` + botón de cierre siempre visible). */
+    val headerHeight = 64.dp
+
+    /** Alto del footer sticky (fila de acciones). */
+    val footerHeight = 72.dp
+
+    /** Opacidad del scrim de fondo. La aporta `androidx.compose.ui.window.Dialog` (MD3: 32%). */
+    const val scrimOpacity = 0.32f
+}
+
+/**
  * Valores de opacidad/alpha para estados visuales.
  * @see com.edugo.kmp.design.tokens.StateLayer para valores MD3 de state layers.
  * @see com.edugo.kmp.design.tokens.SurfaceOpacity para opacidades de superficie.
