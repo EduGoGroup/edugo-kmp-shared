@@ -77,6 +77,12 @@ object Sizes {
     /** Grosor de borde de tarjeta y divisores (spec §4/§5.1). */
     val borderThin = 1.dp
 
+    /** Grosor del anillo de foco (spec §5.1/§5.2/§5.3: anillo 2dp `primary`). */
+    val borderFocus = 2.dp
+
+    /** Alto mínimo de una fila de lista / tarjeta de dos líneas (spec §5.1). */
+    val listRowMinHeight = 72.dp
+
     object Avatar {
         val small = 24.dp
         val medium = 32.dp

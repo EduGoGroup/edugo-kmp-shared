@@ -26,9 +26,9 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 /**
  * Fila expandible del design system EduGo.
  *
- * Envuelve [DSListRow] (la fila canónica del DS: `Card` con `surfaceVariant`,
- * slots de leading/headline/supporting/trailing) y reemplaza su slot `trailing`
- * por un chevron animado que rota 180 grados al alternar `expanded`.
+ * Envuelve [DSListRow] (la fila canónica del DS: `Card` tonal `surfaceContainer`
+ * con borde, slots de leading/headline/supporting/trailing) y reemplaza su slot
+ * `trailing` por un chevron animado que rota 180 grados al alternar `expanded`.
  *
  * El click sobre toda la fila dispara [onToggle]; el contenido revelado se
  * renderiza debajo dentro de un `AnimatedVisibility`.
