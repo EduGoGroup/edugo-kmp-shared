@@ -122,4 +122,24 @@ class NavTreeStateTest {
         assertTrue(rows.first { it.node.key == "admin" }.hasChildren)
         assertFalse(rows.first { it.node.key == "audit" }.hasChildren)
     }
+
+    // --- containsKey (plan 050 F1, resaltado del riel colapsado) -------------------------
+
+    @Test
+    fun containsKeyMatchesSelf() {
+        assertTrue(deep.first { it.key == "admin" }.containsKey("admin"))
+    }
+
+    @Test
+    fun containsKeyMatchesDeepDescendant() {
+        // "admin" contiene al nieto "users-edit" (activo profundo → resalta la sección L1).
+        assertTrue(deep.first { it.key == "admin" }.containsKey("users-edit"))
+    }
+
+    @Test
+    fun containsKeyFalseForForeignKeyAndNull() {
+        val admin = deep.first { it.key == "admin" }
+        assertFalse(admin.containsKey("dashboard"))
+        assertFalse(admin.containsKey(null))
+    }
 }

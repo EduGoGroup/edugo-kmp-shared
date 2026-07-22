@@ -15,12 +15,16 @@ import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextOverflow
 import com.edugo.kmp.design.Spacing
+import com.edugo.kmp.design.components.overlays.DSPlainTooltip
 import com.edugo.kmp.design.tokens.AnimationDuration
 
 private const val ChevronCollapsed = 0f
@@ -150,15 +154,29 @@ private fun NavTreeBranchRow(
 /**
  * Label del ítem: `labelLarge` con una sola línea y elipsis AL FINAL (nunca truncado
  * en medio tipo "Administra…"). Cubre el caso límite de labels largos del plan.
+ *
+ * Plan 050 (task 1.5): cuando el texto se trunca con elipsis, se envuelve en un
+ * [DSPlainTooltip] con el nombre COMPLETO, para que la sidebar/riel/flyout nunca dejen
+ * un label recortado sin forma de leerlo. La detección de recorte es reactiva
+ * (`onTextLayout` → `hasVisualOverflow`): sin recorte no se monta tooltip (sin coste extra).
  */
 @Composable
 private fun NavTreeLabel(text: String) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.labelLarge,
-        maxLines = 1,
-        overflow = TextOverflow.Ellipsis,
-    )
+    var overflowed by remember(text) { mutableStateOf(false) }
+    val label: @Composable () -> Unit = {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelLarge,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            onTextLayout = { overflowed = it.hasVisualOverflow },
+        )
+    }
+    if (overflowed) {
+        DSPlainTooltip(tooltipText = text) { label() }
+    } else {
+        label()
+    }
 }
 
 /**
