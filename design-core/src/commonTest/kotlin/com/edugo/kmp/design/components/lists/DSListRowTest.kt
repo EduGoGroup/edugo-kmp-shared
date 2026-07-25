@@ -1,5 +1,6 @@
 package com.edugo.kmp.design.components.lists
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertHasNoClickAction
 import androidx.compose.ui.test.assertIsDisplayed
@@ -9,6 +10,8 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.runComposeUiTest
 import com.edugo.kmp.design.DSTheme
+import com.edugo.kmp.design.Sizes
+import com.edugo.kmp.design.Spacing
 import com.edugo.kmp.design.components.media.DSAvatar
 import com.edugo.kmp.design.components.selection.DSChip
 import kotlin.test.Test
@@ -100,6 +103,52 @@ class DSListRowTest {
 
             onNodeWithTag(DSListRowDefaults.tag).assertHasNoClickAction()
         }
+
+    /**
+     * F1.1 (plan 051, D-051.1): la densidad compacta sigue pintando título y subtítulo — el
+     * subtítulo pasa a la misma línea tras el separador `·`, pero ambos siguen presentes.
+     */
+    @Test
+    fun showsHeadlineAndSupportingInline_whenCompact() =
+        runComposeUiTest {
+            setContent {
+                DSTheme {
+                    DSListRow(
+                        headlineText = "Ana López",
+                        supportingText = "Docente",
+                        density = DSListRowDensity.COMPACT,
+                    )
+                }
+            }
+
+            onNodeWithText("Ana López").assertIsDisplayed()
+            onNodeWithText("Docente").assertIsDisplayed()
+            onNodeWithText(DSListRowDefaults.inlineSeparator).assertIsDisplayed()
+        }
+
+    /**
+     * F1.1 (plan 051, D-051.1): la geometría de cada densidad sale de tokens —
+     * cómoda 72dp/`spacing4`, compacta 56dp/`spacing3`. Sin literales en el componente.
+     */
+    @Test
+    fun densityGeometryComesFromTokens() {
+        assertEquals(
+            Sizes.listRowMinHeight,
+            DSListRowDefaults.minHeightFor(DSListRowDensity.COMFORTABLE),
+        )
+        assertEquals(
+            Sizes.listRowCompactMinHeight,
+            DSListRowDefaults.minHeightFor(DSListRowDensity.COMPACT),
+        )
+        assertEquals(
+            PaddingValues(Spacing.spacing4),
+            DSListRowDefaults.paddingFor(DSListRowDensity.COMFORTABLE),
+        )
+        assertEquals(
+            PaddingValues(Spacing.spacing3),
+            DSListRowDefaults.paddingFor(DSListRowDensity.COMPACT),
+        )
+    }
 
     /**
      * F1-REQ-1.3 (leading): El row renderiza correctamente con un DSAvatar como leading.

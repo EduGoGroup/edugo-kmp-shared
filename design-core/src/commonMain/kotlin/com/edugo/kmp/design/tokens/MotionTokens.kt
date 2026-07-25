@@ -19,6 +19,13 @@ object AnimationDuration {
     const val long2 = 500L
     const val extraLong1 = 700L
     const val extraLong2 = 1000L
+
+    /**
+     * Ciclo del shimmer de los skeletons de carga (spec §7, D-051.3: shimmer 1.2s).
+     * Fuera de la escala MD3 canonica, pero pertenece aqui para que ningun componente
+     * hardcodee la duracion del loop.
+     */
+    const val extraLong3 = 1200L
 }
 
 /**
@@ -28,7 +35,13 @@ object ScreenDuration {
     const val splash = 2000L
     const val toastShort = 2000L
     const val toastLong = 3500L
-    const val snackbar = 3000L
+
+    /**
+     * Snackbar del patron de estados (spec §7, D-051.3): 4s, verbo + objeto.
+     * Coincide con `SnackbarDuration.Short` de Material3 (4000ms), por lo que el host
+     * del DS no necesita temporizador propio.
+     */
+    const val snackbar = 4000L
 }
 
 /**
