@@ -62,3 +62,11 @@ object AnimationEasing {
     val emphasizedDecelerate = CubicBezierEasing(0.05f, 0.7f, 0.1f, 1f)
     val emphasizedAccelerate = CubicBezierEasing(0.3f, 0f, 0.8f, 0.15f)
 }
+
+/**
+ * Escalas de entrada/salida de contenedores modales (spec §8, D-051.4).
+ */
+object AnimationScale {
+    /** Escala inicial del diálogo: entra con fade + scale 0.9 -> 1 en [AnimationDuration.medium1]. */
+    const val dialogEnter = 0.9f
+}

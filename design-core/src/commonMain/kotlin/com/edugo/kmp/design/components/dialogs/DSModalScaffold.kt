@@ -1,5 +1,7 @@
 package com.edugo.kmp.design.components.dialogs
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -25,8 +27,14 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -34,6 +42,9 @@ import com.edugo.kmp.design.DSTheme
 import com.edugo.kmp.design.DialogDefaults
 import com.edugo.kmp.design.Elevation
 import com.edugo.kmp.design.Spacing
+import com.edugo.kmp.design.tokens.AnimationDuration
+import com.edugo.kmp.design.tokens.AnimationEasing
+import com.edugo.kmp.design.tokens.AnimationScale
 import com.edugo.kmp.design.tokens.Shapes
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -50,6 +61,8 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
  * - Cuerpo scrolleable con indicador (divisores que aparecen cuando hay más contenido arriba/abajo).
  * - Footer sticky de [DialogDefaults.footerHeight] para las acciones.
  * - Scrim [DialogDefaults.scrimOpacity] aportado por `Dialog` (sin cambios respecto a MD3).
+ * - Entrada: fade + scale [AnimationScale.dialogEnter] -> 1 en [AnimationDuration.medium1]
+ *   (250ms) con easing emphasized (spec §8, D-051.4).
  */
 @Composable
 fun DSModalScaffold(
@@ -68,7 +81,11 @@ fun DSModalScaffold(
             contentAlignment = Alignment.Center,
         ) {
             Surface(
-                modifier = modifier.widthIn(max = DialogDefaults.maxWidth).fillMaxWidth(),
+                modifier =
+                    modifier
+                        .widthIn(max = DialogDefaults.maxWidth)
+                        .fillMaxWidth()
+                        .dsModalEnter(),
                 shape = Shapes.extraLarge,
                 color = MaterialTheme.colorScheme.surfaceContainerHigh,
                 shadowElevation = Elevation.dialog,
@@ -103,6 +120,36 @@ fun DSModalScaffold(
                 }
             }
         }
+    }
+}
+
+/**
+ * Entrada de un contenedor modal en tarjeta (spec §8, D-051.4): fade + scale
+ * [AnimationScale.dialogEnter] -> 1 en [AnimationDuration.medium1] (250ms) con easing emphasized.
+ *
+ * `androidx.compose.ui.window.Dialog` no anima su contenido, así que la transición se aplica a la
+ * `Surface` del modal: ninguno "salta" al aparecer. [DSModalScaffold] ya lo incluye; los `Dialog`
+ * a mano (pickers, modales SDUI) lo encadenan a su propia `Surface`. **No** se usa en modales
+ * full-screen: esos ocupan todo el viewport y escalarlos se ve mal.
+ */
+@Composable
+fun Modifier.dsModalEnter(): Modifier {
+    var entered by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { entered = true }
+    val progress by animateFloatAsState(
+        targetValue = if (entered) 1f else 0f,
+        animationSpec =
+            tween(
+                durationMillis = AnimationDuration.medium1.toInt(),
+                easing = AnimationEasing.emphasizedDecelerate,
+            ),
+        label = "dsModalEnter",
+    )
+    return graphicsLayer {
+        alpha = progress
+        val entryScale = AnimationScale.dialogEnter + (1f - AnimationScale.dialogEnter) * progress
+        scaleX = entryScale
+        scaleY = entryScale
     }
 }
 
