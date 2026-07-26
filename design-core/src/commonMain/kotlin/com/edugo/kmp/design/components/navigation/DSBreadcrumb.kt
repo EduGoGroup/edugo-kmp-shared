@@ -50,9 +50,10 @@ fun DSBreadcrumb(
 ) {
     if (items.isEmpty()) return
     Row(
-        modifier = modifier
-            .testTag(DSBreadcrumbDefaults.tag)
-            .horizontalScroll(rememberScrollState()),
+        modifier =
+            modifier
+                .testTag(DSBreadcrumbDefaults.tag)
+                .horizontalScroll(rememberScrollState()),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         val lastIndex = items.lastIndex
@@ -76,25 +77,31 @@ fun DSBreadcrumb(
  * usa `onSurfaceVariant`; el tramo actual usa `onSurface` + semibold y nunca es clicable.
  */
 @Composable
-private fun BreadcrumbSegmentText(item: DSBreadcrumbItem, isCurrent: Boolean) {
+private fun BreadcrumbSegmentText(
+    item: DSBreadcrumbItem,
+    isCurrent: Boolean,
+) {
     val onClick = item.onClick
-    val baseModifier = if (!isCurrent && onClick != null) {
-        Modifier.clickable(onClick = onClick)
-    } else {
-        Modifier
-    }
+    val baseModifier =
+        if (!isCurrent && onClick != null) {
+            Modifier.clickable(onClick = onClick)
+        } else {
+            Modifier
+        }
     Text(
         text = item.label,
-        style = if (isCurrent) {
-            MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)
-        } else {
-            MaterialTheme.typography.bodyMedium
-        },
-        color = if (isCurrent) {
-            MaterialTheme.colorScheme.onSurface
-        } else {
-            MaterialTheme.colorScheme.onSurfaceVariant
-        },
+        style =
+            if (isCurrent) {
+                MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)
+            } else {
+                MaterialTheme.typography.bodyMedium
+            },
+        color =
+            if (isCurrent) {
+                MaterialTheme.colorScheme.onSurface
+            } else {
+                MaterialTheme.colorScheme.onSurfaceVariant
+            },
         maxLines = 1,
         overflow = TextOverflow.Ellipsis,
         modifier = baseModifier.padding(vertical = Spacing.spacing1),

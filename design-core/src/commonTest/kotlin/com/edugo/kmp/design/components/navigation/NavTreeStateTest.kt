@@ -10,32 +10,38 @@ import kotlin.test.assertTrue
  * Cubre casos límite: profundidad 3+, sección con 10 hijos, ruta activa y toggle.
  */
 class NavTreeStateTest {
-
     // Administración › Usuarios › (Listado, Editar, Roles) + Auditoría; Panel.
-    private val deep = listOf(
-        NavTreeNode(
-            key = "admin", label = "Administración",
-            children = listOf(
-                NavTreeNode(
-                    key = "users", label = "Usuarios",
-                    children = listOf(
-                        NavTreeNode(key = "users-list", label = "Listado"),
-                        NavTreeNode(key = "users-edit", label = "Editar"),
-                        NavTreeNode(key = "users-roles", label = "Roles"),
+    private val deep =
+        listOf(
+            NavTreeNode(
+                key = "admin",
+                label = "Administración",
+                children =
+                    listOf(
+                        NavTreeNode(
+                            key = "users",
+                            label = "Usuarios",
+                            children =
+                                listOf(
+                                    NavTreeNode(key = "users-list", label = "Listado"),
+                                    NavTreeNode(key = "users-edit", label = "Editar"),
+                                    NavTreeNode(key = "users-roles", label = "Roles"),
+                                ),
+                        ),
+                        NavTreeNode(key = "audit", label = "Auditoría"),
                     ),
-                ),
-                NavTreeNode(key = "audit", label = "Auditoría"),
             ),
-        ),
-        NavTreeNode(key = "dashboard", label = "Panel"),
-    )
+            NavTreeNode(key = "dashboard", label = "Panel"),
+        )
 
-    private val tenChildren = listOf(
-        NavTreeNode(
-            key = "reports", label = "Reportes",
-            children = (1..10).map { NavTreeNode(key = "report-$it", label = "Reporte $it") },
-        ),
-    )
+    private val tenChildren =
+        listOf(
+            NavTreeNode(
+                key = "reports",
+                label = "Reportes",
+                children = (1..10).map { NavTreeNode(key = "report-$it", label = "Reporte $it") },
+            ),
+        )
 
     @Test
     fun toggleExpandedAddsWhenAbsent() {

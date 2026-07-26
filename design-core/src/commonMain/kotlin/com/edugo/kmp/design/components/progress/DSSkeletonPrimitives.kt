@@ -64,8 +64,7 @@ fun DSSkeletonCard(
                     width = Sizes.borderThin,
                     color = MaterialTheme.colorScheme.outlineVariant,
                     shape = RoundedCornerShape(DSSkeletonDefaults.cardCornerRadius),
-                )
-                .padding(Spacing.spacing4),
+                ).padding(Spacing.spacing4),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Spacing.spacing3),
     ) {
@@ -131,8 +130,7 @@ fun DSSkeletonKpiTile(modifier: Modifier = Modifier) {
                     width = Sizes.borderThin,
                     color = MaterialTheme.colorScheme.outlineVariant,
                     shape = RoundedCornerShape(DSSkeletonDefaults.cardCornerRadius),
-                )
-                .padding(Spacing.spacing4),
+                ).padding(Spacing.spacing4),
         verticalArrangement = Arrangement.spacedBy(Spacing.spacing2, Alignment.CenterVertically),
     ) {
         DSSkeleton(

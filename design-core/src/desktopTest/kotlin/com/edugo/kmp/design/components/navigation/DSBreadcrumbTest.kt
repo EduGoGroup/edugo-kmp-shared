@@ -18,12 +18,12 @@ import kotlin.test.assertEquals
  */
 @OptIn(ExperimentalTestApi::class)
 class DSBreadcrumbTest {
-
-    private fun deepTrail(onAncestor: (String) -> Unit) = listOf(
-        DSBreadcrumbItem(label = "Administración", onClick = { onAncestor("admin") }),
-        DSBreadcrumbItem(label = "Usuarios", onClick = { onAncestor("users") }),
-        DSBreadcrumbItem(label = "Editar: Miguel Castro", onClick = null),
-    )
+    private fun deepTrail(onAncestor: (String) -> Unit) =
+        listOf(
+            DSBreadcrumbItem(label = "Administración", onClick = { onAncestor("admin") }),
+            DSBreadcrumbItem(label = "Usuarios", onClick = { onAncestor("users") }),
+            DSBreadcrumbItem(label = "Editar: Miguel Castro", onClick = null),
+        )
 
     @Test
     fun rendersAllSegments() =
@@ -58,11 +58,12 @@ class DSBreadcrumbTest {
             setContent {
                 DSTheme {
                     DSBreadcrumb(
-                        items = listOf(
-                            DSBreadcrumbItem(label = "Usuarios", onClick = { clicks++ }),
-                            // Último tramo con onClick no nulo: la POSICIÓN manda, no debe navegar.
-                            DSBreadcrumbItem(label = "Editar: Miguel Castro", onClick = { clicks++ }),
-                        ),
+                        items =
+                            listOf(
+                                DSBreadcrumbItem(label = "Usuarios", onClick = { clicks++ }),
+                                // Último tramo con onClick no nulo: la POSICIÓN manda, no debe navegar.
+                                DSBreadcrumbItem(label = "Editar: Miguel Castro", onClick = { clicks++ }),
+                            ),
                     )
                 }
             }
