@@ -87,12 +87,13 @@ private fun DSNavRailFlyout10Preview() {
             Box(modifier = Modifier.padding(Spacing.spacing4)) {
                 NavRailFlyoutPanel(
                     section = NavTreePreviewFixtures.tenChildren.first(),
-                    flyout = NavRailFlyoutBinding(
-                        activeKey = "report-7",
-                        expandedKeys = emptySet(),
-                        onToggle = {},
-                        onSelect = {},
-                    ),
+                    flyout =
+                        NavRailFlyoutBinding(
+                            activeKey = "report-7",
+                            expandedKeys = emptySet(),
+                            onToggle = {},
+                            onSelect = {},
+                        ),
                 )
             }
         }
@@ -107,12 +108,13 @@ private fun DSNavRailFlyoutDeepPreview() {
             Box(modifier = Modifier.padding(Spacing.spacing4)) {
                 NavRailFlyoutPanel(
                     section = NavTreePreviewFixtures.deepTree.first(), // "admin" → users(3), audit
-                    flyout = NavRailFlyoutBinding(
-                        activeKey = "users-edit",
-                        expandedKeys = emptySet(),
-                        onToggle = {},
-                        onSelect = {},
-                    ),
+                    flyout =
+                        NavRailFlyoutBinding(
+                            activeKey = "users-edit",
+                            expandedKeys = emptySet(),
+                            onToggle = {},
+                            onSelect = {},
+                        ),
                 )
             }
         }

@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
@@ -23,7 +22,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.darkColorScheme
@@ -38,6 +36,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.edugo.kmp.design.DSTheme
 import com.edugo.kmp.design.Elevation
@@ -61,6 +60,10 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
  * The component is intentionally ignorant of any data schema; it only consumes
  * composable slots. For the common text-only case, see the convenience
  * overload that accepts `headlineText` / `supportingText` strings.
+ *
+ * **Densidad (spec §6, D-051.1):** [density] elige entre la fila cómoda (72dp, dos líneas,
+ * padding `spacing4` — default) y la compacta (56dp, una línea con subtítulo inline `·`,
+ * padding `spacing3`). Quién decide es el renderer por heurística, nunca la pantalla.
  */
 @Composable
 fun DSListRow(
@@ -71,6 +74,7 @@ fun DSListRow(
     trailing: (@Composable () -> Unit)? = null,
     onClick: (() -> Unit)? = null,
     contentDescription: String? = null,
+    density: DSListRowDensity = DSListRowDensity.COMFORTABLE,
 ) {
     val baseModifier =
         Modifier
@@ -107,7 +111,7 @@ fun DSListRow(
             border = border,
             interactionSource = interactionSource,
         ) {
-            DSListRowContent(leading, headline, supporting, trailing)
+            DSListRowContent(leading, headline, supporting, trailing, density)
         }
     } else {
         Card(
@@ -117,7 +121,7 @@ fun DSListRow(
             elevation = DSListRowDefaults.flatElevation(),
             border = border,
         ) {
-            DSListRowContent(leading, headline, supporting, trailing)
+            DSListRowContent(leading, headline, supporting, trailing, density)
         }
     }
 }
@@ -127,7 +131,8 @@ fun DSListRow(
  * and supporting text. Delegates to the slot-based overload.
  *
  * Use the slot overload when you need richer typography, badges, or any
- * non-text content.
+ * non-text content. En densidad `COMPACT` el `supportingText` se pinta inline tras un `·`
+ * (spec §6/§9) sin que el llamador tenga que cambiar nada.
  */
 @Composable
 fun DSListRow(
@@ -138,6 +143,7 @@ fun DSListRow(
     trailing: (@Composable () -> Unit)? = null,
     onClick: (() -> Unit)? = null,
     contentDescription: String? = null,
+    density: DSListRowDensity = DSListRowDensity.COMFORTABLE,
 ) = DSListRow(
     headline = {
         Text(
@@ -162,13 +168,14 @@ fun DSListRow(
     trailing = trailing,
     onClick = onClick,
     contentDescription = contentDescription,
+    density = density,
     modifier = modifier,
 )
 
 /**
- * Internal row layout shared by both [DSListRow] overloads: leading slot, a
- * column with headline (`bodyLarge`) + supporting text (`bodyMedium`,
- * `onSurfaceVariant`) and a trailing slot defaulting to the chevron.
+ * Internal row layout shared by both [DSListRow] overloads: leading slot, the text block
+ * (apilado o inline según la densidad, ver [DSListRowTexts]) y un trailing que por defecto
+ * es el chevron. Alto mínimo y padding salen de la densidad (spec §5.1/§6).
  */
 @Composable
 private fun DSListRowContent(
@@ -176,36 +183,26 @@ private fun DSListRowContent(
     headline: @Composable () -> Unit,
     supporting: (@Composable () -> Unit)?,
     trailing: (@Composable () -> Unit)?,
+    density: DSListRowDensity,
 ) {
     Row(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .defaultMinSize(minHeight = Sizes.listRowMinHeight)
-                .padding(DSListRowDefaults.padding),
+                .defaultMinSize(minHeight = DSListRowDefaults.minHeightFor(density))
+                .padding(DSListRowDefaults.paddingFor(density)),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Spacing.spacing2),
     ) {
         if (leading != null) {
             leading()
         }
-        Column(
+        DSListRowTexts(
             modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(2.dp),
-        ) {
-            ProvideTextStyle(MaterialTheme.typography.bodyLarge) {
-                headline()
-            }
-            if (supporting != null) {
-                ProvideTextStyle(
-                    MaterialTheme.typography.bodyMedium.copy(
-                        color = DSListRowDefaults.supportingColor,
-                    ),
-                ) {
-                    supporting()
-                }
-            }
-        }
+            density = density,
+            headline = headline,
+            supporting = supporting,
+        )
         (trailing ?: DSListRowDefaults.chevron()).invoke()
     }
 }
@@ -228,6 +225,12 @@ private fun DSListRowContent(
 object DSListRowDefaults {
     const val tag: String = "dsListRow"
 
+    /**
+     * Separador del subtítulo inline en densidad compacta: `dato principal · dato secundario`
+     * (spec §6/§9). Nunca códigos crudos ni "—".
+     */
+    const val inlineSeparator: String = "\u00B7"
+
     /** Fondo tonal de la tarjeta: identidad = tonal + borde, sin sombra (spec §4/§5.1). */
     val containerColor: Color
         @Composable get() = MaterialTheme.colorScheme.surfaceContainer
@@ -244,8 +247,26 @@ object DSListRowDefaults {
     val borderColor: Color
         @Composable get() = MaterialTheme.colorScheme.outlineVariant
 
+    /** Padding interno de la fila cómoda (spec §5.1). Ver [paddingFor] para la compacta. */
     val padding: PaddingValues
         @Composable get() = PaddingValues(Spacing.spacing4)
+
+    /**
+     * Alto mínimo por densidad: 72dp cómoda (dos líneas) / 56dp compacta (una línea)
+     * — spec §5.1 y §6, tokens `Sizes.listRowMinHeight` y `Sizes.listRowCompactMinHeight`.
+     */
+    fun minHeightFor(density: DSListRowDensity): Dp =
+        when (density) {
+            DSListRowDensity.COMFORTABLE -> Sizes.listRowMinHeight
+            DSListRowDensity.COMPACT -> Sizes.listRowCompactMinHeight
+        }
+
+    /** Padding interno por densidad: `spacing4` cómoda / `spacing3` compacta (spec §6). */
+    fun paddingFor(density: DSListRowDensity): PaddingValues =
+        when (density) {
+            DSListRowDensity.COMFORTABLE -> PaddingValues(Spacing.spacing4)
+            DSListRowDensity.COMPACT -> PaddingValues(Spacing.spacing3)
+        }
 
     /** Colores de la tarjeta: fondo tonal `surfaceContainer`, contenido `onSurface`. */
     @Composable
@@ -293,6 +314,20 @@ private fun DSListRowHeadlineOnlyPreview() {
     DSTheme {
         Surface {
             DSListRow(headlineText = "Matemáticas avanzadas")
+        }
+    }
+}
+
+@Preview(name = "DSListRow - Compacta 56dp (una linea)", showBackground = true)
+@Composable
+private fun DSListRowCompactPreview() {
+    DSTheme {
+        Surface {
+            DSListRow(
+                headlineText = "Ana López",
+                supportingText = "Docente",
+                density = DSListRowDensity.COMPACT,
+            )
         }
     }
 }

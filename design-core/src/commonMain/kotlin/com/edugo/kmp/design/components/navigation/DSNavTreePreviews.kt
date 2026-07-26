@@ -21,56 +21,61 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
  * `Nav Arbol Extremo`). `internal` para que los tests del módulo los reutilicen.
  */
 internal object NavTreePreviewFixtures {
-
     /** Profundidad 3+: Administración › Usuarios › Editar. */
-    val deepTree: List<NavTreeNode> = listOf(
-        NavTreeNode(
-            key = "admin",
-            label = "Administración",
-            icon = Icons.Outlined.Settings,
-            selectedIcon = Icons.Filled.Settings,
-            children = listOf(
-                NavTreeNode(
-                    key = "users",
-                    label = "Usuarios",
-                    icon = Icons.Outlined.Person,
-                    children = listOf(
-                        NavTreeNode(key = "users-list", label = "Listado"),
-                        NavTreeNode(key = "users-edit", label = "Editar usuario"),
-                        NavTreeNode(key = "users-roles", label = "Roles y permisos"),
+    val deepTree: List<NavTreeNode> =
+        listOf(
+            NavTreeNode(
+                key = "admin",
+                label = "Administración",
+                icon = Icons.Outlined.Settings,
+                selectedIcon = Icons.Filled.Settings,
+                children =
+                    listOf(
+                        NavTreeNode(
+                            key = "users",
+                            label = "Usuarios",
+                            icon = Icons.Outlined.Person,
+                            children =
+                                listOf(
+                                    NavTreeNode(key = "users-list", label = "Listado"),
+                                    NavTreeNode(key = "users-edit", label = "Editar usuario"),
+                                    NavTreeNode(key = "users-roles", label = "Roles y permisos"),
+                                ),
+                        ),
+                        NavTreeNode(key = "audit", label = "Auditoría"),
                     ),
-                ),
-                NavTreeNode(key = "audit", label = "Auditoría"),
             ),
-        ),
-        NavTreeNode(key = "dashboard", label = "Panel"),
-    )
+            NavTreeNode(key = "dashboard", label = "Panel"),
+        )
 
     /** Sección con 10 hijos: debe scrollear sin partición "Más". */
-    val tenChildren: List<NavTreeNode> = listOf(
-        NavTreeNode(
-            key = "reports",
-            label = "Reportes",
-            icon = Icons.Outlined.Folder,
-            selectedIcon = Icons.Filled.Folder,
-            children = (1..10).map { NavTreeNode(key = "report-$it", label = "Reporte $it") },
-        ),
-    )
+    val tenChildren: List<NavTreeNode> =
+        listOf(
+            NavTreeNode(
+                key = "reports",
+                label = "Reportes",
+                icon = Icons.Outlined.Folder,
+                selectedIcon = Icons.Filled.Folder,
+                children = (1..10).map { NavTreeNode(key = "report-$it", label = "Reporte $it") },
+            ),
+        )
 
     /** Labels largos: elipsis AL FINAL (nunca "Administra…" en medio). */
-    val longLabels: List<NavTreeNode> = listOf(
-        NavTreeNode(
-            key = "long-parent",
-            label = "Administración de unidades académicas y colegios federados",
-            icon = Icons.Outlined.Settings,
-            children = listOf(
-                NavTreeNode(
-                    key = "long-child",
-                    label = "Configuración avanzada de permisos por rol y por unidad organizativa",
-                ),
+    val longLabels: List<NavTreeNode> =
+        listOf(
+            NavTreeNode(
+                key = "long-parent",
+                label = "Administración de unidades académicas y colegios federados",
+                icon = Icons.Outlined.Settings,
+                children =
+                    listOf(
+                        NavTreeNode(
+                            key = "long-child",
+                            label = "Configuración avanzada de permisos por rol y por unidad organizativa",
+                        ),
+                    ),
             ),
-        ),
-    )
+        )
 }
 
 @Preview(name = "DSNavTree - Profundidad 3+", showBackground = true)

@@ -93,8 +93,20 @@ object Sizes {
     /** Grosor del anillo de foco (spec §5.1/§5.2/§5.3: anillo 2dp `primary`). */
     val borderFocus = 2.dp
 
-    /** Alto mínimo de una fila de lista / tarjeta de dos líneas (spec §5.1). */
+    /** Alto mínimo de una fila de lista / tarjeta de dos líneas — densidad cómoda (spec §5.1). */
     val listRowMinHeight = 72.dp
+
+    /**
+     * Alto mínimo de la fila de lista en densidad **compacta**: una línea con subtítulo inline
+     * (spec §6, D-051.1). Reusa `TouchTarget.comfortable` (56dp) — es el mismo valor y mantiene
+     * el touch target holgado exigido en §10.
+     */
+    val listRowCompactMinHeight = TouchTarget.comfortable
+
+    /**
+     * Alto del tile de KPI del dashboard y de su skeleton (spec §7, D-051.2/D-051.3).
+     */
+    val kpiTileHeight = 96.dp
 
     /**
      * Alto de la fila de chips de filtro de la búsqueda de pantalla (plan 050 D-050.6): fila
@@ -139,6 +151,12 @@ object ContentWidth {
 
     /** Texto corrido / lectura larga (prosa). */
     val prose = 720.dp
+
+    /**
+     * Bloque de estado vacío / error centrado (spec §7, D-051.3): icono o ilustración +
+     * título + explicación + acción tonal, con `widthIn(max = …)` y centrado.
+     */
+    val emptyState = 400.dp
 }
 
 /**

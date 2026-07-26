@@ -183,7 +183,10 @@ private fun NavTreeLabel(text: String) {
  * Slot de icono de una hoja: variante seleccionada cuando está activa, con candado
  * si está bloqueada. `null` si la hoja no declara icono (igual que el drawer).
  */
-private fun leafIcon(node: NavTreeNode, active: Boolean): (@Composable () -> Unit)? {
+private fun leafIcon(
+    node: NavTreeNode,
+    active: Boolean,
+): (@Composable () -> Unit)? {
     val icon = node.icon ?: return null
     return {
         DSLockedNavIcon(locked = !node.enabled) {
