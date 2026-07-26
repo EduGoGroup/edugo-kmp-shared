@@ -33,6 +33,10 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
  *
  * Para mostrarlo desde un flujo (guardar / eliminar) usa [showDSSnackbar] sobre el
  * `SnackbarHostState` del Scaffold + [DSSnackbarHost] como `snackbarHost`.
+ *
+ * Este composable solo PINTA: la duracion en pantalla la gobierna el `SnackbarHostState`
+ * (via `DSSnackbarVisuals.duration` / [DSSnackbarDefaults.duration]), por eso no recibe
+ * `duration` — un parametro aqui seria inerte.
  */
 @Composable
 fun DSSnackbar(
@@ -42,7 +46,6 @@ fun DSSnackbar(
     actionLabel: String? = null,
     onAction: (() -> Unit)? = null,
     onDismiss: (() -> Unit)? = null,
-    duration: SnackbarDuration = SnackbarDuration.Short,
 ) {
     val containerColor =
         when (messageType) {
@@ -150,7 +153,6 @@ fun DSSnackbarHost(
             messageType = (visuals as? DSSnackbarVisuals)?.messageType ?: messageType,
             actionLabel = visuals.actionLabel,
             onAction = { snackbarData.performAction() },
-            duration = visuals.duration,
         )
     }
 }
