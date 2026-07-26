@@ -1,13 +1,16 @@
 package com.edugo.kmp.design.components.navigation
 
-/**
+/*
  * Derivación de estado del árbol de navegación, en funciones PURAS y testeables,
- * separadas del composable de render ([DSNavTree]).
+ * separadas del composable de render (DSNavTree).
  *
  * Regla del plan 049 (lección detekt del 047): el cálculo de qué se ve, qué está
  * en la ruta activa y cómo cambia el set de expandidos NO vive en el composable.
  * Así el render queda trivial (bajo el umbral de complejidad 15) y esta lógica se
  * cubre con tests unitarios sin Compose.
+ *
+ * Nota de estilo: cabecera de archivo en comentario de bloque (no KDoc) porque ktlint
+ * (standard:no-consecutive-comments) prohíbe un KDoc seguido de otro KDoc.
  */
 
 /**
@@ -39,8 +42,10 @@ data class NavRowData(
  * Es la operación que el caller aplica en `onToggle`: si estaba expandido lo
  * quita, si no, lo agrega. No muta el set de entrada.
  */
-fun toggleExpanded(expandedKeys: Set<String>, key: String): Set<String> =
-    if (key in expandedKeys) expandedKeys - key else expandedKeys + key
+fun toggleExpanded(
+    expandedKeys: Set<String>,
+    key: String,
+): Set<String> = if (key in expandedKeys) expandedKeys - key else expandedKeys + key
 
 /**
  * `true` si este nodo ES [key] o si [key] pertenece a su subárbol (a cualquier
@@ -66,7 +71,10 @@ fun List<NavTreeNode>.activePath(activeKey: String?): List<String> {
     return findPath(this, activeKey) ?: emptyList()
 }
 
-private fun findPath(nodes: List<NavTreeNode>, target: String): List<String>? {
+private fun findPath(
+    nodes: List<NavTreeNode>,
+    target: String,
+): List<String>? {
     for (node in nodes) {
         if (node.key == target) return listOf(node.key)
         val childPath = findPath(node.children, target)

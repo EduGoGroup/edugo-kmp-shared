@@ -97,25 +97,27 @@ fun DSNavRail(
     header: (@Composable ColumnScope.() -> Unit)? = null,
 ) {
     var openKey by remember { mutableStateOf<String?>(null) }
-    val flyout = NavRailFlyoutBinding(
-        activeKey = activeKey,
-        expandedKeys = expandedKeys,
-        onToggle = onToggle,
-        onSelect = { leaf ->
-            openKey = null
-            onSelect(leaf)
-        },
-    )
+    val flyout =
+        NavRailFlyoutBinding(
+            activeKey = activeKey,
+            expandedKeys = expandedKeys,
+            onToggle = onToggle,
+            onSelect = { leaf ->
+                openKey = null
+                onSelect(leaf)
+            },
+        )
     Surface(
         modifier = modifier.width(Sizes.railWidth),
         color = MaterialTheme.colorScheme.surfaceContainerLow,
     ) {
         Row(modifier = Modifier.fillMaxHeight()) {
             Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-                    .verticalScroll(rememberScrollState()),
+                modifier =
+                    Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 header?.invoke(this)
@@ -181,19 +183,21 @@ private fun RailIcon(
     onClick: () -> Unit,
 ) {
     val indicator = if (active) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent
-    val tint = if (active) {
-        MaterialTheme.colorScheme.onSecondaryContainer
-    } else {
-        MaterialTheme.colorScheme.onSurfaceVariant
-    }
+    val tint =
+        if (active) {
+            MaterialTheme.colorScheme.onSecondaryContainer
+        } else {
+            MaterialTheme.colorScheme.onSurfaceVariant
+        }
     Box(
-        modifier = Modifier
-            .padding(vertical = Spacing.spacing1)
-            .clip(CircleShape)
-            .background(indicator)
-            .clickable(onClick = onClick)
-            .size(RailIndicatorSize)
-            .alpha(if (node.enabled) 1f else DisabledNavItemAlpha),
+        modifier =
+            Modifier
+                .padding(vertical = Spacing.spacing1)
+                .clip(CircleShape)
+                .background(indicator)
+                .clickable(onClick = onClick)
+                .size(RailIndicatorSize)
+                .alpha(if (node.enabled) 1f else DisabledNavItemAlpha),
         contentAlignment = Alignment.Center,
     ) {
         DSLockedNavIcon(locked = !node.enabled) {
@@ -247,9 +251,10 @@ internal fun NavRailFlyoutPanel(
             color = MaterialTheme.colorScheme.onSurface,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = Spacing.spacing4, vertical = Spacing.spacing3),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = Spacing.spacing4, vertical = Spacing.spacing3),
         )
         HorizontalDivider()
         DSNavTree(
@@ -258,10 +263,11 @@ internal fun NavRailFlyoutPanel(
             expandedKeys = flyout.expandedKeys,
             onToggle = flyout.onToggle,
             onSelect = flyout.onSelect,
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(max = RailFlyoutMaxHeight)
-                .padding(vertical = Spacing.spacing2),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = RailFlyoutMaxHeight)
+                    .padding(vertical = Spacing.spacing2),
         )
     }
 }

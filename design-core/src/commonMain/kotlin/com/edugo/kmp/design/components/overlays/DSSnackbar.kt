@@ -8,6 +8,8 @@ import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
+import androidx.compose.material3.SnackbarVisuals
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -18,11 +20,23 @@ import com.edugo.kmp.design.DSTheme
 import com.edugo.kmp.design.MessageType
 import com.edugo.kmp.design.SemanticColors
 import com.edugo.kmp.design.Spacing
+import com.edugo.kmp.design.tokens.ScreenDuration
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 /**
  * Snackbar con estilos consistentes segun el tipo de mensaje.
  * Usa colores semanticos del design system para cada variante.
+ *
+ * Es el canal de **exito** del patron de estados (spec §7, D-051.3): 4s, texto verbo + objeto
+ * ("Usuario guardado"), nunca un dialogo de confirmacion. Tambien absorbe los errores de red NO
+ * destructivos, que no deben escalar a pantalla de error.
+ *
+ * Para mostrarlo desde un flujo (guardar / eliminar) usa [showDSSnackbar] sobre el
+ * `SnackbarHostState` del Scaffold + [DSSnackbarHost] como `snackbarHost`.
+ *
+ * Este composable solo PINTA: la duracion en pantalla la gobierna el `SnackbarHostState`
+ * (via `DSSnackbarVisuals.duration` / [DSSnackbarDefaults.duration]), por eso no recibe
+ * `duration` — un parametro aqui seria inerte.
  */
 @Composable
 fun DSSnackbar(
@@ -32,7 +46,6 @@ fun DSSnackbar(
     actionLabel: String? = null,
     onAction: (() -> Unit)? = null,
     onDismiss: (() -> Unit)? = null,
-    duration: SnackbarDuration = SnackbarDuration.Short,
 ) {
     val containerColor =
         when (messageType) {
@@ -80,7 +93,49 @@ fun DSSnackbar(
 }
 
 /**
+ * `SnackbarVisuals` del DS: transporta el [messageType] a traves del `SnackbarHostState`, que en
+ * Material3 solo conoce message/actionLabel/duration.
+ *
+ * Sin esto, [DSSnackbarHost] tendria que pintar todos los snackbars de una pantalla con el mismo
+ * tono; con esto, cada emision elige el suyo (exito al guardar, error al fallar la red).
+ */
+class DSSnackbarVisuals(
+    override val message: String,
+    override val actionLabel: String? = null,
+    override val withDismissAction: Boolean = false,
+    override val duration: SnackbarDuration = DSSnackbarDefaults.duration,
+    val messageType: MessageType = MessageType.INFO,
+) : SnackbarVisuals
+
+/**
+ * Muestra un snackbar del DS. Atajo para el estado de **exito** de los flujos guardar/eliminar
+ * (spec §7): `hostState.showDSSnackbar("Usuario guardado")`.
+ *
+ * Microcopy obligatorio (§9): **verbo + objeto**, sentence case, sin jerga tecnica.
+ * La duracion por defecto es `SnackbarDuration.Short` = 4000ms = [ScreenDuration.snackbar].
+ */
+suspend fun SnackbarHostState.showDSSnackbar(
+    message: String,
+    messageType: MessageType = MessageType.SUCCESS,
+    actionLabel: String? = null,
+    withDismissAction: Boolean = false,
+    duration: SnackbarDuration = DSSnackbarDefaults.duration,
+): SnackbarResult =
+    showSnackbar(
+        DSSnackbarVisuals(
+            message = message,
+            actionLabel = actionLabel,
+            withDismissAction = withDismissAction,
+            duration = duration,
+            messageType = messageType,
+        ),
+    )
+
+/**
  * Host para mostrar snackbars con el estilo del design system.
+ *
+ * Si la emision usa [DSSnackbarVisuals] se respeta su `messageType`; si es un
+ * `showSnackbar(String)` plano se cae a [messageType] (compatibilidad con los call sites previos).
  */
 @Composable
 fun DSSnackbarHost(
@@ -92,14 +147,28 @@ fun DSSnackbarHost(
         hostState = hostState,
         modifier = modifier,
     ) { snackbarData ->
+        val visuals = snackbarData.visuals
         DSSnackbar(
-            message = snackbarData.visuals.message,
-            messageType = messageType,
-            actionLabel = snackbarData.visuals.actionLabel,
+            message = visuals.message,
+            messageType = (visuals as? DSSnackbarVisuals)?.messageType ?: messageType,
+            actionLabel = visuals.actionLabel,
             onAction = { snackbarData.performAction() },
-            duration = snackbarData.visuals.duration,
         )
     }
+}
+
+/**
+ * Tiempos canonicos del snackbar del DS (spec §7, D-051.3).
+ */
+object DSSnackbarDefaults {
+    /** 4s: el tiempo del snackbar de confirmacion. Alias de [ScreenDuration.snackbar]. */
+    const val durationMillis: Long = ScreenDuration.snackbar
+
+    /**
+     * Equivalente Material3 de [durationMillis]: `SnackbarDuration.Short` dura 4000ms, por lo que
+     * el host no necesita temporizador propio.
+     */
+    val duration: SnackbarDuration = SnackbarDuration.Short
 }
 
 // --- Previews ---

@@ -64,10 +64,11 @@ fun DSNavSidebar(
                     expandedKeys = expandedKeys,
                     onToggle = onToggle,
                     onSelect = onSelect,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                        .padding(vertical = Spacing.spacing2),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                            .padding(vertical = Spacing.spacing2),
                 )
                 if (footer != null) {
                     HorizontalDivider()

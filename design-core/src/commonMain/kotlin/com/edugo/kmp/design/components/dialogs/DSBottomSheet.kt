@@ -14,6 +14,14 @@ import com.edugo.kmp.design.DSTheme
 import com.edugo.kmp.design.Spacing
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
+/**
+ * Bottom sheet modal del design system: punto único por el que pasan todas las hojas de la app.
+ *
+ * Motion (spec §8, D-051.4): la entrada desde abajo (~250ms) y el drag-to-dismiss con física
+ * nativa los aporta `ModalBottomSheet`/`SheetState` de Material 3 y **no se sobrescriben** — el
+ * componente no expone un `animationSpec` y su animación anclada (`AnchoredDraggable`) es
+ * exactamente el "comportamiento nativo" que pide la tabla de movimiento.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DSBottomSheet(
