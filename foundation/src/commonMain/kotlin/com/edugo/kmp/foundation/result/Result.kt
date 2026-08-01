@@ -344,6 +344,10 @@ fun <T> combine(vararg results: Result<T>): Result<List<T>> {
 inline fun <T> catching(block: () -> Result<T>): Result<T> {
     return try {
         block()
+    } catch (e: kotlin.coroutines.cancellation.CancellationException) {
+        // Plan 052 F0 (0.6) — QA-30: la cancelación cooperativa no es un fallo del bloque.
+        // Convertirla en Failure rompe la cancelación estructurada y publica errores falsos.
+        throw e
     } catch (e: Throwable) {
         Result.Failure(e.message ?: "An error occurred")
     }

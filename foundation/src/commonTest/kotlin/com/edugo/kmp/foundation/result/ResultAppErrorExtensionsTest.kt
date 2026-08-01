@@ -302,6 +302,31 @@ class ResultAppErrorExtensionsTest {
         assertEquals("Operation failed", result.error)
     }
 
+    /**
+     * Regresión del plan 052 F0 (0.6) — QA-30: la cancelación cooperativa NO es un fallo del
+     * bloque. Convertirla en `Failure` rompe la cancelación estructurada y publica errores
+     * inventados (un 500 del servidor que nunca ocurrió).
+     */
+    @Test
+    fun catchingWithAppError_rethrowsCancellation() {
+        assertFailsWith<kotlin.coroutines.cancellation.CancellationException> {
+            catchingWithAppError<String>(ErrorCode.SYSTEM_INTERNAL_ERROR) {
+                throw kotlin.coroutines.cancellation.CancellationException("cancelled")
+            }
+        }
+    }
+
+    @Test
+    fun flatMapCatching_rethrowsCancellation() {
+        val initial: Result<Int> = Result.Success(1)
+
+        assertFailsWith<kotlin.coroutines.cancellation.CancellationException> {
+            initial.flatMapCatching<Int, String>(ErrorCode.SYSTEM_INTERNAL_ERROR) {
+                throw kotlin.coroutines.cancellation.CancellationException("cancelled")
+            }
+        }
+    }
+
     @Test
     fun catchingWithAppError_usesDefaultCode() {
         val result: Result<String> = catchingWithAppError {

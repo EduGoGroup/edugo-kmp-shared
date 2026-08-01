@@ -348,6 +348,10 @@ inline fun <T> catchingWithAppError(
 ): Result<T> {
     return try {
         block()
+    } catch (e: kotlin.coroutines.cancellation.CancellationException) {
+        // Plan 052 F0 (0.6) — QA-30: la cancelación cooperativa no es un fallo del bloque.
+        // Convertirla en Failure rompe la cancelación estructurada y publica errores falsos.
+        throw e
     } catch (e: Throwable) {
         resultFailureFrom(e, defaultCode, details)
     }
@@ -381,6 +385,9 @@ inline fun <T, R> Result<T>.flatMapCatching(
         is Result.Success -> {
             try {
                 transform(this.data)
+            } catch (e: kotlin.coroutines.cancellation.CancellationException) {
+                // Plan 052 F0 (0.6) — QA-30: la cancelación cooperativa se propaga tal cual.
+                throw e
             } catch (e: Throwable) {
                 resultFailureFrom(e, errorCode, details)
             }

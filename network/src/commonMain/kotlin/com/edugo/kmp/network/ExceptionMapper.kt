@@ -1,6 +1,7 @@
 package com.edugo.kmp.network
 
 import io.ktor.client.plugins.*
+import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * Mapea excepciones de Ktor y sistema a NetworkException tipadas.
@@ -9,8 +10,15 @@ public object ExceptionMapper {
 
     /**
      * Convierte cualquier excepción a NetworkException apropiada.
+     *
+     * Plan 052 F0 (0.6) — QA-30: una [CancellationException] NO se mapea, se **relanza**. Salir
+     * de una pantalla mientras carga cancela la corrutina de forma cooperativa; tragársela aquí
+     * la publicaba como `ServerError(500)` ("The coroutine scope left the composition" con code
+     * SYSTEM_INTERNAL_ERROR), ensuciaba log y telemetría, rompía la cancelación estructurada y
+     * podía pintarle al usuario un error de servidor que nunca ocurrió.
      */
     public fun map(exception: Throwable): NetworkException {
+        if (exception is CancellationException) throw exception
         return when (exception) {
             // Ya es NetworkException
             is NetworkException -> exception
