@@ -400,4 +400,32 @@ class ExceptionMapperTest {
         assertTrue(result.isFailure)
         assertTrue(result.exceptionOrNull() is NetworkException.Timeout)
     }
+
+    // ==================== CANCELACIÓN COOPERATIVA (plan 052 F0 / QA-30) ====================
+
+    /**
+     * Regresión: salir de una pantalla mientras carga cancela la corrutina. Esa cancelación
+     * NO es un fallo de red — antes caía en el `else` del mapeo y se publicaba como
+     * `ServerError(500)` ("The coroutine scope left the composition").
+     */
+    @Test
+    fun map_rethrows_cancellation_instead_of_mapping_it_to_ServerError() {
+        val cancellation = kotlin.coroutines.cancellation.CancellationException(
+            "The coroutine scope left the composition"
+        )
+
+        val thrown = assertFailsWith<kotlin.coroutines.cancellation.CancellationException> {
+            ExceptionMapper.map(cancellation)
+        }
+        assertSame(cancellation, thrown)
+    }
+
+    @Test
+    fun runCatching_propagates_cancellation_instead_of_returning_failure() {
+        assertFailsWith<kotlin.coroutines.cancellation.CancellationException> {
+            ExceptionMapper.runCatching<String> {
+                throw kotlin.coroutines.cancellation.CancellationException("cancelled")
+            }
+        }
+    }
 }
