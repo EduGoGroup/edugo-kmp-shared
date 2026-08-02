@@ -3,15 +3,20 @@ package com.edugo.kmp.design.tokens
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.Assignment
+import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.automirrored.filled.FormatListBulleted
+import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.automirrored.filled.ManageSearch
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
+import androidx.compose.material.icons.automirrored.outlined.Assignment
+import androidx.compose.material.icons.automirrored.outlined.Chat
+import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.compose.material.icons.automirrored.outlined.ManageSearch
 import androidx.compose.material.icons.automirrored.outlined.TrendingUp
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Archive
 import androidx.compose.material.icons.filled.Assessment
-import androidx.compose.material.icons.filled.Assignment
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.Bolt
@@ -41,8 +46,8 @@ import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.GroupAdd
-import androidx.compose.material.icons.filled.HelpOutline
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.HowToReg
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.filled.Language
@@ -68,7 +73,9 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.Smartphone
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material.icons.filled.Visibility
@@ -76,7 +83,6 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.outlined.Archive
 import androidx.compose.material.icons.outlined.Assessment
-import androidx.compose.material.icons.outlined.Assignment
 import androidx.compose.material.icons.outlined.BarChart
 import androidx.compose.material.icons.outlined.Book
 import androidx.compose.material.icons.outlined.CheckCircle
@@ -88,6 +94,7 @@ import androidx.compose.material.icons.outlined.FolderOpen
 import androidx.compose.material.icons.outlined.Group
 import androidx.compose.material.icons.outlined.GroupAdd
 import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.HowToReg
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Key
 import androidx.compose.material.icons.outlined.Layers
@@ -98,6 +105,8 @@ import androidx.compose.material.icons.outlined.PieChart
 import androidx.compose.material.icons.outlined.School
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Shield
+import androidx.compose.material.icons.outlined.Smartphone
+import androidx.compose.material.icons.outlined.SwapHoriz
 import androidx.compose.ui.graphics.vector.ImageVector
 
 /**
@@ -119,6 +128,10 @@ import androidx.compose.ui.graphics.vector.ImageVector
  *   variantes.
  * - Si el seed introduce un icon-name nuevo no registrado aquí, el
  *   resolver loguea warning en runtime y aplica el fallback.
+ * - El gate que cruza seed y catálogo es `IconCatalogContractTest`, que
+ *   compara contra `SeedIconNames` — archivo generado desde el seed real
+ *   con `make regen-seed-icons`. Al tocar el seed: regenerar primero,
+ *   registrar aquí lo que falte después.
  */
 object IconCatalog {
     private data class Entry(
@@ -170,8 +183,15 @@ object IconCatalog {
             register(
                 "user-plus",
                 "user_plus",
+                "person_add",
                 filled = Icons.Filled.PersonAdd,
                 outlined = Icons.Outlined.PersonAdd,
+            )
+            register(
+                "user-check",
+                "user_check",
+                filled = Icons.Filled.HowToReg,
+                outlined = Icons.Outlined.HowToReg,
             )
             register("group_add", Icons.Filled.GroupAdd, Icons.Outlined.GroupAdd)
             register("school", Icons.Filled.School, Icons.Outlined.School)
@@ -195,7 +215,7 @@ object IconCatalog {
             register("share", filled = Icons.Filled.Share)
             register("check", "done", filled = Icons.Filled.Check)
             register("close", "cancel", "x", filled = Icons.Filled.Close)
-            register("block", filled = Icons.Filled.Block)
+            register("block", "ban", filled = Icons.Filled.Block)
             register(
                 "filter",
                 "filter-list",
@@ -214,8 +234,8 @@ object IconCatalog {
             )
             register(
                 "assign",
-                filled = Icons.Filled.Assignment,
-                outlined = Icons.Outlined.Assignment,
+                filled = Icons.AutoMirrored.Filled.Assignment,
+                outlined = Icons.AutoMirrored.Outlined.Assignment,
             )
 
             // --- Favorites & ratings -------------------------------------------------
@@ -233,6 +253,14 @@ object IconCatalog {
             register("email", "mail", filled = Icons.Filled.Email)
             register("phone", "call", filled = Icons.Filled.Phone)
             register("notifications", "bell", filled = Icons.Filled.Notifications)
+            // `message-circle` es el recurso «Mensajería» (WhatsApp) del seed;
+            // el equivalente Material del globo de diálogo es Chat.
+            register(
+                "message-circle",
+                "message_circle",
+                filled = Icons.AutoMirrored.Filled.Chat,
+                outlined = Icons.AutoMirrored.Outlined.Chat,
+            )
 
             // --- Security & access ---------------------------------------------------
             register("shield", Icons.Filled.Shield, Icons.Outlined.Shield)
@@ -275,6 +303,7 @@ object IconCatalog {
                 outlined = Icons.Outlined.DisplaySettings,
             )
             register("devices", Icons.Filled.Devices, Icons.Outlined.Devices)
+            register("smartphone", Icons.Filled.Smartphone, Icons.Outlined.Smartphone)
             register(
                 "file-search",
                 "file_search",
@@ -293,7 +322,13 @@ object IconCatalog {
                 filled = Icons.Filled.CheckCircle,
                 outlined = Icons.Outlined.CheckCircle,
             )
-            register("help_outline", "help-outline", "help", filled = Icons.Filled.HelpOutline)
+            register(
+                "help_outline",
+                "help-outline",
+                "help",
+                filled = Icons.AutoMirrored.Filled.HelpOutline,
+                outlined = Icons.AutoMirrored.Outlined.HelpOutline,
+            )
 
             // --- Arrows & navigation -------------------------------------------------
             register("arrow-back", "arrow_back", "back", filled = Icons.AutoMirrored.Filled.ArrowBack)
@@ -302,6 +337,17 @@ object IconCatalog {
                 "arrow_forward",
                 "forward",
                 filled = Icons.AutoMirrored.Filled.ArrowForward,
+            )
+            // El recurso «Contexto» (cambiar de escuela/unidad) usa
+            // `arrow-left-right`, nombre que el seed normalizo desde el
+            // `swap_horiz` legacy — de ahi que ambos aliases apunten a SwapHoriz.
+            register(
+                "arrow-left-right",
+                "arrow_left_right",
+                "swap_horiz",
+                "swap-horiz",
+                filled = Icons.Filled.SwapHoriz,
+                outlined = Icons.Outlined.SwapHoriz,
             )
 
             // --- Domain specific -----------------------------------------------------
