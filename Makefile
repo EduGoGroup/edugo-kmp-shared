@@ -5,6 +5,7 @@
 #                  Uso: make publish-local V=0.1.2-LOCAL
 #   ci-local       ktlintCheck + detekt + check (JVM, sin Android/Web/iOS).
 #   ci-docker      Igual pero en contenedor Docker JDK 21 (réplica de GH Actions Linux).
+#   regen-seed-icons  Refresca la lista de icon-names del seed SDUI (cruza repos).
 #
 # Prerequisito: JAVA_HOME apuntando a JDK 21+.
 
@@ -12,7 +13,7 @@ JAVA_VERSION  := 21
 KMP_CI_IMAGE  := edugo-kmp-ci:21
 DOCKER_DIR    := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))../docker
 
-.PHONY: help publish-local ci-image ci-local ci-docker
+.PHONY: help publish-local ci-image ci-local ci-docker regen-seed-icons
 
 help: ## Muestra esta ayuda
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
@@ -30,6 +31,9 @@ publish-local: ## Publica a Maven Local (~/.m2). Uso: make publish-local V=0.1.2
 	@echo "Proximos pasos en kmp-ui:"
 	@echo "  1. gradle.properties:   includeSharedLocally=false"
 	@echo "  2. libs.versions.toml:  edugo-kmp-bom = \"$(V)\""
+
+regen-seed-icons: ## Regenera SeedIconNames desde el seed de edugo-infrastructure (local, cruza repos)
+	@./tools/regen-seed-icon-names.sh
 
 ci-image: ## Construye la imagen Docker de CI para proyectos KMP (una sola vez)
 	@printf "\033[1;33mConstruyendo $(KMP_CI_IMAGE)...\033[0m\n"
