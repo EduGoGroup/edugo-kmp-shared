@@ -1,0 +1,39 @@
+# Configuración detekt de edugo-kmp-shared.
+# Se aplica con `buildUponDefaultConfig = true`: aquí solo van los OVERRIDES sobre el default
+# de detekt 1.23.7; el resto de reglas se hereda.
+#
+# Espeja la config del repo hermano `edugo-ui-kmp` (config/detekt/detekt.yml): mismo criterio
+# de estilo para los dos repos KMP, en vez de dos varas distintas.
+#
+# Todos los overrides son por CONVENCIÓN DE COMPOSE, no relajaciones de la regla:
+# las funciones @Composable usan PascalCase y sus previews/parámetros parecen «no usados» a
+# un analizador que no conoce el framework. Al cablear detekt a los source sets KMP (deuda 059)
+# estos falsos positivos eran 334 de los 540 hallazgos totales — el 62% del ruido.
+
+naming:
+  FunctionNaming:
+    ignoreAnnotated: ['Composable']
+  TopLevelPropertyNaming:
+    # Las propiedades top-level de Compose (p. ej. estilos/Modifiers) usan PascalCase.
+    ignoreAnnotated: ['Composable']
+  MatchingDeclarationName:
+    # Un archivo de design system suele exponer varios composables hermanos (DSButton.kt con
+    # DSButton + DSButtonDefaults); exigir 1:1 nombre-archivo no aporta aquí.
+    active: false
+
+complexity:
+  LongParameterList:
+    # Un composable recibe sus slots y su estado por parámetro: 6 no es un olor, es la API.
+    ignoreAnnotated: ['Composable']
+
+style:
+  UnusedPrivateMember:
+    # @Preview y los parámetros de composables los consume el compilador de Compose, no el código.
+    ignoreAnnotated: ['Composable', 'Preview']
+
+  MagicNumber:
+    # En un módulo de DESIGN SYSTEM el número ES el valor del token: `val spacing3 = 12.dp`.
+    # Eso ya está nombrado, que es exactamente lo que la regla persigue; marcarlo es ruido.
+    # OJO: un literal suelto DENTRO de un composable sigue siendo hallazgo — no se relaja ahí.
+    ignorePropertyDeclaration: true
+    ignoreCompanionObjectPropertyDeclaration: true

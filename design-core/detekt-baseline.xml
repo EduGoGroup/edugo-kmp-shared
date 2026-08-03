@@ -1,0 +1,65 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>CyclomaticComplexMethod:ContextMenuStrategy.kt$@Composable internal fun ContextMenuStrategy( actions: List&lt;RowAction&gt;, onAction: (RowAction) -&gt; Unit, content: @Composable (Modifier) -&gt; Unit, )</ID>
+    <ID>CyclomaticComplexMethod:DSExpandableDrawerContent.kt$@Composable fun DSExpandableDrawerContent( sections: List&lt;DSDrawerSection&gt;, selectedKey: String?, expandedKeys: Set&lt;String&gt;, onSectionClick: (DSDrawerSection) -&gt; Unit, onChildClick: (DSDrawerChild) -&gt; Unit, onExpandToggle: (String) -&gt; Unit, modifier: Modifier = Modifier, header: @Composable (ColumnScope.() -&gt; Unit)? = null, footer: @Composable (ColumnScope.() -&gt; Unit)? = null, )</ID>
+    <ID>CyclomaticComplexMethod:SwipeActionsStrategy.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable internal fun SwipeActionsStrategy( actions: List&lt;RowAction&gt;, onAction: (RowAction) -&gt; Unit, modifier: Modifier, content: @Composable (Modifier) -&gt; Unit, )</ID>
+    <ID>DestructuringDeclarationWithTooManyEntries:SwipeActionsStrategy.kt$val (bgColor, icon, iconDescription, alignment) = when (direction) { SwipeToDismissBoxValue.EndToStart -&gt; SwipeBackground( color = MaterialTheme.colorScheme.errorContainer, icon = Icons.Filled.Delete, description = destructive?.label ?: "", alignment = Alignment.CenterEnd, ) SwipeToDismissBoxValue.StartToEnd -&gt; SwipeBackground( // Plan 050 D-050.5: acción de edición en `primaryContainer` // (antes `secondaryContainer`); la destructiva en `errorContainer`. color = MaterialTheme.colorScheme.primaryContainer, icon = primary?.icon ?: Icons.Filled.Delete, description = primary?.label ?: "", alignment = Alignment.CenterStart, ) SwipeToDismissBoxValue.Settled -&gt; SwipeBackground( color = MaterialTheme.colorScheme.surface, icon = Icons.Filled.Delete, description = "", alignment = Alignment.CenterEnd, ) }</ID>
+    <ID>FunctionNaming:DSAdaptiveActionsHostTest.kt$DSAdaptiveActionsHostTest$@Test fun compositeRenders_withDestructiveAction_smokeTest()</ID>
+    <ID>FunctionNaming:DSAdaptiveActionsHostTest.kt$DSAdaptiveActionsHostTest$@Test fun compositeRenders_withNormalAction_smokeTest()</ID>
+    <ID>FunctionNaming:DSAdaptiveActionsHostTest.kt$DSAdaptiveActionsHostTest$@Test fun opensContextMenu_onRightClick_inDesktop()</ID>
+    <ID>FunctionNaming:DSAdaptiveActionsHostTest.kt$DSAdaptiveActionsHostTest$@Test fun showsHoverButtons_onPointerEnter_inDesktop()</ID>
+    <ID>FunctionNaming:DSAdaptiveActionsHostTest.kt$DSAdaptiveActionsHostTest$@Test fun skipsWrapper_whenNoActions()</ID>
+    <ID>FunctionNaming:WindowSizeRecompositionTest.kt$WindowSizeRecompositionTest$@Test fun crossingThreshold_recomposesWidthClassReader()</ID>
+    <ID>FunctionNaming:WindowSizeRecompositionTest.kt$WindowSizeRecompositionTest$@Test fun dragInsideSameClass_recomposesOnlyRawDpReader()</ID>
+    <ID>FunctionNaming:WindowSizeRecompositionTest.kt$WindowSizeRecompositionTest$@Test fun explicitWindowSize_providesBothLocals()</ID>
+    <ID>LongMethod:ContextMenuStrategy.kt$@Composable internal fun ContextMenuStrategy( actions: List&lt;RowAction&gt;, onAction: (RowAction) -&gt; Unit, content: @Composable (Modifier) -&gt; Unit, )</ID>
+    <ID>LongMethod:ContextStatusBar.kt$@Composable fun ContextStatusBar( schoolName: String?, unitName: String?, roleLabel: String?, modifier: Modifier = Modifier, onSchoolClick: (() -&gt; Unit)? = null, onUnitClick: (() -&gt; Unit)? = null, // Etiquetas a mostrar cuando falta el dato (atenuadas). Neutras por defecto; // el consumidor branded pasa las cadenas localizadas. selectSchoolLabel: String = "Seleccionar colegio", selectUnitLabel: String = "Seleccionar unidad", // Descripciones de accesibilidad para los segmentos clickables. schoolActionLabel: String? = null, unitActionLabel: String? = null, // Descripción global de la barra (lectores de pantalla). contentDescription: String? = null, )</ID>
+    <ID>LongMethod:DSExpandableDrawerContent.kt$@Composable fun DSExpandableDrawerContent( sections: List&lt;DSDrawerSection&gt;, selectedKey: String?, expandedKeys: Set&lt;String&gt;, onSectionClick: (DSDrawerSection) -&gt; Unit, onChildClick: (DSDrawerChild) -&gt; Unit, onExpandToggle: (String) -&gt; Unit, modifier: Modifier = Modifier, header: @Composable (ColumnScope.() -&gt; Unit)? = null, footer: @Composable (ColumnScope.() -&gt; Unit)? = null, )</ID>
+    <ID>LongMethod:SwipeActionsStrategy.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable internal fun SwipeActionsStrategy( actions: List&lt;RowAction&gt;, onAction: (RowAction) -&gt; Unit, modifier: Modifier, content: @Composable (Modifier) -&gt; Unit, )</ID>
+    <ID>LongParameterList:NavTreeState.kt$( nodes: List&lt;NavTreeNode&gt;, depth: Int, effective: Set&lt;String&gt;, activeKey: String?, ancestors: Set&lt;String&gt;, out: MutableList&lt;NavRowData&gt;, )</ID>
+    <ID>MagicNumber:DSBadge.kt$99</ID>
+    <ID>MagicNumber:DSSlider.kt$0.4f</ID>
+    <ID>MagicNumber:ExtendedColorScheme.kt$ExtendedColorScheme.Companion$0xFF001D36</ID>
+    <ID>MagicNumber:ExtendedColorScheme.kt$ExtendedColorScheme.Companion$0xFF003258</ID>
+    <ID>MagicNumber:ExtendedColorScheme.kt$ExtendedColorScheme.Companion$0xFF00497D</ID>
+    <ID>MagicNumber:ExtendedColorScheme.kt$ExtendedColorScheme.Companion$0xFF0061A4</ID>
+    <ID>MagicNumber:ExtendedColorScheme.kt$ExtendedColorScheme.Companion$0xFF062100</ID>
+    <ID>MagicNumber:ExtendedColorScheme.kt$ExtendedColorScheme.Companion$0xFF113800</ID>
+    <ID>MagicNumber:ExtendedColorScheme.kt$ExtendedColorScheme.Companion$0xFF205107</ID>
+    <ID>MagicNumber:ExtendedColorScheme.kt$ExtendedColorScheme.Companion$0xFF281900</ID>
+    <ID>MagicNumber:ExtendedColorScheme.kt$ExtendedColorScheme.Companion$0xFF386A20</ID>
+    <ID>MagicNumber:ExtendedColorScheme.kt$ExtendedColorScheme.Companion$0xFF432C00</ID>
+    <ID>MagicNumber:ExtendedColorScheme.kt$ExtendedColorScheme.Companion$0xFF604100</ID>
+    <ID>MagicNumber:ExtendedColorScheme.kt$ExtendedColorScheme.Companion$0xFF7E5700</ID>
+    <ID>MagicNumber:ExtendedColorScheme.kt$ExtendedColorScheme.Companion$0xFF9DD67D</ID>
+    <ID>MagicNumber:ExtendedColorScheme.kt$ExtendedColorScheme.Companion$0xFF9ECAFF</ID>
+    <ID>MagicNumber:ExtendedColorScheme.kt$ExtendedColorScheme.Companion$0xFFB8F397</ID>
+    <ID>MagicNumber:ExtendedColorScheme.kt$ExtendedColorScheme.Companion$0xFFD1E4FF</ID>
+    <ID>MagicNumber:ExtendedColorScheme.kt$ExtendedColorScheme.Companion$0xFFF5BF48</ID>
+    <ID>MagicNumber:ExtendedColorScheme.kt$ExtendedColorScheme.Companion$0xFFFFDEA6</ID>
+    <ID>MagicNumber:ExtendedColorScheme.kt$ExtendedColorScheme.Companion$0xFFFFFFFF</ID>
+    <ID>MagicNumber:ResponsiveTokens.kt$Breakpoint.EXPANDED$840</ID>
+    <ID>MagicNumber:ResponsiveTokens.kt$Breakpoint.LARGE$1200</ID>
+    <ID>MagicNumber:ResponsiveTokens.kt$Breakpoint.MEDIUM$600</ID>
+    <ID>MagicNumber:ResponsiveTokens.kt$ResponsiveSpacing$3</ID>
+    <ID>MagicNumber:ResponsiveTokens.kt$ResponsiveSpacing$4</ID>
+    <ID>MaxLineLength:DSNavigationDrawer.kt$imageVector = if (selectedIndex == index) (item.selectedIcon ?: item.icon) else item.icon</ID>
+    <ID>MaxLineLength:DSNavigationRail.kt$imageVector = if (selectedIndex == index) (item.selectedIcon ?: item.icon) else item.icon</ID>
+    <ID>MaxLineLength:ResponsiveTokens.kt$ResponsiveLayout$fun</ID>
+    <ID>MaxLineLength:Tokens.kt$Durations$@Deprecated("Use AnimationDuration.extraLong2 instead", ReplaceWith("com.edugo.kmp.design.tokens.AnimationDuration.extraLong2"))</ID>
+    <ID>MaxLineLength:Tokens.kt$Durations$@Deprecated("Use AnimationDuration.long2 instead", ReplaceWith("com.edugo.kmp.design.tokens.AnimationDuration.long2"))</ID>
+    <ID>MaxLineLength:Tokens.kt$Durations$@Deprecated("Use AnimationDuration.short2 instead", ReplaceWith("com.edugo.kmp.design.tokens.AnimationDuration.short2"))</ID>
+    <ID>MaxLineLength:Tokens.kt$Radius$@Deprecated("Use CornerRadius.extraSmall instead", ReplaceWith("com.edugo.kmp.design.tokens.CornerRadius.extraSmall"))</ID>
+    <ID>ReturnCount:IconCatalog.kt$IconCatalog$fun lookup( iconName: String?, filled: Boolean = true, ): ImageVector?</ID>
+    <ID>ReturnCount:NavTreeState.kt$fun NavTreeNode.containsKey(key: String?): Boolean</ID>
+    <ID>ReturnCount:NavTreeState.kt$private fun findPath( nodes: List&lt;NavTreeNode&gt;, target: String, ): List&lt;String&gt;?</ID>
+    <ID>TooManyFunctions:SemanticColors.kt$SemanticColors</ID>
+    <ID>TopLevelPropertyNaming:DSLockedNavIcon.kt$/** * Opacidad aplicada a un item de navegación bloqueado. M3 usa ~0.38 para estados * deshabilitados; lo replicamos para que el item se vea atenuado sin perder el * click (el consumidor intercepta el tap para resolver el contexto faltante). * Compartida por las cuatro superficies de navegación (rail / bottom-nav / * drawer / hoja de overflow): es el único token de atenuación de bloqueo, para * que un item bloqueado se vea idéntico en cualquier banda. */ const val DisabledNavItemAlpha = 0.38f</ID>
+    <ID>TopLevelPropertyNaming:DSNavTree.kt$private const val ChevronCollapsed = 0f</ID>
+    <ID>TopLevelPropertyNaming:DSNavTree.kt$private const val ChevronExpanded = 180f</ID>
+    <ID>UnusedParameter:DSChip.kt$onDismiss: (() -&gt; Unit)? = null</ID>
+    <ID>UnusedParameter:DSCircularProgress.kt$size: Dp = Sizes.progressLarge</ID>
+  </CurrentIssues>
+</SmellBaseline>

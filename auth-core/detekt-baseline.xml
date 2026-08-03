@@ -1,0 +1,24 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>ComplexCondition:TokenRefreshManagerImpl.kt$TokenRefreshManagerImpl$errorMessage.contains("expired", ignoreCase = true) || errorMessage.contains("invalid", ignoreCase = true) || errorMessage.contains("revoked", ignoreCase = true) || errorMessage.contains("401")</ID>
+    <ID>MagicNumber:JwtParser.kt$JwtParser$3</ID>
+    <ID>MagicNumber:RefreshFailureReason.kt$RefreshFailureReason$500</ID>
+    <ID>MagicNumber:TokenRefreshManagerImpl.kt$TokenRefreshManagerImpl$500</ID>
+    <ID>MaxLineLength:JwtParserTest.kt$JwtParserTest$// Payload: {"sub":"user-123","iss":"edugo-api","exp":1893456000,"iat":1704067200,"role":"admin","school_id":"school-456"}</ID>
+    <ID>MaxLineLength:JwtParserTest.kt$JwtParserTest$private</ID>
+    <ID>MaxLineLength:TokenRefreshManagerAutoRefreshTest.kt$TokenRefreshManagerAutoRefreshTest$// Token expires in 10s with threshold 300s =&gt; computed delay is -290s, clamped to MIN_SCHEDULE_DELAY_MS (5s)</ID>
+    <ID>MaxLineLength:TokenRefreshManagerAutoRefreshTest.kt$TokenRefreshManagerAutoRefreshTest$assertEquals(0, refreshCount, "First schedule should be cancelled when startAutomaticRefresh() is called again")</ID>
+    <ID>ReturnCount:JwtParser.kt$JwtParser$@OptIn(ExperimentalEncodingApi::class) fun parse(token: String): JwtParseResult</ID>
+    <ID>ReturnCount:JwtValidatorImpl.kt$JwtValidatorImpl$override suspend fun validate(token: String): JwtValidationResult</ID>
+    <ID>ReturnCount:PermissionMatcher.kt$PermissionMatcher$fun matches( pattern: String, request: String, ): Boolean</ID>
+    <ID>ReturnCount:RetryPolicy.kt$suspend fun &lt;T&gt; withRetry( policy: RetryPolicy = RetryPolicy.DEFAULT, logger: Logger? = null, operation: suspend (attempt: Int) -&gt; Result&lt;T&gt;, ): Result&lt;T&gt;</ID>
+    <ID>ReturnCount:TokenRefreshManagerImpl.kt$TokenRefreshManagerImpl$private fun isRetryableError(errorMessage: String): Boolean</ID>
+    <ID>ReturnCount:TokenRefreshManagerImpl.kt$TokenRefreshManagerImpl$private suspend fun performRefresh(reason: RefreshReason): Result&lt;TokenPair&gt;</ID>
+    <ID>TooGenericExceptionCaught:JwtParser.kt$JwtParser$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:JwtValidatorImpl.kt$JwtValidatorImpl$e: Exception</ID>
+    <ID>TooManyFunctions:TokenRefreshManagerImpl.kt$TokenRefreshManagerImpl : TokenRefreshManager</ID>
+    <ID>UseCheckOrError:JwtValidatorImpl.kt$JwtValidatorImpl$throw IllegalStateException("Missing subject in valid token response")</ID>
+  </CurrentIssues>
+</SmellBaseline>
