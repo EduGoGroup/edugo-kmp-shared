@@ -49,7 +49,7 @@ Por capas (Fase de extracción entre paréntesis):
 ## Release atómico (BOM)
 
 El repo se publica en **un solo Release atómico** que sube todos los módulos + el BOM con la misma
-matriz de versiones. Ver **ADR 0014 (`EduGo/docs/adr/0014-release-atomico-edugo-kmp-shared.md`)**.
+matriz de versiones. Ver **ADR 0014 (`EduGo/documentacion/adrs/0014-release-atomico-edugo-kmp-shared.md`)**.
 
 > Nota operativa: el publish atómico tarda ~30 min. No cancelarlo antes de completar o el BOM queda
 > incompleto (le faltaría el módulo raíz). Verificar completitud por módulos raíz, no por conteo de
