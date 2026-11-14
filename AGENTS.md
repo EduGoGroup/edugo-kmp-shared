@@ -2,7 +2,7 @@
 
 > Fuente única de instrucciones para este proyecto (Claude, Gemini, Cursor, Codex…).
 > `CLAUDE.md` y `GEMINI.md` solo apuntan aquí. Reglas del ecosistema: `../../AGENTS.md`.
-> Convención de docs (estructura fractal): `../../docs/CONVENCIONES.md`.
+> Reglas y nomenclatura del ecosistema: `../../documentacion/constitucion/04-reglas-de-trabajo-y-nomenclatura.md`.
 > El plan vivo de extracción que gobierna este repo vive en el repo principal:
 > `../edugo-ui-kmp/docs/architecture/kmp-shared-extraction-v2/README.md`.
 
