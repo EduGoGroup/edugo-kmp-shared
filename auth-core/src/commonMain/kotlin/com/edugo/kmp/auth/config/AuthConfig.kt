@@ -26,7 +26,8 @@ data class AuthConfig(
                         rateLimitWindow = 1.minutes,
                     )
 
-                Environment.STAGING ->
+                // DEMO usa la misma imagen y el mismo identity-core que staging (ADR 0046).
+                Environment.STAGING, Environment.DEMO ->
                     AuthConfig(
                         refreshConfig = TokenRefreshConfig.DEFAULT,
                         circuitBreakerConfig = CircuitBreakerConfig.default(),

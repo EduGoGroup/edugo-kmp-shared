@@ -26,13 +26,14 @@ object ConfigLoader {
     /**
      * Carga la configuración para el ambiente especificado.
      *
-     * @param environment Ambiente a cargar (DEV, DEV_LAN, STAGING, PROD)
+     * @param environment Ambiente a cargar (DEV, DEV_LAN, STAGING, DEMO, PROD)
      * @return AppConfig generada en build-time desde el JSON correspondiente
      */
     fun load(environment: Environment): AppConfig = when (environment) {
         Environment.DEV -> GeneratedConfigs.DEV
         Environment.DEV_LAN -> GeneratedConfigs.DEV_LAN
         Environment.STAGING -> GeneratedConfigs.STAGING
+        Environment.DEMO -> GeneratedConfigs.DEMO
         Environment.PROD -> GeneratedConfigs.PROD
     }
 

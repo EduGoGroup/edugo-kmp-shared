@@ -1,0 +1,23 @@
+{
+  "environmentName": "DEMO",
+  "network": {
+    "timeout": 60000,
+    "webPort": 8080,
+    "debugMode": true
+  },
+  "behavior": {
+    "mockMode": false,
+    "testUserSelectorEnabled": false
+  },
+  "api": {
+    "identityBaseUrl": "https://edugo-api-identity-demo-eckbvbu3pa-ue.a.run.app",
+    "academicBaseUrl": "https://edugo-api-academic-demo-eckbvbu3pa-ue.a.run.app",
+    "learningBaseUrl": "https://edugo-api-learning-demo-eckbvbu3pa-ue.a.run.app",
+    "platformBaseUrl": "https://edugo-api-platform-demo-eckbvbu3pa-ue.a.run.app",
+    "messagingBaseUrl": "",
+    "identityCoreBaseUrl": "https://identity-api-eckbvbu3pa-ue.a.run.app"
+  },
+  "telemetry": {
+    "otelEndpoint": ""
+  }
+}
