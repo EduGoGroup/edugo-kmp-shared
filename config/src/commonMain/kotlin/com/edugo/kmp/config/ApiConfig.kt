@@ -29,6 +29,17 @@ interface ApiConfig {
      */
     val messagingBaseUrl: String
         get() = ""
+
+    /**
+     * URL base de identity-core, el IdP externo (login, refresh y logout; ADR 0038).
+     *
+     * El login de la app pasa por aquí y luego se canjea en [identityBaseUrl].
+     * Getter por defecto vacío, igual que [messagingBaseUrl], para no romper los
+     * implementadores anónimos de ApiConfig. No entra en el mapa de puertos del
+     * modo mixto: identity-core no se levanta en local.
+     */
+    val identityCoreBaseUrl: String
+        get() = ""
 }
 
 /**
@@ -43,5 +54,8 @@ data class ApiConfigImpl(
     // Default vacío por compatibilidad con los call sites posicionales existentes
     // (tests de config). El generador generateAppConfigs lo emite explícito desde
     // los JSON, y el modo mixto lo propaga en LocalApiOverride.
-    override val messagingBaseUrl: String = ""
+    override val messagingBaseUrl: String = "",
+    // Mismo criterio que messagingBaseUrl: default vacío para los call sites
+    // posicionales; el generador lo emite explícito desde los JSON.
+    override val identityCoreBaseUrl: String = ""
 ) : ApiConfig
