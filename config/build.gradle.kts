@@ -145,6 +145,9 @@ val generateAppConfigs by tasks.registering {
                 ?: throw GradleException("Falta 'api.platformBaseUrl' en ${jsonFile.name}.")
             val messagingBaseUrlRaw = api["messagingBaseUrl"]?.toString()
                 ?: throw GradleException("Falta 'api.messagingBaseUrl' en ${jsonFile.name}.")
+            // identity-core (ADR 0038): sin override del modo mixto, no se levanta en local.
+            val identityCoreBaseUrl = api["identityCoreBaseUrl"]?.toString()
+                ?: throw GradleException("Falta 'api.identityCoreBaseUrl' en ${jsonFile.name}.")
 
             // Override del modo mixto: solo en el entorno activo (`-Penv`) y solo
             // para las APIs listadas en `-PlocalApis`. El resto queda intacto.
@@ -180,6 +183,7 @@ val generateAppConfigs by tasks.registering {
                 append("            learningBaseUrl = ").append(kotlinStringLiteral(learningBaseUrl)).append(",\n")
                 append("            platformBaseUrl = ").append(kotlinStringLiteral(platformBaseUrl)).append(",\n")
                 append("            messagingBaseUrl = ").append(kotlinStringLiteral(messagingBaseUrl)).append(",\n")
+                append("            identityCoreBaseUrl = ").append(kotlinStringLiteral(identityCoreBaseUrl)).append(",\n")
                 append("        ),\n")
                 append("        telemetry = TelemetryConfigImpl(\n")
                 append("            otelEndpoint = ").append(kotlinStringLiteral(otelEndpoint)).append(",\n")

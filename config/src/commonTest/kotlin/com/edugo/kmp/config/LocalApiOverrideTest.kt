@@ -25,6 +25,7 @@ class LocalApiOverrideTest {
         learningBaseUrl = "https://edugo-api-learning-eckbvbu3pa-ue.a.run.app",
         platformBaseUrl = "https://edugo-api-platform-eckbvbu3pa-ue.a.run.app",
         messagingBaseUrl = "https://edugo-api-messaging-eckbvbu3pa-ue.a.run.app",
+        identityCoreBaseUrl = "https://identity-api-eckbvbu3pa-ue.a.run.app",
     )
 
     // --- Mapeo nombre→puerto (fuente de verdad, alineado con APIs Go / Makefile) ---
@@ -116,5 +117,19 @@ class LocalApiOverrideTest {
         assertEquals("http://localhost:8060", result.academicBaseUrl)
         assertEquals("http://localhost:8065", result.learningBaseUrl)
         assertEquals("http://localhost:8075", result.platformBaseUrl)
+    }
+
+    @Test
+    fun override_keeps_identity_core_base_url() {
+        val result = LocalApiOverride.applyTo(stagingApi, LocalApiOverride.parse("identity,academic"))
+
+        // identity-core no tiene puerto local: el modo mixto no lo pierde ni lo reescribe.
+        assertEquals(stagingApi.identityCoreBaseUrl, result.identityCoreBaseUrl)
+        assertEquals("http://localhost:8070", result.identityBaseUrl)
+    }
+
+    @Test
+    fun identity_core_is_not_a_local_api() {
+        assertFailsWith<IllegalArgumentException> { LocalApiOverride.parse("identitycore") }
     }
 }

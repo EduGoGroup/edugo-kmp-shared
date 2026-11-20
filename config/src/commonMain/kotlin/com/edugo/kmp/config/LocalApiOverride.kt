@@ -73,6 +73,8 @@ object LocalApiOverride {
             learningBaseUrl = if ("learning" in localApis) localUrl("learning") else base.learningBaseUrl,
             platformBaseUrl = if ("platform" in localApis) localUrl("platform") else base.platformBaseUrl,
             messagingBaseUrl = if ("messaging" in localApis) localUrl("messaging") else base.messagingBaseUrl,
+            // identity-core no tiene puerto local: se conserva siempre el del entorno base.
+            identityCoreBaseUrl = base.identityCoreBaseUrl,
         )
     }
 

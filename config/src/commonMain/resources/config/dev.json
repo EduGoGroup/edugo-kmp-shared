@@ -14,7 +14,8 @@
     "academicBaseUrl": "http://localhost:8060",
     "learningBaseUrl": "http://localhost:8065",
     "platformBaseUrl": "http://localhost:8075",
-    "messagingBaseUrl": "http://localhost:8085"
+    "messagingBaseUrl": "http://localhost:8085",
+    "identityCoreBaseUrl": "https://identity-api-eckbvbu3pa-ue.a.run.app"
   },
   "telemetry": {
     "otelEndpoint": "http://localhost:4318"

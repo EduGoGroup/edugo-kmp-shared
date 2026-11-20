@@ -325,4 +325,37 @@ class AppConfigTest {
         assertEquals("http://localhost:8065", config.api.learningBaseUrl)
         assertEquals("http://localhost:8075", config.api.platformBaseUrl)
     }
+
+    // --- identity-core (HU-DEMO.1, ADR 0038) ---
+
+    @Test
+    fun staging_config_has_identity_core_base_url() {
+        val api = ConfigLoader.load(Environment.STAGING).api
+        assertEquals("https://identity-api-eckbvbu3pa-ue.a.run.app", api.identityCoreBaseUrl)
+    }
+
+    @Test
+    fun dev_configs_point_to_the_only_identity_core_instance() {
+        val staging = ConfigLoader.load(Environment.STAGING).api.identityCoreBaseUrl
+        assertEquals(staging, ConfigLoader.load(Environment.DEV).api.identityCoreBaseUrl)
+        assertEquals(staging, ConfigLoader.load(Environment.DEV_LAN).api.identityCoreBaseUrl)
+    }
+
+    @Test
+    fun prod_config_has_empty_identity_core_base_url() {
+        assertEquals("", ConfigLoader.load(Environment.PROD).api.identityCoreBaseUrl)
+    }
+
+    @Test
+    fun api_config_without_identity_core_field_defaults_to_empty() {
+        val anonymous = object : ApiConfig {
+            override val identityBaseUrl = "http://localhost:8070"
+            override val academicBaseUrl = "http://localhost:8060"
+            override val learningBaseUrl = "http://localhost:8065"
+            override val platformBaseUrl = "http://localhost:8075"
+        }
+        assertEquals("", anonymous.identityCoreBaseUrl)
+        val positional = ApiConfigImpl("a", "b", "c", "d")
+        assertEquals("", positional.identityCoreBaseUrl)
+    }
 }

@@ -14,7 +14,8 @@
     "academicBaseUrl": "https://edugo-api-academic-eckbvbu3pa-ue.a.run.app",
     "learningBaseUrl": "https://edugo-api-learning-eckbvbu3pa-ue.a.run.app",
     "platformBaseUrl": "https://edugo-api-platform-eckbvbu3pa-ue.a.run.app",
-    "messagingBaseUrl": "https://edugo-api-messaging-eckbvbu3pa-ue.a.run.app"
+    "messagingBaseUrl": "https://edugo-api-messaging-eckbvbu3pa-ue.a.run.app",
+    "identityCoreBaseUrl": "https://identity-api-eckbvbu3pa-ue.a.run.app"
   },
   "telemetry": {
     "otelEndpoint": ""
