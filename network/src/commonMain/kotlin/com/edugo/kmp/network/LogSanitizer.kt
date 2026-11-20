@@ -22,6 +22,7 @@ public object LogSanitizer {
         "apiKey",
         "access_token",
         "refresh_token",
+        "identity_token",
         "credentials"
     )
 

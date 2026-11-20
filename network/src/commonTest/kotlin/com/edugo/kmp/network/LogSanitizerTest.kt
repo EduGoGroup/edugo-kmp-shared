@@ -180,4 +180,19 @@ class LogSanitizerTest {
 
         assertEquals(url, sanitized) // No changes
     }
+
+    @Test
+    fun sanitizeBody_masks_identity_core_tokens() {
+        val body =
+            """{"identity_token":"eyJ.it.sig","refresh_token":"opaque-refresh",""" +
+                """"access_token":"eyJ.ct.sig","expires_in":898}"""
+
+        val sanitized = LogSanitizer.sanitizeBody(body)
+
+        assertFalse(sanitized.contains("eyJ.it.sig"))
+        assertFalse(sanitized.contains("opaque-refresh"))
+        assertFalse(sanitized.contains("eyJ.ct.sig"))
+        assertTrue(sanitized.contains("\"identity_token\": \"[REDACTED]\""))
+        assertTrue(sanitized.contains("898"))
+    }
 }
