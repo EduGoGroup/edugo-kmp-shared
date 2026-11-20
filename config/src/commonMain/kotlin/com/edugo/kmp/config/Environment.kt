@@ -6,6 +6,7 @@ package com.edugo.kmp.config
  * Cada ambiente tiene su propia configuración en un archivo JSON separado:
  * - DEV: config/dev.json
  * - STAGING: config/staging.json
+ * - DEMO: config/demo.json
  * - PROD: config/prod.json
  */
 enum class Environment {
@@ -28,6 +29,13 @@ enum class Environment {
      * Usa servidores de staging para validación antes de producción.
      */
     STAGING,
+
+    /**
+     * Ambiente de demo para presentaciones (ADR 0046).
+     * Apunta a las APIs `*-demo` de Cloud Run, que corren la imagen de staging contra una base propia;
+     * comparte identity-core con staging y apaga el selector de usuarios de prueba.
+     */
+    DEMO,
 
     /**
      * Ambiente de producción.

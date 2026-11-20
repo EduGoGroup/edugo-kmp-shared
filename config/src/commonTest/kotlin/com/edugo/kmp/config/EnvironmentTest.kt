@@ -17,6 +17,9 @@ class EnvironmentTest {
         assertEquals(Environment.STAGING, Environment.fromString("staging"))
         assertEquals(Environment.STAGING, Environment.fromString("Staging"))
 
+        assertEquals(Environment.DEMO, Environment.fromString("DEMO"))
+        assertEquals(Environment.DEMO, Environment.fromString("demo"))
+
         assertEquals(Environment.PROD, Environment.fromString("PROD"))
         assertEquals(Environment.PROD, Environment.fromString("prod"))
         assertEquals(Environment.PROD, Environment.fromString("Prod"))
@@ -56,6 +59,7 @@ class EnvironmentTest {
     fun fileNameReturnsLowercaseName() {
         assertEquals("dev", Environment.DEV.fileName)
         assertEquals("staging", Environment.STAGING.fileName)
+        assertEquals("demo", Environment.DEMO.fileName)
         assertEquals("prod", Environment.PROD.fileName)
     }
 }

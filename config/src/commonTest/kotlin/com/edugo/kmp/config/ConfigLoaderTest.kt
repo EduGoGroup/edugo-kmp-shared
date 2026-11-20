@@ -3,6 +3,7 @@ package com.edugo.kmp.config
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
@@ -53,6 +54,30 @@ class ConfigLoaderTest {
         assertTrue(config.network.debugMode)
         // Collectors cloud retirados (ADR 0027, commit d459789): endpoint vacío = telemetría remota off
         assertEquals("", config.telemetry.otelEndpoint)
+    }
+
+    @Test
+    fun load_demo_config_points_to_demo_apis_and_shares_identity_core_with_staging() {
+        val demo = ConfigLoader.load(Environment.DEMO)
+        val staging = ConfigLoader.load(Environment.STAGING)
+
+        assertEquals(Environment.DEMO, demo.environment)
+        assertFalse(demo.behavior.testUserSelectorEnabled)
+        assertFalse(demo.behavior.mockMode)
+
+        val demoApis = listOf(
+            demo.api.identityBaseUrl to staging.api.identityBaseUrl,
+            demo.api.academicBaseUrl to staging.api.academicBaseUrl,
+            demo.api.learningBaseUrl to staging.api.learningBaseUrl,
+            demo.api.platformBaseUrl to staging.api.platformBaseUrl,
+        )
+        demoApis.forEach { (demoUrl, stagingUrl) ->
+            assertTrue("-demo" in demoUrl, "La URL de demo debe contener -demo: $demoUrl")
+            assertNotEquals(stagingUrl, demoUrl)
+        }
+
+        assertEquals(staging.api.identityCoreBaseUrl, demo.api.identityCoreBaseUrl)
+        assertEquals("", demo.api.messagingBaseUrl)
     }
 
     @Test
