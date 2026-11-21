@@ -40,14 +40,8 @@
     <ID>MagicNumber:ExtendedColorScheme.kt$ExtendedColorScheme.Companion$0xFFF5BF48</ID>
     <ID>MagicNumber:ExtendedColorScheme.kt$ExtendedColorScheme.Companion$0xFFFFDEA6</ID>
     <ID>MagicNumber:ExtendedColorScheme.kt$ExtendedColorScheme.Companion$0xFFFFFFFF</ID>
-    <ID>MagicNumber:ResponsiveTokens.kt$Breakpoint.EXPANDED$840</ID>
-    <ID>MagicNumber:ResponsiveTokens.kt$Breakpoint.LARGE$1200</ID>
-    <ID>MagicNumber:ResponsiveTokens.kt$Breakpoint.MEDIUM$600</ID>
-    <ID>MagicNumber:ResponsiveTokens.kt$ResponsiveSpacing$3</ID>
-    <ID>MagicNumber:ResponsiveTokens.kt$ResponsiveSpacing$4</ID>
     <ID>MaxLineLength:DSNavigationDrawer.kt$imageVector = if (selectedIndex == index) (item.selectedIcon ?: item.icon) else item.icon</ID>
     <ID>MaxLineLength:DSNavigationRail.kt$imageVector = if (selectedIndex == index) (item.selectedIcon ?: item.icon) else item.icon</ID>
-    <ID>MaxLineLength:ResponsiveTokens.kt$ResponsiveLayout$fun</ID>
     <ID>MaxLineLength:Tokens.kt$Durations$@Deprecated("Use AnimationDuration.extraLong2 instead", ReplaceWith("com.edugo.kmp.design.tokens.AnimationDuration.extraLong2"))</ID>
     <ID>MaxLineLength:Tokens.kt$Durations$@Deprecated("Use AnimationDuration.long2 instead", ReplaceWith("com.edugo.kmp.design.tokens.AnimationDuration.long2"))</ID>
     <ID>MaxLineLength:Tokens.kt$Durations$@Deprecated("Use AnimationDuration.short2 instead", ReplaceWith("com.edugo.kmp.design.tokens.AnimationDuration.short2"))</ID>

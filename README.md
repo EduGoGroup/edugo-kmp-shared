@@ -30,8 +30,10 @@ Por capas (Fase de extracción entre paréntesis):
 - **Datos & red (F4):** `:network` (Ktor Client), `:database-core` (base SQLDelight neutra).
 - **Auth (F5, DA-12):** `:auth-core` (orquestación de tokens; define puertos `TokenProvider`,
   `RefreshTokenSource`, `TokenVerifier` que el producto implementa).
-- **UI (F6):** `:design-core` (design system neutro sobre Material 3), `:resources-core` (strings
-  genéricos vía Compose Resources).
+- **UI (F6):** `:design-tokens` (tokens sin Compose: `Breakpoint`, `ContentKind`, `ResponsiveGrid`,
+  `SemanticTone`, `PlatformDetector`; lo que la lógica lee sin arrastrar Compose ni skiko),
+  `:design-core` (design system neutro sobre Material 3; re-exporta `:design-tokens` con `api`),
+  `:resources-core` (strings genéricos vía Compose Resources).
 - **Mensajería (móvil-only, ADR 0029):** `:crypto` (crypto_box_seal/open + keygen X25519 sobre
   libsodium) y `:secure-storage` (custodia de llaves en Android Keystore / iOS Keychain). Renuncian
   al target Web (`kmp.webSupported = false`).

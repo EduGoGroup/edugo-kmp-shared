@@ -45,8 +45,11 @@ Por capas (Fase de extracción entre paréntesis):
 - **Auth (F5, DA-12):** `:auth-core` — orquestación de tokens (refresh, single-flight, circuit
   breaker, retry, JWT parser, rate limiter, `AuthInterceptor`). Define **puertos** que el producto
   implementa: `TokenProvider`, `RefreshTokenSource`, `TokenVerifier`.
-- **UI (F6):** `:design-core` (design system neutro: tokens, tipografía, `DSTheme` parametrizable,
-  familia `DS*` sobre Material 3 — sin marca), `:resources-core` (strings genéricos vía Compose
+- **UI (F6):** `:design-tokens` (tokens sin Compose — `Breakpoint`, `ContentKind`, `ResponsiveGrid`,
+  `SemanticTone`, `PlatformType`/`PlatformDetector` — en los paquetes `com.edugo.kmp.design.tokens` y
+  `.platform`; lo consume la lógica que no pinta, deuda 131), `:design-core` (design system neutro:
+  tokens en `Dp`, tipografía, `DSTheme` parametrizable, familia `DS*` sobre Material 3 — sin marca;
+  re-exporta `:design-tokens` con `api`), `:resources-core` (strings genéricos vía Compose
   Resources — sin marca).
 - **Mensajería (móvil-only, ADR 0029):** `:crypto` (crypto_box_seal/open + keygen X25519 sobre
   libsodium/Ionspin) y `:secure-storage` (custodia de Kd_priv + DEK en Android Keystore / iOS

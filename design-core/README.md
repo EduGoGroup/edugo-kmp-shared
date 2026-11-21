@@ -9,7 +9,7 @@ Módulo central del **design system neutro** de la familia `edugo-kmp-shared` (C
 ## Contenido
 
 - **Tokens neutros:** `Spacing`, `Sizes`, `Alpha`, `Durations`, `Radius`, `Elevation`, `MessageType`, `SemanticColors`.
-- **Tokens en `tokens/`:** `ColorTokens` (paleta MD3 baseline), `ExtendedColorScheme`, `MotionTokens`, `OpacityTokens`, `ResponsiveTokens`, `ShapeTokens`, `SpacingTokens`, `ZIndexTokens`.
+- **Tokens en `tokens/`:** `ColorTokens` (paleta MD3 baseline), `ExtendedColorScheme`, `MotionTokens`, `OpacityTokens`, `ResponsiveTokens` (`ResponsiveSpacing` y `ResponsiveLayout`, en `Dp`), `ShapeTokens`, `SpacingTokens`, `ZIndexTokens`. Los tokens sin Compose (`Breakpoint`, `ContentKind`, `ResponsiveGrid`, `SemanticTone`, `PlatformType`/`PlatformDetector`) viven en `:design-tokens`, con los mismos paquetes, y este módulo los re-exporta con `api`.
 - **Tipografía baseline:** `BaseTypography` (Material 3 baseline con `FontFamily.Default`).
 - **Theme parametrizable:** `DSTheme(colorScheme, typography, extendedColors, content)`.
 - **Componentes `DS*`:** botones (8), cards (3), dialogs (4 incl. `DSAlertDialog` raíz), inputs (4), lists (3), media (3), navigation (5), overlays (5), progress (3), selection (5), feedback (1).

@@ -58,6 +58,8 @@ include(":database-core")
 include(":auth-core")
 
 // Fase 6 (UI Design Extraction)
+// :design-tokens = los tokens puros (sin Compose) que la lógica lee; :design-core lo re-exporta.
+include(":design-tokens")
 include(":design-core")
 include(":resources-core")
 
