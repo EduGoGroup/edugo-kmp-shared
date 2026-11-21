@@ -73,9 +73,6 @@ object PlatformFlags {
             "iosSimulatorArm64Binaries",
             "iosSimulatorArm64MainBinaries",
             "iosSimulatorArm64TestBinaries",
-            "iosX64Binaries",
-            "iosX64MainBinaries",
-            "iosX64TestBinaries",
         )
 
         iosBinaryTasks.forEach { taskName ->
