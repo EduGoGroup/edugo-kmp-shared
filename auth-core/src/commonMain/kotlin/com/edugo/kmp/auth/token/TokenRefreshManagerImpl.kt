@@ -5,6 +5,7 @@ import com.edugo.kmp.foundation.result.failure
 import com.edugo.kmp.foundation.result.success
 import com.edugo.kmp.telemetry.Telemetry
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
@@ -47,8 +48,6 @@ class TokenRefreshManagerImpl(
     @Volatile
     private var refreshJob: Deferred<Result<TokenPair>>? = null
 
-    private var refreshJobCancellable: Job? = null
-
     private val _onRefreshFailed = MutableSharedFlow<RefreshFailureReason>(replay = 0)
     override val onRefreshFailed: Flow<RefreshFailureReason> = _onRefreshFailed.asSharedFlow()
 
@@ -89,20 +88,22 @@ class TokenRefreshManagerImpl(
     }
 
     /**
-     * Starts a refresh job, publishes it to the single-flight slot so concurrent callers
-     * can await it, and clears the slot on completion. Must be called while holding
-     * [refreshMutex].
+     * Starts a refresh job and publishes it to the single-flight slot so concurrent callers
+     * can await it. Must be called while holding [refreshMutex].
+     *
+     * Bug 0132: el hueco lo vacía la propia renovación al terminar, no quien la espera. Si a
+     * quien espera lo cancelan (el programador, al reiniciar la renovación automática en un
+     * cambio de escuela), la renovación sigue en vuelo —identity-core ya puede haber rotado el
+     * refresh— y quien llegue después se une a ella en vez de mandar otra vez el refresh sin
+     * rotar. Solo se pone una renovación en el hueco cuando está vacío, así que nadie más que
+     * su propia terminación lo vacía.
      */
     private suspend fun executeRefresh(reason: RefreshReason): Result<TokenPair> {
-        val job = scope.async { performRefresh(reason) }
+        val job = scope.async(start = CoroutineStart.LAZY) { performRefresh(reason) }
         refreshJob = job
-        refreshJobCancellable = job
-        return try {
-            job.await()
-        } finally {
-            refreshJob = null
-            refreshJobCancellable = null
-        }
+        job.invokeOnCompletion { if (refreshJob === job) refreshJob = null }
+        job.start()
+        return job.await()
     }
 
     override fun shouldRefresh(token: TokenPair): Boolean {
@@ -281,11 +282,15 @@ class TokenRefreshManagerImpl(
         }
     }
 
+    /**
+     * Vuelve cuando no queda ninguna renovación en vuelo (bug 0132). No la cancela: con
+     * rotación, cortarla después de que identity-core rotara perdería el refresh nuevo. Es lo
+     * que el logout ya obtenía al esperar el mutex, y ahora vale también para la renovación
+     * cuyo programador se paró a medias.
+     */
     override suspend fun cancelPendingRefresh() {
         refreshMutex.withLock {
-            refreshJobCancellable?.cancel()
-            refreshJobCancellable = null
-            refreshJob = null
+            refreshJob?.join()
         }
     }
 }
