@@ -24,19 +24,23 @@ kotlin {
                 api(project(":design-tokens"))
             }
         }
+        // Las pruebas de UI con runComposeUiTest viven aquí y no en commonTest: en testAndroidHostTest la
+        // variante Android de compose-ui-test necesita el runtime de Android (android.os.Build.FINGERPRINT
+        // es null en la JVM del host sin Robolectric) y revienta antes de componer. Las comparten
+        // desktop, wasmJs e iOS, que sí las ejecutan.
+        val commonTest by getting
+        val nonAndroidTest by creating {
+            dependsOn(commonTest)
+        }
         val desktopTest by getting {
+            dependsOn(nonAndroidTest)
             dependencies {
                 // Runtime nativo de Skiko resuelto por el OS del build —
                 // requerido por runComposeUiTest en desktop. Agnóstico a CI/macOS/Linux/Windows.
                 runtimeOnly(compose.desktop.currentOs)
             }
         }
-    }
-}
-
-tasks.withType<Test>().configureEach {
-    if (name.contains("AndroidHostTest", ignoreCase = true)) {
-        exclude("**/components/buttons/ButtonContentTest*")
-        exclude("**/components/lists/DSListRowTest*")
+        findByName("wasmJsTest")?.dependsOn(nonAndroidTest)
+        findByName("iosTest")?.dependsOn(nonAndroidTest)
     }
 }
