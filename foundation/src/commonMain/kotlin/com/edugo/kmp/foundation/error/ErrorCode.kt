@@ -530,6 +530,9 @@ enum class ErrorCode(
                 500 -> SYSTEM_INTERNAL_ERROR
                 502 -> NETWORK_SERVER_ERROR
                 503 -> SYSTEM_SERVICE_UNAVAILABLE
+                // 504: el gateway no recibió respuesta a tiempo del upstream. Como el 502, el
+                // servidor contestó con un 5xx de pasarela, no un fallo de transporte.
+                504 -> NETWORK_SERVER_ERROR
                 else -> SYSTEM_UNKNOWN_ERROR
             }
         }

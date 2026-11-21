@@ -430,6 +430,15 @@ class ErrorCodeTest {
     }
 
     @Test
+    fun fromHttpStatus_mapsGatewayTimeoutToServerError() {
+        val code = ErrorCode.fromHttpStatus(504)
+
+        assertEquals(ErrorCode.NETWORK_SERVER_ERROR, code)
+        assertTrue(code.isRetryable(), "Un 504 de pasarela se puede reintentar, como el 502")
+        assertFalse(code.isConnectivityError(), "El 504 llegó del servidor: no es fallo de conexión")
+    }
+
+    @Test
     fun fromHttpStatus_returnsUnknownForUnmappedStatus() {
         assertEquals(ErrorCode.SYSTEM_UNKNOWN_ERROR, ErrorCode.fromHttpStatus(418)) // I'm a teapot
         assertEquals(ErrorCode.SYSTEM_UNKNOWN_ERROR, ErrorCode.fromHttpStatus(505))
