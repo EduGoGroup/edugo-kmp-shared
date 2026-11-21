@@ -1,10 +1,13 @@
 package com.edugo.kmp.auth.retry
 
+import com.edugo.kmp.foundation.error.ErrorCode
 import com.edugo.kmp.foundation.result.Result
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertIs
+import kotlin.test.assertSame
 import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
@@ -94,6 +97,32 @@ class RetryPolicyTest {
             assertTrue(result is Result.Failure)
             assertEquals(3, attemptCount)
             assertTrue((result as Result.Failure).error.contains("timeout"))
+        }
+
+    @Test
+    fun testExhaustedRetriesReturnTheLastFailureAsItCame() =
+        runTest {
+            val policy =
+                RetryPolicy(
+                    maxAttempts = 3,
+                    initialDelay = 10.milliseconds,
+                    maxDelay = 100.milliseconds,
+                )
+            val failures =
+                (1..3).map { attempt ->
+                    Result.Failure(
+                        error = "network unreachable ($attempt)",
+                        isRetryable = true,
+                        errorCode = ErrorCode.NETWORK_NO_CONNECTION,
+                    )
+                }
+
+            val result = withRetry(policy) { attempt -> failures[attempt - 1] }
+
+            val failure = assertIs<Result.Failure>(result)
+            assertSame(failures.last(), failure, "Se devuelve el último fallo, no una copia")
+            assertEquals(ErrorCode.NETWORK_NO_CONNECTION, failure.errorCode)
+            assertTrue(failure.isRetryable)
         }
 
     @Test
