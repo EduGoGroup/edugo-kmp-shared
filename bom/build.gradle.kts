@@ -17,7 +17,7 @@ publishing {
 }
 
 // Versión unificada: todos los constraints apuntan a la versión del build
-// (`project.version` = -Pversion), de modo que cada corte atómico pinea los 15
+// (`project.version` = -Pversion), de modo que cada corte atómico pinea los 16
 // módulos a la MISMA versión y el grafo del BOM cierra por construcción.
 // (Antes se leía versions.properties por-módulo, lo que producía referencias
 // fantasma como foundation:0.1.3 cuando un módulo se publicaba solo.)
@@ -43,7 +43,8 @@ dependencies {
         api("com.edugo.kmp:database-core:${project.version}")
         // Auth (Fase 5) — DA-12
         api("com.edugo.kmp:auth-core:${project.version}")
-        // UI (Fase 6)
+        // UI (Fase 6) — design-tokens: tokens sin Compose que design-core re-exporta (deuda 131)
+        api("com.edugo.kmp:design-tokens:${project.version}")
         api("com.edugo.kmp:design-core:${project.version}")
         api("com.edugo.kmp:resources-core:${project.version}")
         // Mensajería (plan 025 / ADR 0029) — móvil-only (android/ios/jvm, sin wasm)

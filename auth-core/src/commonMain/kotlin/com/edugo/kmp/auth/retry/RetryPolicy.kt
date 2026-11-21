@@ -105,7 +105,9 @@ data class RetryPolicy(
  * @param policy Política de reintentos
  * @param logger Logger opcional (usa DefaultLogger si no se provee)
  * @param operation Operación suspendible que retorna Result<T>
- * @return El primer Result.Success, o el último Result.Failure si se agotan los intentos
+ * @return El primer Result.Success, o el último Result.Failure si se agotan los intentos. Ese
+ *   fallo se devuelve tal como llegó de [operation], con su `errorCode` y su `isRetryable`; solo
+ *   si no hubo ninguno se devuelve un fallo genérico.
  */
 suspend fun <T> withRetry(
     policy: RetryPolicy = RetryPolicy.DEFAULT,
@@ -113,7 +115,7 @@ suspend fun <T> withRetry(
     operation: suspend (attempt: Int) -> Result<T>,
 ): Result<T> {
     val tag = "RetryPolicy"
-    var lastError: String? = null
+    var lastFailure: Result.Failure? = null
 
     repeat(policy.maxAttempts) { index ->
         val attempt = index + 1
@@ -136,7 +138,7 @@ suspend fun <T> withRetry(
             }
 
             is Result.Failure -> {
-                lastError = result.error
+                lastFailure = result
 
                 if (!policy.isRetryable(result.error)) {
                     logger?.w(tag, "Non-retryable error: ${result.error}")
@@ -156,5 +158,5 @@ suspend fun <T> withRetry(
         }
     }
 
-    return Result.Failure(lastError ?: "Operation failed after ${policy.maxAttempts} attempts")
+    return lastFailure ?: Result.Failure("Operation failed after ${policy.maxAttempts} attempts")
 }

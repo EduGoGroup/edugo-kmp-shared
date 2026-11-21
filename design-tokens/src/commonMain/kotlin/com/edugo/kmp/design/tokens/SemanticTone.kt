@@ -7,8 +7,9 @@ package com.edugo.kmp.design.tokens
  * componente que lo consume (ej. `DSStatusBadge`), siempre apoyandose en
  * `MaterialTheme.colorScheme` para respetar tema claro/oscuro y temas custom.
  *
- * Pertenece a `design-core` porque es reutilizable por cualquier componente
- * DS (no es propio del renderer SDUI ni de un contrato concreto).
+ * Pertenece a `design-tokens` porque es reutilizable por cualquier componente
+ * DS (no es propio del renderer SDUI ni de un contrato concreto) y no necesita
+ * Compose: el motor SDUI lo usa sin depender de `design-core` (deuda 131).
  */
 enum class SemanticTone {
     Neutral,

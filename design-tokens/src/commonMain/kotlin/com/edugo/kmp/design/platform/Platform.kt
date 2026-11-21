@@ -22,11 +22,12 @@ enum class WindowSizeClass {
 /**
  * Provides the current platform type at runtime.
  *
- * Vive en `design-core` (no en `sdui-engine`) porque componentes DS agnósticos
+ * Vive en `design-tokens` (no en `sdui-engine`) porque componentes DS agnósticos
  * al motor SDUI también necesitan adaptarse por plataforma (ej.
- * `DSAdaptiveActionsHost`). `sdui-engine` ya depende de `design-core`; subirlo
- * aquí rompe el ciclo que aparecería si `design-core` tuviera que importar
- * desde `sdui-engine`.
+ * `DSAdaptiveActionsHost` de `design-core`), y `design-tokens` no arrastra Compose:
+ * el motor SDUI lo lee sin depender de `design-core` (deuda 131). Ponerlo aquí
+ * evita el ciclo que aparecería si `design-core` tuviera que importar desde
+ * `sdui-engine`.
  *
  * Cada entrypoint de plataforma (Android Application.onCreate, iOS app init,
  * Desktop main, Web main) debe setear `PlatformDetector.current` antes de

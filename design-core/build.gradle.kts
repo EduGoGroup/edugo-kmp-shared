@@ -16,6 +16,14 @@ kotlin {
     }
 
     sourceSets {
+        val commonMain by getting {
+            dependencies {
+                // Los tokens sin Compose (Breakpoint, SemanticTone, PlatformDetector…) viven en
+                // :design-tokens con los mismos paquetes; `api` para que quien consume
+                // design-core los siga viendo sin declarar nada (deuda 131).
+                api(project(":design-tokens"))
+            }
+        }
         val desktopTest by getting {
             dependencies {
                 // Runtime nativo de Skiko resuelto por el OS del build —

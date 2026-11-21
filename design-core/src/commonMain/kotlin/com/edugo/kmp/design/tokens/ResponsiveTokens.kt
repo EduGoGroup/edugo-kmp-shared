@@ -3,34 +3,9 @@ package com.edugo.kmp.design.tokens
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
-/**
- * Responsive breakpoints for adapting layouts across device sizes.
- *
- * Based on Material Design 3 window size classes:
- * - [COMPACT]: phones in portrait (~0-599dp)
- * - [MEDIUM]: tablets, phones in landscape (~600-839dp)
- * - [EXPANDED]: desktop, large tablets (~840-1199dp)
- * - [LARGE]: ultra-wide desktop, large monitors (~1200dp+)
- */
-enum class Breakpoint(
-    val minWidthDp: Int,
-) {
-    COMPACT(0),
-    MEDIUM(600),
-    EXPANDED(840),
-    LARGE(1200),
-}
-
-/**
- * Resolves the [Breakpoint] for the given screen [widthDp].
- */
-fun breakpointFromWidth(widthDp: Int): Breakpoint =
-    when {
-        widthDp >= Breakpoint.LARGE.minWidthDp -> Breakpoint.LARGE
-        widthDp >= Breakpoint.EXPANDED.minWidthDp -> Breakpoint.EXPANDED
-        widthDp >= Breakpoint.MEDIUM.minWidthDp -> Breakpoint.MEDIUM
-        else -> Breakpoint.COMPACT
-    }
+// `Breakpoint`, `breakpointFromWidth` y `ContentKind` viven en `design-tokens` (mismo paquete,
+// sin Compose; deuda 131). Aquí queda solo lo que mide en `Dp`; lo entero delega en
+// `ResponsiveGrid` para que haya una sola política.
 
 /**
  * Responsive spacing presets per breakpoint.
@@ -54,27 +29,8 @@ object ResponsiveSpacing {
             Breakpoint.LARGE -> 32.dp
         }
 
-    /** Recommended grid column count per breakpoint. */
-    fun gridColumns(breakpoint: Breakpoint): Int =
-        when (breakpoint) {
-            Breakpoint.COMPACT -> 1
-            Breakpoint.MEDIUM -> 2
-            Breakpoint.EXPANDED -> 3
-            Breakpoint.LARGE -> 4
-        }
-}
-
-/**
- * Kind of content a screen renders. Drives column counts and two-pane decisions in
- * [ResponsiveLayout]. Intentionally semantic (no pixels), so the contract only needs to express
- * intention while the front decides the spatial realization per breakpoint.
- */
-enum class ContentKind {
-    FORM,
-    LIST,
-    DETAIL,
-    DASHBOARD,
-    SETTINGS,
+    /** Recommended grid column count per breakpoint. Delega en [ResponsiveGrid.gridColumns]. */
+    fun gridColumns(breakpoint: Breakpoint): Int = ResponsiveGrid.gridColumns(breakpoint)
 }
 
 /**
@@ -100,37 +56,16 @@ object ResponsiveLayout {
 
     /**
      * Whether the layout should use two side-by-side panes (e.g. list+detail) at this breakpoint
-     * (D4). Enabled from EXPANDED upward.
+     * (D4). Enabled from EXPANDED upward. Delega en [ResponsiveGrid.useTwoPane].
      */
-    fun useTwoPane(breakpoint: Breakpoint): Boolean = breakpoint == Breakpoint.EXPANDED || breakpoint == Breakpoint.LARGE
+    fun useTwoPane(breakpoint: Breakpoint): Boolean = ResponsiveGrid.useTwoPane(breakpoint)
 
     /**
-     * Number of content columns for a given [breakpoint] and [kind] (design.md §3).
-     *
-     * FORM/SETTINGS: 1 column until EXPANDED, where fields pack into 2 columns.
-     * LIST/DETAIL: a single content column; their EXPANDED richness is two *panes*
-     *   (see [useTwoPane]), not more columns inside a pane.
-     * DASHBOARD: tracks [ResponsiveSpacing.gridColumns] (1/2/3/4) — the metric grid grows with width.
+     * Number of content columns for a given [breakpoint] and [kind] (design.md §3). Delega en
+     * [ResponsiveGrid.contentColumns], que documenta la política por [ContentKind].
      */
     fun contentColumns(
         breakpoint: Breakpoint,
         kind: ContentKind,
-    ): Int =
-        when (kind) {
-            ContentKind.FORM,
-            ContentKind.SETTINGS,
-            ->
-                when (breakpoint) {
-                    Breakpoint.COMPACT -> 1
-                    Breakpoint.MEDIUM -> 1
-                    Breakpoint.EXPANDED -> 2
-                    Breakpoint.LARGE -> 2
-                }
-
-            ContentKind.LIST,
-            ContentKind.DETAIL,
-            -> 1
-
-            ContentKind.DASHBOARD -> ResponsiveSpacing.gridColumns(breakpoint)
-        }
+    ): Int = ResponsiveGrid.contentColumns(breakpoint, kind)
 }
