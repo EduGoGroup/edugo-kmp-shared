@@ -3,8 +3,8 @@
 # Targets principales:
 #   publish-local  Publica todos los modulos a ~/.m2 con la version indicada.
 #                  Uso: make publish-local V=0.1.2-LOCAL
-#   ci-local       ktlintCheck + detekt + check (JVM, sin Android/Web/iOS).
-#   ci-docker      Igual pero en contenedor Docker JDK 21 (réplica de GH Actions Linux).
+#   ci-local       ktlintCheck + detekt + check (JVM) y testAndroidHostTest (requiere Android SDK).
+#   ci-docker      ktlintCheck + detekt + check en contenedor Docker JDK 21 (sin Android host).
 #   regen-seed-icons  Refresca la lista de icon-names del seed SDUI (cruza repos).
 #
 # Prerequisito: JAVA_HOME apuntando a JDK 21+.
@@ -40,13 +40,14 @@ ci-image: ## Construye la imagen Docker de CI para proyectos KMP (una sola vez)
 	@docker build -t $(KMP_CI_IMAGE) -f $(DOCKER_DIR)/kmp-ci.Dockerfile $(DOCKER_DIR)
 	@printf "\033[0;32mImagen $(KMP_CI_IMAGE) lista\033[0m\n"
 
-ci-local: ## CI local: ktlintCheck + detekt + check JVM (sin Android/Web/iOS)
+ci-local: ## CI local: ktlintCheck + detekt + check JVM, y las pruebas Android host (sin Web/iOS)
 	@printf "\033[1;33mEjecutando CI local (kmp-shared)...\033[0m\n"
 	./gradlew ktlintCheck detekt check \
 		-PenableAndroid=false \
 		-PenableWeb=false \
 		-PenableIos=false \
 		--console=plain
+	./gradlew testAndroidHostTest -PenableAndroid=true --console=plain
 	@printf "\033[0;32mCI local OK\033[0m\n"
 
 ci-docker: ## CI en Docker ($(KMP_CI_IMAGE)) — réplica exacta de GH Actions Linux
