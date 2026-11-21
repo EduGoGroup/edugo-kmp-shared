@@ -11,8 +11,9 @@ import kotlin.test.assertTrue
 /**
  * Pruebas de la capa de sellado anónimo ([SealedBoxCrypto]).
  *
- * Ejecutables en JVM/desktop (`:crypto:desktopTest`). Verifican round-trip, tamaños/overhead, el caso
- * negativo y la **compatibilidad de bytes con el backend Go** mediante un vector fijo generado por Go
+ * Ejecutables en desktop (`:crypto:desktopTest`) e iOS; no en Android host, donde falta la libsodium
+ * nativa del SO del host (ver `crypto/build.gradle.kts`). Verifican round-trip, tamaños/overhead, el
+ * caso negativo y la **compatibilidad de bytes con el backend Go** mediante un vector fijo generado por Go
  * en el spike F5.0 (`/tmp/spike-crypto-f5/vectors.json`).
  */
 @OptIn(ExperimentalEncodingApi::class)

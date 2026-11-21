@@ -24,5 +24,19 @@ kotlin {
                 api(libs.ionspin.libsodium.bindings)
             }
         }
+
+        // Las pruebas de SealedBoxCrypto necesitan cargar la libsodium nativa del binding. En
+        // testAndroidHostTest se ejecuta el `actual` Android de Ionspin sobre la JVM del host: el AAR solo
+        // trae los .so de Android (jni/<abi>/libsodium.so), no la librería del SO del host, y la carga
+        // revienta. Por eso viven en este conjunto, que comparten desktop (JVM, con la nativa del host)
+        // e iOS (libsodium estática), y no en commonTest.
+        val commonTest by getting
+        val nonAndroidTest by creating {
+            dependsOn(commonTest)
+        }
+        val desktopTest by getting {
+            dependsOn(nonAndroidTest)
+        }
+        findByName("iosTest")?.dependsOn(nonAndroidTest)
     }
 }
