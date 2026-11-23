@@ -1,5 +1,6 @@
 package com.edugo.kmp.design.components.progress
 
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Surface
 import androidx.compose.material3.darkColorScheme
@@ -10,19 +11,26 @@ import com.edugo.kmp.design.DSTheme
 import com.edugo.kmp.design.Sizes
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
+/**
+ * Indicador circular, determinado si llega [progress] e indeterminado si no.
+ *
+ * [size] es el diámetro. Se aplica por dentro del [modifier] del que llama, así que un
+ * `Modifier.size(...)` explícito sigue mandando.
+ */
 @Composable
 fun DSCircularProgress(
     modifier: Modifier = Modifier,
     progress: (() -> Float)? = null,
     size: Dp = Sizes.progressLarge,
 ) {
+    val sized = modifier.size(size)
     if (progress != null) {
         CircularProgressIndicator(
             progress = progress,
-            modifier = modifier,
+            modifier = sized,
         )
     } else {
-        CircularProgressIndicator(modifier = modifier)
+        CircularProgressIndicator(modifier = sized)
     }
 }
 
